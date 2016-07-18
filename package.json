@@ -2,7 +2,7 @@
     "name": "push-wrapper-example-site",
     "version": "1.0.0",
     "main": "app.js",
-    "description": "A example site to show the Ableton Pusher wrapper in use",
+    "description": "A example site to show the Ableton Push push-wrapper in use",
     "dependencies": {
         "lodash.foreach": "^3.0.0",
         "lodash.partial": "^3.1.0",
