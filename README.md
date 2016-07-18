@@ -1,6 +1,6 @@
-# Demo app
+# push-wrapper demo site
 
-A relatively simple web application that uses the Ableton Push hardare as a MIDI controller for a sampler, via the push-wrapper wrapper. 
+A relatively simple web application that uses the Ableton Push hardare as a MIDI controller for a drum machine, via the push-wrapper npm module. 
 
 ## Running locally
 
@@ -17,8 +17,7 @@ The Push hardware uses MIDI SYSEX messages for some of it communication. MIDI SY
 
 Under OS X, Python can be used to create a simple HTTPS server - this repo includes a script to start that server, and also prompts you to create a *self-signed certificate* for that HTTPS server to use. Generation of this certificate is only required the first time you start the server - the generated cert is stored at `example-site/server.pem`
 
-    cd example-site
-    python simple-http-server.py # Fill in details for certificate when prompted
+    python simple-https-server.py # Fill in details for certificate when prompted
 
 **Load app in browser**
 
@@ -35,8 +34,3 @@ TBD
 Initial version of the app based off blog post here: http://www.keithmcmillen.com/blog/making-music-in-the-browser-web-midi-api/
 
 Timing for repeated notes inspired by this: https://github.com/cwilso/metronome
-
-## TODO
-
-- should this be ready compiled
-- should it have its own package.json for the browserify build command?
