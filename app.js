@@ -1,4 +1,4 @@
-const Push = require('../push.js'),
+const Push = require('push-wrapper'),
     foreach = require('lodash.foreach'),
     partial = require('lodash.partial'),
     Player = require('./player.js'),
@@ -57,7 +57,7 @@ function off_we_go(bound_push) {
         repetae.on('on', partial(push.grid.select[column_number].led_rgb, 0, 0, 255));
         repetae.on('off', push.grid.select[column_number].led_on);
         repetae.on('interval', (amount_ms) => push.lcd.x[column_number].y[1].update(amount_ms + 'ms'));
-        
+
         repetae.report_interval();
 
         foreach(repeat_interval_buttons, (button) => {
@@ -102,7 +102,7 @@ function bind_column_to_player(push, player, x, repetae) {
 
     foreach([1, 2, 3, 4, 5, 6, 7, 8], (y) => {
         const grid_button = push.grid.y[y].x[x];
-    
+
         grid_button.on('pressed', (velocity) => {
             mutable_velocity = velocity;
             mutable_frequency = filter_frequencies[y];
@@ -119,7 +119,7 @@ function bindQwertyuiToPlayback(players) {
     let lookup = {113: 0, 119: 1, 101: 2, 114: 3, 116: 4, 121: 5, 117: 6, 105: 7};
     window.addEventListener("keypress", (event) => {
         if (event.charCode in lookup) {
-            players[lookup[event.charCode]].play(110, filter_frequencies[8]);    
+            players[lookup[event.charCode]].play(110, filter_frequencies[8]);
         }
     });
 }
