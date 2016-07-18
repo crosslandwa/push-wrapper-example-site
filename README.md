@@ -1,15 +1,15 @@
 # Demo app
 
-A relatively simple web application that uses the Ableton Push hardare as a MIDI controller for a sampler, via the node-push wrapper. 
+A relatively simple web application that uses the Ableton Push hardare as a MIDI controller for a sampler, via the push-wrapper wrapper. 
 
 ## Running locally
 
 **Installation**
 
-    cd node-push
+    cd push-wrapper-example-site
     sudo npm install -g browserify
     npm install # installs dependencies
-    npm run build # bundles example-site/app.js and all its dependencies into single file example-site/bundle.js
+    npm run-script build # bundles app.js and all its dependencies into single file bundle.js, which is included in index.html
 
 **Start web server**
 
