@@ -29,6 +29,10 @@ Under OS X, Python can be used to create a simple HTTPS server - this repo inclu
 
 TBD
 
+### Disclaimer
+
+This example site is only **known** to work in Google Chrome/OS X...
+
 ## Credits
 
 Initial version of the app based off blog post here: http://www.keithmcmillen.com/blog/making-music-in-the-browser-web-midi-api/
