@@ -13,7 +13,7 @@
     },
     "scripts": {
         "test": "jasmine",
-        "build": "browserify ./app.js -o ./bundle.js"
+        "build": "browserify ./app.js -o ./bundle.js --debug"
     },
     "author": "https://github.com/crosslandwa",
     "license": "MIT"

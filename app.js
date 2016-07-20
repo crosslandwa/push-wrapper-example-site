@@ -50,18 +50,18 @@ function off_we_go(bound_push) {
             sample_name = full_path_sample_name.split('/').pop(),
             repetae = Repetae.create_scheduled_by_audio_context(context, repeat_interval_buttons[7].amount);
 
-        push.grid.select[column_number].on('pressed', repetae.press);
-        push.grid.select[column_number].on('released', repetae.release);
+        push.grid.x[column_number].select.on('pressed', repetae.press);
+        push.grid.x[column_number].select.on('released', repetae.release);
 
-        push.grid.select[column_number].led_on();
-        repetae.on('on', partial(push.grid.select[column_number].led_rgb, 0, 0, 255));
-        repetae.on('off', push.grid.select[column_number].led_on);
+        push.grid.x[column_number].select.led_on();
+        repetae.on('on', partial(push.grid.x[column_number].select.led_rgb, 0, 0, 255));
+        repetae.on('off', push.grid.x[column_number].select.led_on);
         repetae.on('interval', (amount_ms) => push.lcd.x[column_number].y[1].update(amount_ms + 'ms'));
 
         repetae.report_interval();
 
         foreach(repeat_interval_buttons, (button) => {
-            push.control[button.name].on('pressed', partial(repetae.interval, button.amount))
+            push.button[button.name].on('pressed', partial(repetae.interval, button.amount))
         });
 
         turn_off_column(push, column_number);
@@ -75,7 +75,7 @@ function off_we_go(bound_push) {
     });
 
     foreach(repeat_interval_buttons, (button) => {
-        push.control[button.name].led_dim();
+        push.button[button.name].led_dim();
     });
 
     bind_pitchbend(push, players);
@@ -101,7 +101,7 @@ function bind_column_to_player(push, player, x, repetae) {
     }
 
     foreach([1, 2, 3, 4, 5, 6, 7, 8], (y) => {
-        const grid_button = push.grid.y[y].x[x];
+        const grid_button = push.grid.x[x].y[y];
 
         grid_button.on('pressed', (velocity) => {
             mutable_velocity = velocity;
@@ -136,9 +136,9 @@ function turn_on_column(push, x, velocity) {
 
 function turn_off_column(push, x) {
     foreach([2, 3, 4, 5, 6, 7, 8], (y) => {
-        push.grid.y[y].x[x].led_off();
+        push.grid.x[x].y[y].led_off();
     });
-    push.grid.y[1].x[x].led_on();
+    push.grid.x[x].y[1].led_on();
 }
 
 function bind_pitchbend(push, players) {
