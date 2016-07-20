@@ -1,6 +1,6 @@
 # push-wrapper demo site
 
-A relatively simple web application that uses the Ableton Push hardare as a MIDI controller for a drum machine, via the push-wrapper npm module. 
+A relatively simple web application that uses the Ableton Push hardware as a MIDI controller for a drum machine, via the [push-wrapper npm module](https://www.npmjs.com/package/push-wrapper).
 
 ## Running locally
 
@@ -22,7 +22,7 @@ Under OS X, Python can be used to create a simple HTTPS server - this repo inclu
 **Load app in browser**
 
 - Navigate to `https://localhost:4443` in Chrome
-- Chrome will consider the *self-signed certificated* used by the server as invalid. Read the code, and if you are happy accept the invalid cert in the warning page Chrome displays
+- Chrome will consider the *self-signed certificate* used by the server as invalid. Read the code, and if you are happy accept the invalid cert in the warning page Chrome displays
 - Allow browser use of MIDI devices via the dialogue box that pops up
 
 ## Functionality
