@@ -8,7 +8,7 @@ describe('BPM module', () => {
     beforeEach(() => {
         bpm = new BPM(); // use the inbuilt setTimeout function for tests
         emitted_events = [];
-        bpm.on('bpm', (bpm) => emitted_events.push('bpm=' + bpm));
+        bpm.on('changed', (bpm) => emitted_events.push('bpm=' + bpm));
     })
 
     it('reports bpm', () => {

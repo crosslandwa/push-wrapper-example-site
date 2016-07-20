@@ -9,10 +9,10 @@ function BPM() {
     let current = 120,
         bpm = this;
 
-    this.report = function() { bpm.emit('bpm', current) }
+    this.report = function() { bpm.emit('changed', current) }
     this.change_by = function(amount) {
         current = clip(current + amount);
-        bpm.emit('bpm', current);
+        bpm.report();
     }
 }
 util.inherits(BPM, EventEmitter);

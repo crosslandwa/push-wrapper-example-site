@@ -4,6 +4,7 @@ const Push = require('push-wrapper'),
     Player = require('./player.js'),
     context = new AudioContext(),
     Repetae = require('./repetae.js'),
+    BPM = require('./bpm.js'),
     samples = [
         'samples/Bonus_Kick27.mp3',
         'samples/snare_turnboot.mp3',
@@ -31,7 +32,6 @@ window.addEventListener('load', () => {
         navigator.requestMIDIAccess({ sysex: true })
             .then(Push.create_bound_to_web_midi_api)
             .then(off_we_go)
-            .catch(function(error) { console.log(error.message) });
     } else {
         alert('No MIDI support in your browser');
     }
@@ -40,7 +40,8 @@ window.addEventListener('load', () => {
 function off_we_go(bound_push) {
     const buttons = document.getElementsByClassName('button'),
         players = create_players(),
-        push = bound_push;
+        push = bound_push,
+        bpm = new BPM();
 
     push.lcd.clear();
 
@@ -81,6 +82,8 @@ function off_we_go(bound_push) {
     bind_pitchbend(push, players);
 
     bindQwertyuiToPlayback(players);
+    bind_tempo_knob_to_bpm(push, bpm);
+    bpm.report();
 }
 
 function create_players() {
@@ -146,6 +149,11 @@ function bind_pitchbend(push, players) {
         var rate = pb > 8192 ? pb / 4096 : pb / 8192;
         foreach(players, (player) => player.update_playback_rate(rate));
     });
+}
+
+function bind_tempo_knob_to_bpm(push, bpm) {
+    push.knob['tempo'].on('turned', bpm.change_by);
+    bpm.on('changed', bpm => push.lcd.x[1].y[3].update('bpm= ' + bpm));
 }
 
 function turn_button_display_on(ui_btn) {
