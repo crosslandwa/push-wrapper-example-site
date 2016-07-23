@@ -1,10 +1,11 @@
-const Repetae = require('../src/repetae.js');
+const Repetae = require('../src/repetae.js'),
+    Repeater = require('../src/repeater.js');
 
 describe('Example app repetae', () => {
     var repetae, emitted_events;
 
     beforeEach(() => {
-        repetae = new Repetae(setTimeout); // use the inbuilt setTimeout function for tests
+        repetae = new Repetae(new Repeater(setTimeout)); // use the inbuilt setTimeout function for tests
         emitted_events = [];
         repetae.on('on', (amount) => emitted_events.push('on'));
         repetae.on('off', () => emitted_events.push('off'));
