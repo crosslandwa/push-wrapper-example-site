@@ -6,7 +6,7 @@ const Push = require('push-wrapper'),
     Repetae = require('./src/repetae.js'),
     Repeater = require('./src/repeater.js'),
     BPM = require('./src/bpm.js'),
-    bpm = new BPM(120);
+    bpm = new BPM(120),
     Interval = require('./src/interval.js'),
     intervals = {
         '1/4': Interval['4n'](bpm, '1/4'),
@@ -41,7 +41,7 @@ window.addEventListener('load', () => {
 });
 
 function off_we_go(bound_push) {
-    const buttons = document.getElementsByClassName('button'),
+    const buttons = document.getElementsByClassName('push-wrapper-button'),
         players = create_players(),
         push = bound_push;
 
