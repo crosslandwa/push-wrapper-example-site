@@ -16,12 +16,12 @@ function Interval(bpm, multiplier, value) {
 util.inherits(Interval, EventEmitter);
 
 module.exports = {
-    '4n': function(bpm) { return new Interval(bpm, 1, '4n') },
-    '4nt': function(bpm) { return new Interval(bpm, 2 / 3, '4nt') },
-    '8n': function(bpm) { return new Interval(bpm, 0.5, '8n') },
-    '8nt': function(bpm) { return new Interval(bpm, 1 / 3, '8nt') },
-    '16n': function(bpm) { return new Interval(bpm, 0.25, '16n') },
-    '16nt': function(bpm) { return new Interval(bpm, 1 / 6, '16nt') },
-    '32n': function(bpm) { return new Interval(bpm, 0.125, '32n') },
-    '32nt': function(bpm) { return new Interval(bpm, 1 / 12, '32nt') },
+    '4n': function(bpm, name) { return new Interval(bpm, 1, name ? name : '4n') },
+    '4nt': function(bpm, name) { return new Interval(bpm, 2 / 3, name ? name : '4nt') },
+    '8n': function(bpm, name) { return new Interval(bpm, 0.5, name ? name : '8n') },
+    '8nt': function(bpm, name) { return new Interval(bpm, 1 / 3, name ? name : '8nt') },
+    '16n': function(bpm, name) { return new Interval(bpm, 0.25, name ? name : '16n') },
+    '16nt': function(bpm, name) { return new Interval(bpm, 1 / 6, name ? name : '16nt') },
+    '32n': function(bpm, name) { return new Interval(bpm, 0.125, name ? name : '32n') },
+    '32nt': function(bpm, name) { return new Interval(bpm, 1 / 12, name ? name : '32nt') },
 };
