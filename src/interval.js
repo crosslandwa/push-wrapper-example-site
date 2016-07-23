@@ -15,4 +15,6 @@ function Interval(bpm) {
 }
 util.inherits(Interval, EventEmitter);
 
-module.exports = Interval;
+module.exports = {
+    '4n': function(bpm) { return new Interval(bpm) }
+};

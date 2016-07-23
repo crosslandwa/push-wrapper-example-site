@@ -38,12 +38,12 @@ describe('BPM module', () => {
     });
 });
 
-describe('Interval module', () => {
+fdescribe('Interval module', () => {
     var bpm, interval, emitted_events;
 
     beforeEach(() => {
         bpm = new BPM(60);
-        interval = new Interval(bpm);
+        interval = Interval['4n'](bpm);
         emitted_events = [];
         interval.on('changed', (time) => emitted_events.push('interval=' + time + 'ms'));
     })
