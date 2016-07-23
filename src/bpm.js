@@ -6,12 +6,13 @@ const EventEmitter = require('events'),
 
 function BPM(initial) {
     EventEmitter.call(this);
-    let current = clip(initial) ? clip(initial) : 120,
-        bpm = this;
+    let bpm = this;
 
-    this.report = function() { bpm.emit('changed', current) }
+    this.current = clip(initial) ? clip(initial) : 120;
+
+    this.report = function() { bpm.emit('changed', bpm) }
     this.change_by = function(amount) {
-        current = clip(current + amount);
+        bpm.current = clip(bpm.current + amount);
         bpm.report();
     }
 }

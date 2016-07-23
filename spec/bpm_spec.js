@@ -9,7 +9,7 @@ describe('BPM module', () => {
     beforeEach(() => {
         bpm = new BPM();
         emitted_events = [];
-        bpm.on('changed', (bpm) => emitted_events.push('bpm=' + bpm));
+        bpm.on('changed', (bpm) => emitted_events.push('bpm=' + bpm.current));
     })
 
     it('reports bpm', () => {

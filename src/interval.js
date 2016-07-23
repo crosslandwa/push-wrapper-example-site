@@ -6,16 +6,12 @@ const EventEmitter = require('events'),
 
 function Interval(bpm, multiplier, value) {
     EventEmitter.call(this);
-    let current = 120,
-        interval = this;
+    let interval = this;
 
     this.value = value;
+    this.report = function() { interval.emit('changed', (60 / bpm.current) * multiplier * 1000); };
 
-    this.report = bpm.report;
-
-    bpm.on('changed', (bpm) => {
-        interval.emit('changed', (60 / bpm) * multiplier * 1000);
-    });
+    bpm.on('changed', interval.report);
 }
 util.inherits(Interval, EventEmitter);
 
