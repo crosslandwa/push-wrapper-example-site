@@ -28,16 +28,6 @@ const Push = require('push-wrapper'),
         'samples/tang-1.mp3',
         'samples/Cassette808_Tom01.mp3'
     ],
-    repeat_interval_buttons = [
-        { name: '1/32t'},
-        { name: '1/32'},
-        { name: '1/16t'},
-        { name: '1/16'},
-        { name: '1/8t'},
-        { name: '1/8'},
-        { name: '1/4t'},
-        { name: '1/4'},
-    ],
     filter_frequencies = [0, 100, 200, 400, 800, 2000, 6000, 10000, 20000];
 
 window.addEventListener('load', () => {
@@ -73,8 +63,8 @@ function off_we_go(bound_push) {
 
         repetae.report_interval();
 
-        foreach(repeat_interval_buttons, (button) => {
-            push.button[button.name].on('pressed', partial(repetae.interval, intervals[button.name]))
+        foreach(intervals, (interval, button_name) => {
+            push.button[button_name].on('pressed', partial(repetae.interval, interval))
         });
 
         turn_off_column(push, column_number);
@@ -87,8 +77,8 @@ function off_we_go(bound_push) {
         bind_column_to_player(push, player, column_number, repetae);
     });
 
-    foreach(repeat_interval_buttons, (button) => {
-        push.button[button.name].led_dim();
+    foreach(intervals, (interval, button_name) => {
+        push.button[button_name].led_dim();
     });
 
     bind_pitchbend(push, players);
