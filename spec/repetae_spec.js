@@ -3,7 +3,7 @@ const Repetae = require('../src/repetae.js'),
     BPM = require('../src/bpm.js'),
     Interval = require('../src/interval.js');
 
-fdescribe('Example app repetae', () => {
+describe('Example app repetae', () => {
     var repetae, emitted_events, bpm, interval_4n, interval_16n, interval_32n;
 
     beforeEach(() => {
@@ -131,5 +131,10 @@ fdescribe('Example app repetae', () => {
     it('reports current interval on request', () => {
         repetae.report_interval();
         expect(emitted_events).toEqual(['interval-1000']);
+    })
+
+    it('automatically changes interval when BPM changes', () => {
+        bpm.change_by(60);
+        expect(emitted_events).toEqual(['interval-500']);
     })
 });
