@@ -58,6 +58,12 @@ fdescribe('Interval module', () => {
         expect(emitted_events).toEqual(['interval=500ms', 'interval=750ms']);
     });
 
+    it('reports a quarter note time when bpm changed', () => {
+        create_and_listen_to(Interval['4nt']);
+        bpm.change_by(20);
+        expect(emitted_events).toEqual(['interval=500ms']);
+    });
+
     it('reports a sixteenth note time when bpm changed', () => {
         create_and_listen_to(Interval['16n']);
         bpm.change_by(60);
