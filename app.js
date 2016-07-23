@@ -69,7 +69,7 @@ function off_we_go(bound_push) {
         push.grid.x[column_number].select.led_on();
         repetae.on('on', partial(push.grid.x[column_number].select.led_rgb, 0, 0, 255));
         repetae.on('off', push.grid.x[column_number].select.led_on);
-        repetae.on('interval', (amount_ms) => push.lcd.x[column_number].y[1].update(amount_ms + 'ms'));
+        repetae.on('interval', push.lcd.x[column_number].y[1].update);
 
         repetae.report_interval();
 

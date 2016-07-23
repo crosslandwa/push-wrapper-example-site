@@ -11,7 +11,6 @@ function Repetae(repeater, initial_interval) {
     this._time_changed = false;
     this._being_pressed = false;
     this._current_interval = initial_interval;
-    repeater.on('interval', (interval) => repetae.emit('interval', interval))
 
     repetae._current_interval.on('changed', repeater.interval);
     repetae._current_interval.report();
@@ -45,6 +44,7 @@ function Repetae(repeater, initial_interval) {
             repetae._current_interval.removeListener('changed', repeater.interval);
             repetae._current_interval = new_interval;
             repetae._current_interval.on('changed', repeater.interval);
+            repetae.report_interval();
             repetae._current_interval.report();
         }
     }
@@ -58,7 +58,7 @@ function Repetae(repeater, initial_interval) {
     }
 
     this.stop = repeater.stop;
-    this.report_interval = repeater.report_interval;
+    this.report_interval = function() { repetae.emit('interval', repetae._current_interval.value)  };
 }
 util.inherits(Repetae, EventEmitter);
 

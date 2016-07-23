@@ -11,11 +11,13 @@ describe('Example app repetae', () => {
         interval_4n = Interval['4n'](bpm); // 1000ms at 60BPM
         interval_16n = Interval['16n'](bpm); // 250ms at 60BPM
         interval_32n = Interval['32n'](bpm); // 125ms at 60BPM
-        repetae = new Repetae(new Repeater(setTimeout), interval_4n); // use the inbuilt setTimeout function for tests
+        const repeater = new Repeater(setTimeout);
+        repetae = new Repetae(repeater, interval_4n); // use the inbuilt setTimeout function for tests
         emitted_events = [];
         repetae.on('on', (amount) => emitted_events.push('on'));
         repetae.on('off', () => emitted_events.push('off'));
-        repetae.on('interval', (amount_ms) => emitted_events.push('interval-' + amount_ms));
+        repetae.on('interval', (interval_name) => emitted_events.push('interval-' + interval_name));
+        repeater.on('interval', (amount_ms) => emitted_events.push('repeater-interval-' + amount_ms));
     })
 
     it('can be turned on', () => {
@@ -30,10 +32,10 @@ describe('Example app repetae', () => {
         expect(emitted_events).toEqual([]);
 
         repetae.interval(interval_16n);
-        expect(emitted_events).toEqual(['interval-250']);
+        expect(emitted_events).toEqual(['interval-16n', 'repeater-interval-250']);
 
         repetae.release();
-        expect(emitted_events).toEqual(['interval-250', 'on']);
+        expect(emitted_events).toEqual(['interval-16n', 'repeater-interval-250', 'on']);
     });
 
     it('can be turned off', () => {
@@ -54,7 +56,7 @@ describe('Example app repetae', () => {
         repetae.press();
         repetae.interval(interval_16n);
         repetae.release();
-        expect(emitted_events).toEqual(['on', 'interval-250']);
+        expect(emitted_events).toEqual(['on', 'interval-16n', 'repeater-interval-250']);
     });
 
     it('cannot have interval changed while not being pressed', () => {
@@ -73,7 +75,7 @@ describe('Example app repetae', () => {
         repetae.press();
         repetae.interval(interval_16n); // expect to be called at 0, 250, 500, 750 & 1000ms (i.e. 4 times in 0.9s)
         repetae.release();
-        expect(emitted_events).toEqual(['interval-250', 'on']);
+        expect(emitted_events).toEqual(['interval-16n', 'repeater-interval-250', 'on']);
 
         var called_count = 0;
 
@@ -130,11 +132,11 @@ describe('Example app repetae', () => {
 
     it('reports current interval on request', () => {
         repetae.report_interval();
-        expect(emitted_events).toEqual(['interval-1000']);
+        expect(emitted_events).toEqual(['interval-4n']);
     })
 
     it('automatically changes interval when BPM changes', () => {
         bpm.change_by(60);
-        expect(emitted_events).toEqual(['interval-500']);
+        expect(emitted_events).toEqual(['repeater-interval-500']);
     })
 });
