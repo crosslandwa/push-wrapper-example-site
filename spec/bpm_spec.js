@@ -38,7 +38,7 @@ describe('BPM module', () => {
     });
 });
 
-fdescribe('Interval module', () => {
+describe('Interval module', () => {
     var bpm, interval, emitted_events;
 
     var create_and_listen_to = function(interval) {
@@ -51,6 +51,7 @@ fdescribe('Interval module', () => {
         emitted_events = [];
     })
 
+    // timings based on the intervals/notation reported by MaxMSP
     it('reports a quarter note time when bpm changed', () => {
         create_and_listen_to(Interval['4n']);
         bpm.change_by(60);
@@ -80,5 +81,23 @@ fdescribe('Interval module', () => {
         create_and_listen_to(Interval['16n']);
         bpm.change_by(60);
         expect(emitted_events).toEqual(['interval=125ms']);
+    });
+
+    it('reports a sixteenth note triplet time when bpm changed', () => {
+        create_and_listen_to(Interval['16nt']);
+        bpm.change_by(20);
+        expect(emitted_events).toEqual(['interval=125ms']);
+    });
+
+    it('reports a thirty-secondth note time when bpm changed', () => {
+        create_and_listen_to(Interval['32n']);
+        bpm.change_by(60);
+        expect(emitted_events).toEqual(['interval=62.5ms']);
+    });
+
+    it('reports a thirty-secondth note triplet time when bpm changed', () => {
+        create_and_listen_to(Interval['32nt']);
+        bpm.change_by(20);
+        expect(emitted_events).toEqual(['interval=62.5ms']);
     });
 });

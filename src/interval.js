@@ -21,4 +21,7 @@ module.exports = {
     '8n': function(bpm) { return new Interval(bpm, 0.5) },
     '8nt': function(bpm) { return new Interval(bpm, 1 / 3) },
     '16n': function(bpm) { return new Interval(bpm, 0.25) },
+    '16nt': function(bpm) { return new Interval(bpm, 1 / 6) },
+    '32n': function(bpm) { return new Interval(bpm, 0.125) },
+    '32nt': function(bpm) { return new Interval(bpm, 1 / 12) },
 };
