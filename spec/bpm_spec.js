@@ -1,12 +1,13 @@
 'use strict'
 
-const BPM = require('../src/bpm.js');
+const BPM = require('../src/bpm.js'),
+    Interval = require('../src/interval.js');
 
 describe('BPM module', () => {
     var bpm, emitted_events;
 
     beforeEach(() => {
-        bpm = new BPM(); // use the inbuilt setTimeout function for tests
+        bpm = new BPM();
         emitted_events = [];
         bpm.on('changed', (bpm) => emitted_events.push('bpm=' + bpm));
     })
@@ -34,5 +35,21 @@ describe('BPM module', () => {
     it('supports a min bpm of 20', () => {
         bpm.change_by(-500);
         expect(emitted_events).toEqual(['bpm=20']);
+    });
+});
+
+fdescribe('Interval module', () => {
+    var bpm, interval, emitted_events;
+
+    beforeEach(() => {
+        bpm = new BPM(60);
+        interval = new Interval(bpm);
+        emitted_events = [];
+        interval.on('changed', (time) => emitted_events.push('interval=' + time + 'ms'));
+    })
+
+    it('reports a whole note time when bpm changed', () => {
+        bpm.change_by(60);
+        expect(emitted_events).toEqual(['interval=500ms']);
     });
 });

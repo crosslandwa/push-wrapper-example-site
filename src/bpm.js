@@ -4,9 +4,9 @@ const EventEmitter = require('events'),
     util = require('util'),
     foreach = require('lodash.foreach');
 
-function BPM() {
+function BPM(initial) {
     EventEmitter.call(this);
-    let current = 120,
+    let current = clip(initial) ? clip(initial) : 120,
         bpm = this;
 
     this.report = function() { bpm.emit('changed', current) }
