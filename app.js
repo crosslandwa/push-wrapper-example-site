@@ -4,7 +4,20 @@ const Push = require('push-wrapper'),
     Player = require('./src/player.js'),
     context = new AudioContext(),
     Repetae = require('./src/repetae.js'),
+    Repeater = require('./src/repeater.js'),
     BPM = require('./src/bpm.js'),
+    bpm = new BPM(120);
+    Interval = require('./src/interval.js'),
+    intervals = {
+        '1/4': Interval['4n'](bpm),
+        '1/4t': Interval['4nt'](bpm),
+        '1/8': Interval['8n'](bpm),
+        '1/8t': Interval['8nt'](bpm),
+        '1/16': Interval['16n'](bpm),
+        '1/16t': Interval['16nt'](bpm),
+        '1/32': Interval['32n'](bpm),
+        '1/32t': Interval['32nt'](bpm),
+    },
     samples = [
         'samples/Bonus_Kick27.mp3',
         'samples/snare_turnboot.mp3',
@@ -16,14 +29,14 @@ const Push = require('push-wrapper'),
         'samples/Cassette808_Tom01.mp3'
     ],
     repeat_interval_buttons = [
-        { name: '1/32t', amount: 37.5 },
-        { name: '1/32', amount: 50 },
-        { name: '1/16t', amount: 75 },
-        { name: '1/16', amount: 100 },
-        { name: '1/8t', amount: 150 },
-        { name: '1/8', amount: 200 },
-        { name: '1/4t', amount: 300 },
-        { name: '1/4', amount: 400 },
+        { name: '1/32t'},
+        { name: '1/32'},
+        { name: '1/16t'},
+        { name: '1/16'},
+        { name: '1/8t'},
+        { name: '1/8'},
+        { name: '1/4t'},
+        { name: '1/4'},
     ],
     filter_frequencies = [0, 100, 200, 400, 800, 2000, 6000, 10000, 20000];
 
@@ -40,8 +53,7 @@ window.addEventListener('load', () => {
 function off_we_go(bound_push) {
     const buttons = document.getElementsByClassName('button'),
         players = create_players(),
-        push = bound_push,
-        bpm = new BPM();
+        push = bound_push;
 
     push.lcd.clear();
 
@@ -49,7 +61,7 @@ function off_we_go(bound_push) {
         var column_number = i + 1,
             full_path_sample_name = samples[i].split('.')[0],
             sample_name = full_path_sample_name.split('/').pop(),
-            repetae = Repetae.create_scheduled_by_audio_context(context, repeat_interval_buttons[7].amount);
+            repetae = new Repetae(Repeater.create_scheduled_by_audio_context(context), intervals['1/4']);
 
         push.grid.x[column_number].select.on('pressed', repetae.press);
         push.grid.x[column_number].select.on('released', repetae.release);
@@ -62,7 +74,7 @@ function off_we_go(bound_push) {
         repetae.report_interval();
 
         foreach(repeat_interval_buttons, (button) => {
-            push.button[button.name].on('pressed', partial(repetae.interval, button.amount))
+            push.button[button.name].on('pressed', partial(repetae.interval, intervals[button.name]))
         });
 
         turn_off_column(push, column_number);
@@ -153,7 +165,7 @@ function bind_pitchbend(push, players) {
 
 function bind_tempo_knob_to_bpm(push, bpm) {
     push.knob['tempo'].on('turned', bpm.change_by);
-    bpm.on('changed', bpm => push.lcd.x[1].y[3].update('bpm= ' + bpm));
+    bpm.on('changed', bpm => push.lcd.x[1].y[3].update('bpm= ' + bpm.current));
 }
 
 function turn_button_display_on(ui_btn) {

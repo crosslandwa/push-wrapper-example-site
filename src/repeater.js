@@ -45,7 +45,7 @@ Repeater.create_scheduled_by_audio_context = function(context, initial_interval)
         let source = context.createBufferSource(),
             now = context.currentTime,
             thousandth = context.sampleRate / 1000,
-            scheduled_at = now + (interval_ms / 1000) - thousandth;
+            scheduled_at = now + (interval_ms / 1000);
         // a buffer length of 1 sample doesn't work on IOS, so use 1/1000th of a second
         let buffer = context.createBuffer(1, thousandth, context.sampleRate);
         source.addEventListener('ended', callback);
