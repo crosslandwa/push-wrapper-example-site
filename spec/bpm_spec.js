@@ -41,16 +41,26 @@ describe('BPM module', () => {
 fdescribe('Interval module', () => {
     var bpm, interval, emitted_events;
 
+    var create_and_listen_to = function(interval) {
+        var created = interval(bpm);
+        created.on('changed', (time) => emitted_events.push('interval=' + time + 'ms'));
+    }
+
     beforeEach(() => {
         bpm = new BPM(60);
-        interval = Interval['4n'](bpm);
         emitted_events = [];
-        interval.on('changed', (time) => emitted_events.push('interval=' + time + 'ms'));
     })
 
-    it('reports a whole note time when bpm changed', () => {
+    it('reports a quarter note time when bpm changed', () => {
+        create_and_listen_to(Interval['4n']);
         bpm.change_by(60);
         bpm.change_by(-40);
         expect(emitted_events).toEqual(['interval=500ms', 'interval=750ms']);
+    });
+
+    it('reports a sixteenth note time when bpm changed', () => {
+        create_and_listen_to(Interval['16n']);
+        bpm.change_by(60);
+        expect(emitted_events).toEqual(['interval=125ms']);
     });
 });
