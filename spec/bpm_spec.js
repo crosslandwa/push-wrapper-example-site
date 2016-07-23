@@ -38,7 +38,7 @@ describe('BPM module', () => {
     });
 });
 
-fdescribe('Interval module', () => {
+describe('Interval module', () => {
     var bpm, interval, emitted_events;
 
     beforeEach(() => {
@@ -50,6 +50,7 @@ fdescribe('Interval module', () => {
 
     it('reports a whole note time when bpm changed', () => {
         bpm.change_by(60);
-        expect(emitted_events).toEqual(['interval=500ms']);
+        bpm.change_by(-40);
+        expect(emitted_events).toEqual(['interval=500ms', 'interval=750ms']);
     });
 });
