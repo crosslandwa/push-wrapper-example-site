@@ -1,6 +1,6 @@
 'use strict'
 
-const BPM = require('../bpm.js');
+const BPM = require('../src/bpm.js');
 
 describe('BPM module', () => {
     var bpm, emitted_events;

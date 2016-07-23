@@ -1,4 +1,4 @@
-const Repetae = require('../repetae.js');
+const Repetae = require('../src/repetae.js');
 
 describe('Example app repetae', () => {
     var repetae, emitted_events;

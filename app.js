@@ -1,10 +1,10 @@
 const Push = require('push-wrapper'),
     foreach = require('lodash.foreach'),
     partial = require('lodash.partial'),
-    Player = require('./player.js'),
+    Player = require('./src/player.js'),
     context = new AudioContext(),
-    Repetae = require('./repetae.js'),
-    BPM = require('./bpm.js'),
+    Repetae = require('./src/repetae.js'),
+    BPM = require('./src/bpm.js'),
     samples = [
         'samples/Bonus_Kick27.mp3',
         'samples/snare_turnboot.mp3',
