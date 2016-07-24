@@ -19,14 +19,14 @@ const Push = require('push-wrapper'),
         '1/32t': Interval['32nt'](bpm, '1/32t'),
     },
     samples = [
-        'samples/Bonus_Kick27.mp3',
-        'samples/snare_turnboot.mp3',
-        'samples/HandClap.mp3',
-        'samples/Beat07_Hat.mp3',
-        'samples/HH_KIT09_100_TMB.mp3',
-        'samples/clingfilm.mp3',
-        'samples/tang-1.mp3',
-        'samples/Cassette808_Tom01.mp3'
+        'assets/audio/Bonus_Kick27.mp3',
+        'assets/audio/snare_turnboot.mp3',
+        'assets/audio/HandClap.mp3',
+        'assets/audio/Beat07_Hat.mp3',
+        'assets/audio/HH_KIT09_100_TMB.mp3',
+        'assets/audio/clingfilm.mp3',
+        'assets/audio/tang-1.mp3',
+        'assets/audio/Cassette808_Tom01.mp3'
     ],
     filter_frequencies = [0, 100, 200, 400, 800, 2000, 6000, 10000, 20000];
 
