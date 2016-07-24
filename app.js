@@ -36,9 +36,13 @@ window.addEventListener('load', () => {
             .then(Push.create_bound_to_web_midi_api)
             .then(off_we_go)
     } else {
-        Promise.resolve(new Push({ send: (bytes) => { } })).then(off_we_go); //todo add onscreen warning
+        Promise.resolve(new Push({ send: (bytes) => { } })).then(off_we_go).then(show_no_midi_warning);
     }
 });
+
+function show_no_midi_warning() {
+    document.getElementById("no-midi-warning").style.display = '';
+}
 
 function off_we_go(bound_push) {
     const buttons = document.getElementsByClassName('push-wrapper-button'),
