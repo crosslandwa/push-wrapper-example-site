@@ -2,7 +2,7 @@ const Push = require('push-wrapper'),
     foreach = require('lodash.foreach'),
     partial = require('lodash.partial'),
     Player = require('./src/player.js'),
-    context = new AudioContext(),
+    context = window.AudioContext ? new window.AudioContext() : new window.webkitAudioContext(),
     Repetae = require('./src/repetae.js'),
     Repeater = require('./src/repeater.js'),
     BPM = require('./src/bpm.js'),
@@ -36,7 +36,7 @@ window.addEventListener('load', () => {
             .then(Push.create_bound_to_web_midi_api)
             .then(off_we_go)
     } else {
-        alert('No MIDI support in your browser');
+        Promise.resolve(new Push({ send: (bytes) => { } })).then(off_we_go); //todo add onscreen warning
     }
 });
 
