@@ -25,10 +25,6 @@ Under OS X, Python can be used to create a simple HTTPS server - this repo inclu
 - Chrome will consider the *self-signed certificate* used by the server as invalid. Read the code, and if you are happy accept the invalid cert in the warning page Chrome displays
 - Allow browser use of MIDI devices via the dialogue box that pops up
 
-## Functionality
-
-TBD
-
 ### Disclaimer
 
 This example site is only **known** to work in Google Chrome/OS X...
