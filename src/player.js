@@ -17,6 +17,10 @@ function Player(asset_url, audio_context) {
     this._loaded = false;
     this._voices = [];
     this._playback_rate = 1;
+    this._gain_node = audio_context.createGain();
+    this._filter_node = audio_context.createBiquadFilter();
+    this._filter_node.connect(this._gain_node);
+    this._gain_node.connect(audio_context.destination);
     loadSample(asset_url, audio_context, (buffer) => {
         this._buffer = buffer;
         this._loaded = true;
@@ -37,31 +41,26 @@ function loadSample(asset_url, audio_context, done) {
 function play(player, audio_context, velocity, cutoff_frequency) {
     if (!player._loaded) return;
 
-    var now = time_now(audio_context);
+    var now = time_now(audio_context),
+        start_time = now;
 
     if (is_playing(player)) {
-        foreach(player._voices, (voice) => {
-            voice.gain.cancelScheduledValues(now);
-            anchor(voice.gain, now);
-            voice.gain.linearRampToValueAtTime(0, now + 0.01);
-        });
+        player._gain_node.gain.cancelScheduledValues(now);
+        anchor(player._gain_node.gain, now);
+        player._gain_node.gain.linearRampToValueAtTime(0, now + 0.01);
+        start_time = now + 0.01;
         player.emit('stopped');
     }
 
-    var gain_node = audio_context.createGain();
-    var filter_node = audio_context.createBiquadFilter();       
-    filter_node.frequency.value = cutoff_frequency > 30 ? cutoff_frequency : 30;
+    player._filter_node.frequency.value = cutoff_frequency > 30 ? cutoff_frequency : 30;
     var source = audio_context.createBufferSource();
-    
-    source.connect(filter_node);
-    filter_node.connect(gain_node);
 
-    gain_node.connect(audio_context.destination);
+    source.connect(player._filter_node);
 
-    gain_node.gain.setValueAtTime(0, now);
-    gain_node.gain.linearRampToValueAtTime(velocity / 127, now + 0.01);
+    player._gain_node.gain.setValueAtTime(0, start_time);
+    player._gain_node.gain.linearRampToValueAtTime(velocity / 127, start_time + 0.01);
 
-    source.playbackRate.setValueAtTime(player._playback_rate, now);
+    source.playbackRate.setValueAtTime(player._playback_rate, start_time);
     source.buffer = player._buffer;
 
     source.addEventListener('ended', () => {
@@ -69,8 +68,8 @@ function play(player, audio_context, velocity, cutoff_frequency) {
         if (!is_playing(player)) player.emit('stopped');
     });
 
-    player._voices.push({source: source, gain: gain_node.gain});
-    source.start();
+    player._voices.push(source);
+    source.start(start_time);
     player.emit('started', velocity);
 }
 
@@ -85,8 +84,8 @@ function is_playing(player) {
 function update_playback_rate(player, audio_context, rate) {
     player._playback_rate = rate;
     var now = time_now(audio_context);
-    foreach(player._voices, (voice) => {
-        voice.source.playbackRate.setValueAtTime(player._playback_rate, now);
+    foreach(player._voices, (source) => {
+        source.playbackRate.setValueAtTime(player._playback_rate, now);
     });
 }
 
