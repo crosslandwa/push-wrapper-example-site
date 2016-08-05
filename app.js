@@ -78,7 +78,7 @@ function off_we_go(bound_push) {
         player.on('stopped', partial(turn_button_display_off, buttons[i]));
         player.on('started', partial(turn_on_column, push, column_number));
         player.on('stopped', partial(turn_off_column, push, column_number));
-        buttons[i].addEventListener('mousedown', () => { player.cut_off(filter_frequencies[8]).play(110) });
+        buttons[i].addEventListener('mousedown', () => { player.cut_off(filter_frequencies[8]).play(midiGain(110)) });
         bind_column_to_player(push, player, column_number, repetae);
     });
 
@@ -116,7 +116,7 @@ function bind_column_to_player(push, player, x, repetae) {
         pressed_pads_in_col = 0;
 
     let playback = function() {
-        player.cut_off(mutable_frequency).play(mutable_velocity);
+        player.cut_off(mutable_frequency).play(midiGain(mutable_velocity));
     }
 
     foreach([1, 2, 3, 4, 5, 6, 7, 8], (y) => {
@@ -138,15 +138,24 @@ function bindQwertyuiToPlayback(players) {
     let lookup = {113: 0, 119: 1, 101: 2, 114: 3, 116: 4, 121: 5, 117: 6, 105: 7};
     window.addEventListener("keypress", (event) => {
         if (event.charCode in lookup) {
-            players[lookup[event.charCode]].cut_off(filter_frequencies[8]).play(110);
+            players[lookup[event.charCode]].cut_off(filter_frequencies[8]).play(midiGain(110));
         }
     });
 }
 
-function turn_on_column(push, x, velocity) {
+function midiGain(velocity) {
+    return {
+        velocity: function() { return velocity },
+        toAbsolute: function() {
+            return velocity / 127;
+        }
+    }
+}
+
+function turn_on_column(push, x, gain) {
     foreach([1, 2, 3, 4, 5, 6, 7, 8], (y) => {
-        if (((velocity + 15) / 16) >= y) {
-            push.grid.x[x].y[y].led_on(velocity);
+        if (((gain.velocity() + 15) / 16) >= y) {
+            push.grid.x[x].y[y].led_on(gain.velocity());
         } else {
             push.grid.x[x].y[y].led_off();
         }
@@ -163,7 +172,7 @@ function turn_off_column(push, x) {
 function bind_pitchbend(push, players) {
     push.touchstrip.on('pitchbend', (pb) => {
         var rate = pb > 8192 ? pb / 4096 : pb / 8192;
-        foreach(players, (player) => player.update_playback_rate(rate));
+        foreach(players, (player) => player.updatePlaybackRate(rate));
     });
 }
 
