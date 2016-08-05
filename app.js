@@ -1,7 +1,8 @@
+'use strict'
 const Push = require('push-wrapper'),
     foreach = require('lodash.foreach'),
     partial = require('lodash.partial'),
-    Player = require('./src/player.js'),
+    Player = require('wac.sample-player'),
     context = window.AudioContext ? new window.AudioContext() : new window.webkitAudioContext(),
     Repetae = require('./src/repetae.js'),
     Repeater = require('./src/repeater.js'),
@@ -77,7 +78,7 @@ function off_we_go(bound_push) {
         player.on('stopped', partial(turn_button_display_off, buttons[i]));
         player.on('started', partial(turn_on_column, push, column_number));
         player.on('stopped', partial(turn_off_column, push, column_number));
-        buttons[i].addEventListener('mousedown', partial(player.play, 110, filter_frequencies[8]));
+        buttons[i].addEventListener('mousedown', () => { player.cut_off(filter_frequencies[8]).play(110) });
         bind_column_to_player(push, player, column_number, repetae);
     });
 
@@ -95,8 +96,17 @@ function off_we_go(bound_push) {
 function create_players() {
     var players = [];
     for (var  i = 0; i < samples.length; i++) {
-        players[i] = new Player(samples[i], context);
+        let player = new Player(samples[i], context),
+            filter = context.createBiquadFilter();
+        player.connect(filter);
+        filter.connect(context.destination);
+        player.cut_off = function(f) {
+            filter.frequency.value = f > 30 ? f : 30;
+            return player;
+        }
+        players[i] = player;
     }
+    console.log(players);
     return players;
 }
 
@@ -106,7 +116,7 @@ function bind_column_to_player(push, player, x, repetae) {
         pressed_pads_in_col = 0;
 
     let playback = function() {
-        player.play(mutable_velocity, mutable_frequency);
+        player.cut_off(mutable_frequency).play(mutable_velocity);
     }
 
     foreach([1, 2, 3, 4, 5, 6, 7, 8], (y) => {
@@ -128,7 +138,7 @@ function bindQwertyuiToPlayback(players) {
     let lookup = {113: 0, 119: 1, 101: 2, 114: 3, 116: 4, 121: 5, 117: 6, 105: 7};
     window.addEventListener("keypress", (event) => {
         if (event.charCode in lookup) {
-            players[lookup[event.charCode]].play(110, filter_frequencies[8]);
+            players[lookup[event.charCode]].cut_off(filter_frequencies[8]).play(110);
         }
     });
 }
