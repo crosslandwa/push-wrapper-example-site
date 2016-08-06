@@ -106,7 +106,6 @@ function create_players() {
         }
         players[i] = player;
     }
-    console.log(players);
     return players;
 }
 
