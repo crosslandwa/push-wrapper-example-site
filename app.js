@@ -78,6 +78,11 @@ function off_we_go(bound_push) {
         player.on('stopped', partial(turn_button_display_off, buttons[i]));
         player.on('started', partial(turn_on_column, push, column_number));
         player.on('stopped', partial(turn_off_column, push, column_number));
+
+        player.on('pitch', push.lcd.x[column_number].y[4].update);
+        push.channel[column_number].knob.on('turned', player.changePitchByInterval);
+        player.reportPitch();
+
         buttons[i].addEventListener('mousedown', () => { player.cutOff(filter_frequencies[8]).play(midiGain(110)) });
         bind_column_to_player(push, player, column_number, repetae);
     });
@@ -162,8 +167,8 @@ function turn_off_column(push, x) {
 
 function bind_pitchbend(push, players) {
     push.touchstrip.on('pitchbend', (pb) => {
-        var rate = pb > 8192 ? pb / 4096 : pb / 8192;
-        foreach(players, (player) => player.updatePlaybackRate(rate));
+        var rate = scale(pb, 0, 16384, -12, 12);
+        foreach(players, (player) => player.modulatePitch(rate));
     });
 }
 
@@ -178,4 +183,8 @@ function turn_button_display_on(ui_btn) {
 
 function turn_button_display_off(ui_btn) {
     ui_btn.classList.remove('active');
+}
+
+function scale(input, minIn, maxIn, minOut, maxOut) {
+    return ((maxOut - minOut) * ((input - minIn) / (maxIn - minIn))) + minOut;
 }
