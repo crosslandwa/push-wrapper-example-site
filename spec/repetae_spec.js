@@ -1,5 +1,5 @@
+'use strict'
 const Repetae = require('../src/repetae.js'),
-    Repeater = require('../src/repeater.js'),
     BPM = require('../src/bpm.js'),
     Interval = require('../src/interval.js');
 
@@ -11,13 +11,12 @@ describe('Example app repetae', () => {
         interval_4n = Interval['4n'](bpm); // 1000ms at 60BPM
         interval_16n = Interval['16n'](bpm); // 250ms at 60BPM
         interval_32n = Interval['32n'](bpm); // 125ms at 60BPM
-        const repeater = new Repeater(setTimeout);
-        repetae = new Repetae(repeater, interval_4n); // use the inbuilt setTimeout function for tests
         emitted_events = [];
+        repetae = new Repetae(interval_4n);
         repetae.on('on', (amount) => emitted_events.push('on'));
         repetae.on('off', () => emitted_events.push('off'));
         repetae.on('interval', (interval_name) => emitted_events.push('interval-' + interval_name));
-        repeater.on('interval', (amount_ms) => emitted_events.push('repeater-interval-' + amount_ms));
+        repetae.on('intervalMs', (amount) => emitted_events.push('repeater-interval-' + amount.toMs()));
     })
 
     it('can be turned on', () => {

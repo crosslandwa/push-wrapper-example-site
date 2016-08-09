@@ -5,7 +5,6 @@ const Push = require('push-wrapper'),
     Player = require('./src/player.js'),
     context = window.AudioContext ? new window.AudioContext() : new window.webkitAudioContext(),
     Repetae = require('./src/repetae.js'),
-    Repeater = require('./src/repeater.js'),
     BPM = require('./src/bpm.js'),
     bpm = new BPM(120),
     Interval = require('./src/interval.js'),
@@ -56,7 +55,7 @@ function off_we_go(bound_push) {
         var column_number = i + 1,
             full_path_sample_name = samples[i].split('.')[0],
             sample_name = full_path_sample_name.split('/').pop(),
-            repetae = new Repetae(Repeater.create_scheduled_by_audio_context(context), intervals['1/4']);
+            repetae = new Repetae(intervals['1/4'], context);
 
         push.grid.x[column_number].select.on('pressed', repetae.press);
         push.grid.x[column_number].select.on('released', repetae.release);
