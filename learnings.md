@@ -44,9 +44,16 @@ gain.setValueAtTime(gain.value, now);
 gain.linearRampToValueAtTime(0, now + 0.01);            
 ```
 
-### Single use / multi use
+## Single use / multi use
 I was aware that source/oscillator nodes should only be used once
 In the initial player.js implementation I created a new source, filter and gain node for each playback
  - on debugging I saw the source node cleared quickly, but the filter/gain nodes stuck around
  - after < 1 minute playback with lots of beat repeats I found audio would drop out (likely as audio graph filled up)
  - *fixed* this by creating single filter/gain instance, keeping a reference to them and only creating new source node on playback
+
+## Parameters
+Instant changes by only actually be *instant* if done via a method that takes a schedule time:
+```javascript
+filterNode.frequency.value = clip(f, 30, 20000); // may not actually be honoured instantly
+filterNode.frequency.setValueAtTime(clip(f, 30, 20000), audioContext.currentTime); // much better
+```

@@ -42,7 +42,7 @@ function Player(assetUrl, audioContext, onLoad) {
     }
 
     this.cutOff = function(f) {
-        filterNode.frequency.value = clip(f, 30, 20000);
+        filterNode.frequency.setValueAtTime(clip(f, 30, 20000), audioContext.currentTime);
         return player;
     }
 
