@@ -4,6 +4,7 @@ const Push = require('push-wrapper'),
     partial = require('lodash.partial'),
     Player = require('./src/player.js'),
     context = window.AudioContext ? new window.AudioContext() : new window.webkitAudioContext(),
+    Scheduling = require('wac.scheduling')(context),
     Repetae = require('./src/repetae.js'),
     BPM = require('./src/bpm.js'),
     bpm = new BPM(120),
@@ -95,6 +96,73 @@ function off_we_go(bound_push) {
     bindQwertyuiToPlayback(players);
     bind_tempo_knob_to_bpm(push, bpm);
     bpm.report();
+    makeSequence(players);
+}
+
+function makeSequence(players) {
+    function Sequence() {
+        let kick = () => players[0].play(midiGain(100)),
+            snare = () => players[1].play(midiGain(100)),
+            hat = () => players[4].play(midiGain(60)),
+            sequence = this,
+            noAction = function() {},
+            schedule = function(event) {
+                event.cancel = Scheduling.inTheFuture(() => {
+                    if (running) event.action();
+                }, event.when);
+            },
+            play = function() {
+                foreach(events, schedule);
+            },
+            start = function() {
+                play();
+            },
+            events = [
+                {when: 0, action: kick, cancel: noAction},
+                {when: 0, action: hat, cancel: noAction},
+                {when: 250, action: hat, cancel: noAction},
+                {when: 500, action: hat, cancel: noAction},
+                {when: 750, action: hat, cancel: noAction},
+                {when: 1000, action: hat, cancel: noAction},
+                {when: 1250, action: hat, cancel: noAction},
+                {when: 1500, action: hat, cancel: noAction},
+                {when: 1750, action: hat, cancel: noAction},
+                {when: 1750, action: () => {players[4].changePitchByInterval(-2)}, cancel: noAction},
+                {when: 2000, action: hat, cancel: noAction},
+                {when: 2250, action: hat, cancel: noAction},
+                {when: 2500, action: hat, cancel: noAction},
+                {when: 2750, action: hat, cancel: noAction},
+                {when: 3000, action: hat, cancel: noAction},
+                {when: 3250, action: hat, cancel: noAction},
+                {when: 3500, action: hat, cancel: noAction},
+                {when: 3750, action: hat, cancel: noAction},
+                {when: 1000, action: kick, cancel: noAction},
+                {when: 1000, action: snare, cancel: noAction},
+                {when: 2000, action: kick, cancel: noAction},
+                {when: 3000, action: kick, cancel: noAction},
+                {when: 3000, action: snare, cancel: noAction},
+                {when: 4000, action: play, cancel: noAction}
+            ],
+            running = false;
+
+        let stop = function() {
+            console.log('stopping');
+            foreach(events, (event) => {
+                event.cancel();
+                event.cancel = noAction;
+            });
+        };
+
+        this.toggle = function() {
+            running = !running;
+            running ? start() : stop();
+        }
+    }
+
+    var sequence = new Sequence();
+    window.addEventListener('keydown', (event) => {
+        if (32 == event.keyCode) sequence.toggle();
+    });
 }
 
 function create_players() {
