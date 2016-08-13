@@ -11,8 +11,7 @@ function Sequence(Scheduling) {
         running = false,
         schedule = function(event) {
             event.cancel = Scheduling.inTheFuture(() => {
-                console.log(running);
-                if (!running) { console.log('its stopped'); return };
+                if (!running) return;
                 if (event.action) {
                     event.action();
                 } else {
@@ -20,12 +19,8 @@ function Sequence(Scheduling) {
                 }
             }, event.when);
         },
-        play = function() {
-            foreach(events, schedule);
-
-        },
         start = function() {
-            play();
+            foreach(events, schedule);
         },
         events = [
             {when: 0, name: 'play', args: {player: 0, velocity: 100}, cancel: noAction},
@@ -51,12 +46,10 @@ function Sequence(Scheduling) {
             {when: 2000, name: 'play', args: {player: 0, velocity: 100}, cancel: noAction},
             {when: 3000, name: 'play', args: {player: 0, velocity: 100}, cancel: noAction},
             {when: 3000, name: 'play', args: {player: 2, velocity: 50}, cancel: noAction},
-            {when: 4000, action: play, cancel: noAction}
+            {when: 4000, action: start, cancel: noAction}
         ];
 
-
     let stop = function() {
-        console.log('stopping');
         foreach(events, (event) => {
             event.cancel();
             event.cancel = noAction;
