@@ -9,11 +9,18 @@ function Sequence(Scheduling) {
     EventEmitter.call(this);
     let sequence = this,
         running = false,
+        restart = function() {
+            sequence.start(true);
+        },
         schedule = function(event) {
             event.cancel = Scheduling.inTheFuture(() => {
                 if (!running) return;
                 if (event.action) {
-                    event.action();
+                    switch (event.action) {
+                        case 'restart':
+                            restart();
+                            break;
+                    }
                 } else {
                     sequence.emit(event.name, event.args);
                 }
@@ -41,7 +48,7 @@ function Sequence(Scheduling) {
 
         if (end) {
             // TODO will need to hold reference to this if I want to turn off looping...
-            events.push({when: endTime, action: function restart() { sequence.start(true); }, cancel: noAction})
+            events.push({when: endTime, action: 'restart', cancel: noAction})
         }
     }
 
