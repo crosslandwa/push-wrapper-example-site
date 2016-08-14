@@ -19,47 +19,25 @@ function Sequence(Scheduling) {
                 }
             }, event.when);
         },
-        start = function() {
-            foreach(events, schedule);
-        },
-        events = [
-            {when: 0, name: 'play', args: {player: 0, velocity: 100}, cancel: noAction},
-            {when: 0, name: 'play', args: {player: 4, velocity: 75}, cancel: noAction},
-            {when: 250, name: 'play', args: {player: 4, velocity: 20}, cancel: noAction},
-            {when: 500, name: 'play', args: {player: 4, velocity: 50}, cancel: noAction},
-            {when: 750, name: 'play', args: {player: 4, velocity: 20}, cancel: noAction},
-            {when: 1000, name: 'play', args: {player: 4, velocity: 70}, cancel: noAction},
-            {when: 1250, name: 'play', args: {player: 4, velocity: 20}, cancel: noAction},
-            {when: 1500, name: 'play', args: {player: 4, velocity: 50}, cancel: noAction},
-            {when: 1750, name: 'play', args: {player: 4, velocity: 20}, cancel: noAction},
-            {when: 2000, name: 'changePitch', args: {player: 4, interval: -2}, cancel: noAction},
-            {when: 2000, name: 'play', args: {player: 4, velocity: 70}, cancel: noAction},
-            {when: 2250, name: 'play', args: {player: 4, velocity: 20}, cancel: noAction},
-            {when: 2500, name: 'play', args: {player: 4, velocity: 50}, cancel: noAction},
-            {when: 2750, name: 'play', args: {player: 4, velocity: 20}, cancel: noAction},
-            {when: 3000, name: 'play', args: {player: 4, velocity: 70}, cancel: noAction},
-            {when: 3250, name: 'play', args: {player: 4, velocity: 20}, cancel: noAction},
-            {when: 3500, name: 'play', args: {player: 4, velocity: 50}, cancel: noAction},
-            {when: 3750, name: 'play', args: {player: 4, velocity: 20}, cancel: noAction},
-            {when: 1000, name: 'play', args: {player: 0, velocity: 100}, cancel: noAction},
-            {when: 1000, name: 'play', args: {player: 2, velocity: 50}, cancel: noAction},
-            {when: 2000, name: 'play', args: {player: 0, velocity: 100}, cancel: noAction},
-            {when: 3000, name: 'play', args: {player: 0, velocity: 100}, cancel: noAction},
-            {when: 3000, name: 'play', args: {player: 2, velocity: 50}, cancel: noAction},
-            {when: 4000, action: start, cancel: noAction}
-        ];
+        events = [];
 
-    let stop = function() {
+    this.start = function() {
+        if (running) return;
+        running = true;
+        foreach(events, schedule);
+    }
+
+    this.stop = function() {
+        running = false;
         foreach(events, (event) => {
             event.cancel();
             event.cancel = noAction;
         });
         sequence.emit('stopped');
-    };
+    }
 
-    this.toggle = function() {
-        running = !running;
-        running ? start() : stop();
+    this.addEvent = function(when, name, data) {
+        events.push({when: when, name: name, args: data, cancel: noAction});
     }
 }
 util.inherits(Sequence, EventEmitter);
