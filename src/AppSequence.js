@@ -33,5 +33,7 @@ module.exports = function(Scheduling) {
         running ? sequence.start() : sequence.stop();
     }
 
+    sequence.loop(4000);
+
     return sequence;
 };

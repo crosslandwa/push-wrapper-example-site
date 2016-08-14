@@ -21,8 +21,8 @@ function Sequence(Scheduling) {
         },
         events = [];
 
-    this.start = function() {
-        if (running) return;
+    this.start = function(force) {
+        if (!force && running) return;
         running = true;
         foreach(events, schedule);
     }
@@ -34,6 +34,15 @@ function Sequence(Scheduling) {
             event.cancel = noAction;
         });
         sequence.emit('stopped');
+    }
+
+    this.loop = function(endTime) {
+        let end = endTime > 0 ? endTime : undefined;
+
+        if (end) {
+            // TODO will need to hold reference to this if I want to turn off looping...
+            events.push({when: endTime, action: function restart() { sequence.start(true); }, cancel: noAction})
+        }
     }
 
     this.addEvent = function(when, name, data) {
