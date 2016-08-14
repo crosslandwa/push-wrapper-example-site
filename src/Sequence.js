@@ -9,8 +9,13 @@ function Sequence(Scheduling) {
     EventEmitter.call(this);
     let sequence = this,
         running = false,
+        doStart = function(force) {
+            if (!force && running) return;
+            running = true;
+            foreach(events, schedule);
+        },
         restart = function() {
-            sequence.start(true);
+            doStart(true);
         },
         schedule = function(event) {
             event.cancel = Scheduling.inTheFuture(() => {
@@ -28,10 +33,8 @@ function Sequence(Scheduling) {
         },
         events = [];
 
-    this.start = function(force) {
-        if (!force && running) return;
-        running = true;
-        foreach(events, schedule);
+    this.start = function() {
+        doStart(false);
     }
 
     this.stop = function() {
