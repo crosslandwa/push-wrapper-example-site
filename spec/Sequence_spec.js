@@ -39,4 +39,24 @@ describe('Sequence', () => {
             done();
         }, 300);
     });
+
+    it('can be serialized to and loaded from JSON', (done) => {
+        let fired_events = [];
+        sequence.addEvent(50, 'capture', { test: 'hello1' });
+        sequence.addEvent(100, 'capture', { test: 'hello2' });
+        sequence.loop(150);
+
+        let sequence2 = new Sequence(Scheduling).load(sequence.toJSON());
+        sequence2.on('capture', (data) => fired_events.push(data));
+
+        sequence2.start();
+        setTimeout(() => {
+            expect(fired_events.length).toEqual(4);
+            expect(fired_events[0].test).toEqual('hello1');
+            expect(fired_events[1].test).toEqual('hello2');
+            expect(fired_events[2].test).toEqual('hello1');
+            expect(fired_events[3].test).toEqual('hello2');
+            done();
+        }, 300);
+    });
 });

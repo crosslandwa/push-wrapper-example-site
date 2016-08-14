@@ -58,8 +58,33 @@ function Sequence(Scheduling) {
     this.addEvent = function(when, name, data) {
         events.push({when: when, name: name, args: data, cancel: noAction});
     }
+
+    this.load = function(json) {
+        events = json.map((event) => {
+            let newEvent = mapEvent(event);
+                newEvent.cancel = noAction;
+            return newEvent;
+        });
+
+        return sequence;
+    }
+
+    this.toJSON = function() {
+        return events.map(mapEvent);
+    }
 }
 util.inherits(Sequence, EventEmitter);
+
+function mapEvent(event) {
+    let newEvent = {when: event.when};
+    if (event.action) {
+        newEvent.action = event.action;
+    } else {
+        newEvent.name = event.name;
+        newEvent.args = event.args;
+    }
+    return newEvent;
+}
 
 
 module.exports = Sequence;
