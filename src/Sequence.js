@@ -35,6 +35,7 @@ function Sequence(Scheduling) {
 
     this.start = function() {
         doStart(false);
+        return sequence;
     }
 
     this.stop = function() {
@@ -53,6 +54,7 @@ function Sequence(Scheduling) {
             // TODO will need to hold reference to this if I want to turn off looping...
             events.push({when: endTime, action: 'restart', cancel: noAction})
         }
+        return sequence;
     }
 
     this.addEvent = function(when, name, data) {

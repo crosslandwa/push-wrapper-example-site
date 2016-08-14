@@ -49,7 +49,8 @@ function show_no_midi_warning() {
 function off_we_go(bound_push) {
     const buttons = document.getElementsByClassName('push-wrapper-button'),
         players = create_players(),
-        push = bound_push;
+        push = bound_push,
+        sequence = makeSequence(players, push);
 
     push.lcd.clear();
 
@@ -70,7 +71,7 @@ function off_we_go(bound_push) {
         repetae.report_interval();
 
         foreach(intervals, (interval, button_name) => {
-            push.button[button_name].on('pressed', partial(repetae.interval, interval))
+            push.button[button_name].on('pressed', partial(repetae.interval, interval));
         });
 
         turn_off_column(push, column_number);
@@ -85,7 +86,7 @@ function off_we_go(bound_push) {
         player.reportPitch();
 
         buttons[i].addEventListener('mousedown', () => { player.cutOff(filter_frequencies[8]).play(midiGain(110)) });
-        bind_column_to_player(push, player, column_number, repetae);
+        bind_column_to_player(push, player, column_number, repetae, sequence);
     });
 
     foreach(intervals, (interval, button_name) => {
@@ -97,14 +98,14 @@ function off_we_go(bound_push) {
     bindQwertyuiToPlayback(players);
     bind_tempo_knob_to_bpm(push, bpm);
     bpm.report();
-    makeSequence(players);
+    sequence.reportState();
 }
 
-function makeSequence(players) {
-    var sequence = new Sequence(Scheduling);
+function makeSequence(players, push) {
+    let sequence = new Sequence(Scheduling, context);
 
     sequence.on('play', (meta) => {
-        players[meta.player].play(midiGain(meta.velocity));
+        players[meta.player].cutOff(meta.frequency).play(midiGain(meta.velocity));
     });
     sequence.on('changePitch', (meta) => {
         players[meta.player].modulatePitch(meta.interval);
@@ -113,9 +114,30 @@ function makeSequence(players) {
         foreach(players, (player) => player.modulatePitch(0));
     });
 
-    window.addEventListener('keydown', (event) => {
-        if (32 == event.keyCode) sequence.toggle();
+//    window.addEventListener('keydown', (event) => {
+//        if (32 == event.keyCode) sequence.toggle();
+//    });
+
+    sequence.on('armed', () => {
+        push.button['rec'].led_on();
+        push.button['play'].led_off();
     });
+    sequence.on('playback', () => {
+        push.button['rec'].led_off();
+        push.button['play'].led_on();
+    });
+    sequence.on('stopped', () => {
+        push.button['rec'].led_off();
+        push.button['play'].led_dim();
+    });
+    sequence.on('idle', () => {
+        push.button['rec'].led_off();
+        push.button['play'].led_off();
+    });
+    push.button['rec'].on('pressed', sequence.arm);
+    push.button['play'].on('pressed', sequence.handlePlayButton);
+
+    return sequence;
 }
 
 function create_players() {
@@ -126,7 +148,7 @@ function create_players() {
     return players;
 }
 
-function bind_column_to_player(push, player, x, repetae) {
+function bind_column_to_player(push, player, x, repetae, sequence) {
     let mutable_velocity = 127,
         mutable_frequency = filter_frequencies[8],
         pressed_pads_in_col = 0;
@@ -142,6 +164,7 @@ function bind_column_to_player(push, player, x, repetae) {
             mutable_velocity = velocity;
             mutable_frequency = filter_frequencies[y];
             if (++pressed_pads_in_col == 1) repetae.start(playback);
+            sequence.addEventNow('play', { player: x - 1, velocity: velocity, frequency: mutable_frequency });
         });
         grid_button.on('aftertouch', (pressure) => { if (pressure > 0) mutable_velocity = pressure });
         grid_button.on('released', () => {
