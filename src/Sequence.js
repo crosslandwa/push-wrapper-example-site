@@ -2,17 +2,20 @@
 
 const EventEmitter = require('events'),
     util = require('util'),
-    foreach = require('lodash.foreach'),
     noAction = function() {};
 
 function Sequence(Scheduling) {
     EventEmitter.call(this);
     let sequence = this,
         running = false,
+        restartEvent = {when: undefined, action: 'restart', cancel: noAction},
         doStart = function(force) {
             if (!force && running) return;
             running = true;
-            foreach(events, schedule);
+            events.filter((event) => {
+                return (typeof restartEvent.when === 'undefined') ? true : event.when < restartEvent.when;
+            }).forEach(schedule);
+            if (restartEvent.when) schedule(restartEvent);
         },
         restart = function() {
             doStart(true);
@@ -40,7 +43,7 @@ function Sequence(Scheduling) {
 
     this.stop = function() {
         running = false;
-        foreach(events, (event) => {
+        events.forEach((event) => {
             event.cancel();
             event.cancel = noAction;
         });
@@ -51,8 +54,7 @@ function Sequence(Scheduling) {
         let end = endTime > 0 ? endTime : undefined;
 
         if (end) {
-            // TODO will need to hold reference to this if I want to turn off looping...
-            events.push({when: endTime, action: 'restart', cancel: noAction})
+            restartEvent.when = end;
         }
         return sequence;
     }
@@ -62,17 +64,25 @@ function Sequence(Scheduling) {
     }
 
     this.load = function(json) {
-        events = json.map((event) => {
+        // TODO cancel all current events before loading new
+
+        events = json.events.map((event) => {
             let newEvent = mapEvent(event);
                 newEvent.cancel = noAction;
             return newEvent;
         });
 
+        restartEvent = json.loop;
+        restartEvent.cancel = noAction;
+
         return sequence;
     }
 
     this.toJSON = function() {
-        return events.map(mapEvent);
+        return {
+            loop: mapEvent(restartEvent),
+            events: events.map(mapEvent)
+        };
     }
 }
 util.inherits(Sequence, EventEmitter);
