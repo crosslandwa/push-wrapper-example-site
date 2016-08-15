@@ -31,14 +31,13 @@ function Sequence(Scheduling) {
         schedule = function(event) {
             event.cancel = Scheduling.inTheFuture(() => {
                 if (!running) return;
-                if (event.action) {
-                    switch (event.action) {
-                        case 'restart':
-                            restart();
-                            break;
-                    }
-                } else {
-                    sequence.emit(event.name, event.args);
+                switch (event.action) {
+                    case 'restart':
+                        restart();
+                        break;
+                    default:
+                        sequence.emit(event.name, event.args);
+                        break;
                 }
             }, event.when);
         },
