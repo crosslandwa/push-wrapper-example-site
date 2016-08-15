@@ -20,6 +20,14 @@ function Sequence(Scheduling) {
         restart = function() {
             doStart(true);
         },
+        cancelAllEvents = function() {
+            events.forEach((event) => {
+                event.cancel();
+                event.cancel = noAction;
+            });
+            restartEvent.cancel();
+            restartEvent.cancel = noAction;
+        },
         schedule = function(event) {
             event.cancel = Scheduling.inTheFuture(() => {
                 if (!running) return;
@@ -43,16 +51,12 @@ function Sequence(Scheduling) {
 
     this.stop = function() {
         running = false;
-        events.forEach((event) => {
-            event.cancel();
-            event.cancel = noAction;
-        });
+        cancelAllEvents();
         sequence.emit('stopped');
     }
 
     this.loop = function(endTime) {
         let end = endTime > 0 ? endTime : undefined;
-
         if (end) {
             restartEvent.when = end;
         }
@@ -64,7 +68,7 @@ function Sequence(Scheduling) {
     }
 
     this.load = function(json) {
-        // TODO cancel all current events before loading new
+        cancelAllEvents();
 
         events = json.events.map((event) => {
             let newEvent = mapEvent(event);
