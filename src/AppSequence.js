@@ -7,11 +7,19 @@ const Sequence = require('./Sequence.js'),
 
 module.exports = function(Scheduling, audioContext) {
     let sequence = new Sequence(Scheduling),
-        states = {armed: 'armed', idle: 'idle', recording: 'recording', playback: 'playback', stopped: 'stopped' },
+        states = {
+            armed: 'armed',
+            idle: 'idle',
+            recording: 'recording',
+            playback: 'playback',
+            stopped: 'stopped',
+            overdubbing: 'overdubbing'
+        },
         state = states.idle,
         startTime = undefined,
+        endTime = undefined,
         running = false,
-        reportState = function() { sequence.emit(state); };
+        reportState = function() { console.log(state); sequence.emit(state); };
 
     // kicks
 //    sequence.addEvent(0, 'play', {player: 0, velocity: 100});
@@ -40,28 +48,47 @@ module.exports = function(Scheduling, audioContext) {
 //        running ? sequence.start() : sequence.stop();
 //    }
 
-    sequence.arm = function() {
-        if (state === states.armed) {
-            state = state.idle;
-            sequence.emit(states.idle);
-            return;
+    sequence.handleRecButton = function() {
+        switch (state) {
+            case (states.idle): {
+                state = states.armed;
+                break;
+            }
+            case (states.armed): {
+                state = states.idle;
+                break;
+            }
+            case (states.playback): {
+                state = states.overdubbing;
+                break;
+            }
+            case (states.overdubbing): {
+                state = states.playback;
+                break;
+            }
         }
-        state = states.armed;
         reportState();
+        return sequence;
     }
 
     sequence.addEventNow = function(name, data) {
-        if (state === states.idle) return;
         if (state === states.recording) {
             let time = (audioContext.currentTime * 1000) - startTime;
             sequence.addEvent(time, name, data);
             return sequence;
         }
-        // armed
-        startTime = (audioContext.currentTime * 1000);
-        sequence.addEvent(0, name, data);
-        state = states.recording;
-        reportState();
+        if (state === states.overdubbing) {
+            let time = ((audioContext.currentTime * 1000) - startTime) % endTime;
+            sequence.addEvent(time, name, data);
+            return sequence;
+        }
+        if (state === states.armed) {
+            startTime = (audioContext.currentTime * 1000);
+            sequence.addEvent(0, name, data);
+            state = states.recording;
+            reportState();
+        }
+
         return sequence;
     }
 
@@ -79,9 +106,9 @@ module.exports = function(Scheduling, audioContext) {
             return sequence;
         }
         if (state !== states.recording) return;
-        let time = (audioContext.currentTime * 1000) - startTime;
+        endTime = (audioContext.currentTime * 1000) - startTime;
         state = states.playback;
-        sequence.loop(time).start();
+        sequence.loop(endTime).start();
         reportState();
         return sequence;
     }

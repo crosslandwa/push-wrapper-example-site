@@ -126,6 +126,10 @@ function makeSequence(players, push) {
         push.button['rec'].led_off();
         push.button['play'].led_on();
     });
+    sequence.on('overdubbing', () => {
+        push.button['rec'].led_dim();
+        push.button['play'].led_on();
+    });
     sequence.on('stopped', () => {
         push.button['rec'].led_off();
         push.button['play'].led_dim();
@@ -134,7 +138,7 @@ function makeSequence(players, push) {
         push.button['rec'].led_off();
         push.button['play'].led_off();
     });
-    push.button['rec'].on('pressed', sequence.arm);
+    push.button['rec'].on('pressed', sequence.handleRecButton);
     push.button['play'].on('pressed', sequence.handlePlayButton);
 
     return sequence;
