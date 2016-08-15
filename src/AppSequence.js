@@ -5,7 +5,7 @@ const Sequence = require('./Sequence.js'),
 
 
 
-module.exports = function(Scheduling, audioContext) {
+module.exports = function(Scheduling, nowMs) {
     let sequence = new Sequence(Scheduling),
         states = {
             armed: 'armed',
@@ -50,65 +50,69 @@ module.exports = function(Scheduling, audioContext) {
 
     sequence.handleRecButton = function() {
         switch (state) {
-            case (states.idle): {
+            case (states.idle):
                 state = states.armed;
                 break;
-            }
-            case (states.armed): {
+            case (states.armed):
                 state = states.idle;
                 break;
-            }
-            case (states.playback): {
+            case (states.playback):
                 state = states.overdubbing;
                 break;
-            }
-            case (states.overdubbing): {
+            case (states.overdubbing):
                 state = states.playback;
                 break;
-            }
+            case (states.recording):
+                endTime = nowMs() - startTime;
+                state = states.overdubbing;
+                sequence.loop(endTime).start();
+                break;
         }
         reportState();
         return sequence;
     }
 
     sequence.addEventNow = function(name, data) {
-        if (state === states.recording) {
-            let time = (audioContext.currentTime * 1000) - startTime;
-            sequence.addEvent(time, name, data);
-            return sequence;
+        switch (state) {
+            case (states.recording):
+                {
+                    let time = nowMs() - startTime;
+                    sequence.addEvent(time, name, data);
+                    break;
+                }
+            case (states.overdubbing):
+                {
+                    let time = (nowMs() - startTime) % endTime;
+                    sequence.addEvent(time, name, data);
+                    break;
+                }
+            case (states.armed):
+                startTime = nowMs();
+                sequence.addEvent(0, name, data);
+                state = states.recording;
+                reportState();
+                break;
         }
-        if (state === states.overdubbing) {
-            let time = ((audioContext.currentTime * 1000) - startTime) % endTime;
-            sequence.addEvent(time, name, data);
-            return sequence;
-        }
-        if (state === states.armed) {
-            startTime = (audioContext.currentTime * 1000);
-            sequence.addEvent(0, name, data);
-            state = states.recording;
-            reportState();
-        }
-
         return sequence;
     }
 
     sequence.handlePlayButton = function() {
-        if (state === states.playback) {
-            state = states.stopped;
-            sequence.stop();
-            reportState();
-            return sequence;
+        switch (state) {
+            case (states.playback):
+            case (states.overdubbing):
+                state = states.stopped;
+                sequence.stop();
+                break;
+            case (states.stopped):
+                state = states.playback;
+                sequence.start();
+                break;
+            case (states.recording):
+                endTime = nowMs() - startTime;
+                state = states.playback;
+                sequence.loop(endTime).start();
+                break;
         }
-        if (state === states.stopped) {
-            state = states.playback;
-            sequence.start();
-            reportState();
-            return sequence;
-        }
-        if (state !== states.recording) return;
-        endTime = (audioContext.currentTime * 1000) - startTime;
-        state = states.playback;
-        sequence.loop(endTime).start();
         reportState();
         return sequence;
     }

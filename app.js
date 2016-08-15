@@ -4,6 +4,7 @@ const Push = require('push-wrapper'),
     partial = require('lodash.partial'),
     Player = require('./src/player.js'),
     context = window.AudioContext ? new window.AudioContext() : new window.webkitAudioContext(),
+    nowMs = function() { return context.currentTime * 1000; },
     Scheduling = require('wac.scheduling')(context),
     Sequence = require('./src/AppSequence.js'),
     Repetae = require('./src/repetae.js'),
@@ -102,7 +103,7 @@ function off_we_go(bound_push) {
 }
 
 function makeSequence(players, push) {
-    let sequence = new Sequence(Scheduling, context);
+    let sequence = new Sequence(Scheduling, nowMs);
 
     sequence.on('play', (meta) => {
         players[meta.player].cutOff(meta.frequency).play(midiGain(meta.velocity));
@@ -114,9 +115,9 @@ function makeSequence(players, push) {
         foreach(players, (player) => player.modulatePitch(0));
     });
 
-//    window.addEventListener('keydown', (event) => {
-//        if (32 == event.keyCode) sequence.toggle();
-//    });
+    window.addEventListener('keydown', (event) => {
+        if (32 == event.keyCode) sequence.handlePlayButton();
+    });
 
     sequence.on('armed', () => {
         push.button['rec'].led_on();
