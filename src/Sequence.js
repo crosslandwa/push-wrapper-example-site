@@ -9,16 +9,18 @@ function Sequence(Scheduling) {
     let sequence = this,
         running = false,
         restartEvent = {when: undefined, action: 'restart', cancel: noAction},
-        doStart = function(force) {
+        doStart = function(force, offsetMs) {
             if (!force && running) return;
             running = true;
             events.filter((event) => {
-                return (typeof restartEvent.when === 'undefined') ? true : event.when < restartEvent.when;
+                let isAfterStart = event.when >= offsetMs,
+                    isBeforeLoopEnd = (typeof restartEvent.when === 'undefined') ? true : event.when < restartEvent.when;
+                return isAfterStart && isBeforeLoopEnd;
             }).forEach(schedule);
             if (restartEvent.when) schedule(restartEvent);
         },
         restart = function() {
-            doStart(true);
+            doStart(true, 0);
         },
         cancelAllEvents = function() {
             events.forEach((event) => {
@@ -43,8 +45,8 @@ function Sequence(Scheduling) {
         },
         events = [];
 
-    this.start = function() {
-        doStart(false);
+    this.start = function(offsetMs) {
+        doStart(false, offsetMs > 0 ? offsetMs : 0);
         return sequence;
     }
 
