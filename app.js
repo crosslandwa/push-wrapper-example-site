@@ -96,7 +96,7 @@ function off_we_go(bound_push) {
 
     bind_pitchbend(push, players);
 
-    bindQwertyuiToPlayback(players);
+    bindQwertyuiToPlayback(players, sequence);
     bind_tempo_knob_to_bpm(push, bpm);
     bpm.report();
     sequence.reportState();
@@ -116,7 +116,10 @@ function makeSequence(players, push) {
     });
 
     window.addEventListener('keydown', (event) => {
-        if (32 == event.keyCode) sequence.handlePlayButton();
+        switch (event.keyCode) {
+            case 32: sequence.handlePlayButton(); break;
+            case 80: sequence.handleRecButton(); break;
+        }
     });
 
     sequence.on('armed', () => {
@@ -169,7 +172,7 @@ function bind_column_to_player(push, player, x, repetae, sequence) {
             mutable_velocity = velocity;
             mutable_frequency = filter_frequencies[y];
             if (++pressed_pads_in_col == 1) repetae.start(playback);
-            sequence.addEventNow('play', { player: x - 1, velocity: velocity, frequency: mutable_frequency });
+            sequence.addEventNow('play', playbackEvent(x - 1, velocity, mutable_frequency));
         });
         grid_button.on('aftertouch', (pressure) => { if (pressure > 0) mutable_velocity = pressure });
         grid_button.on('released', () => {
@@ -178,11 +181,16 @@ function bind_column_to_player(push, player, x, repetae, sequence) {
     });
 }
 
-function bindQwertyuiToPlayback(players) {
+function playbackEvent(index, velocity, f) {
+    return { player: index, velocity: velocity, frequency: f };
+}
+
+function bindQwertyuiToPlayback(players, sequence) {
     let lookup = {113: 0, 119: 1, 101: 2, 114: 3, 116: 4, 121: 5, 117: 6, 105: 7};
     window.addEventListener("keypress", (event) => {
         if (event.charCode in lookup) {
             players[lookup[event.charCode]].cutOff(filter_frequencies[8]).play(midiGain(110));
+            sequence.addEventNow('play', playbackEvent(lookup[event.charCode], 110, filter_frequencies[8]));
         }
     });
 }
