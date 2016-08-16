@@ -16,7 +16,7 @@ function Sequence(Scheduling) {
                 let isAfterStart = event.when >= offsetMs,
                     isBeforeLoopEnd = (typeof restartEvent.when === 'undefined') ? true : event.when < restartEvent.when;
                 return isAfterStart && isBeforeLoopEnd;
-            }).forEach(schedule);
+            }).forEach((event) => schedule(event, offsetMs));
             if (restartEvent.when) schedule(restartEvent);
         },
         restart = function() {
@@ -30,7 +30,7 @@ function Sequence(Scheduling) {
             restartEvent.cancel();
             restartEvent.cancel = noAction;
         },
-        schedule = function(event) {
+        schedule = function(event, offsetMs) {
             event.cancel = Scheduling.inTheFuture(() => {
                 if (!running) return;
                 switch (event.action) {
@@ -41,7 +41,7 @@ function Sequence(Scheduling) {
                         sequence.emit(event.name, event.args);
                         break;
                 }
-            }, event.when);
+            }, event.when - offsetMs);
         },
         events = [];
 

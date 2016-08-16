@@ -33,7 +33,7 @@ describe('Sequence', () => {
             expect(fired_events.length).toEqual(1);
             expect(fired_events[0]).toEqual('hello2');
             done();
-        }, 125);
+        }, 50);
     });
 
     it('can repeatedly fire scheduled events on a loop', (done) => {
