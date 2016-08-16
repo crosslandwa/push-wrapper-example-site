@@ -19,16 +19,11 @@ function Sequence(Scheduling) {
             scheduleAllEvents(true, 0);
         },
         cancelAllEvents = function() {
-            events.forEach((event) => {
-                event.cancel();
-                event.cancel = noAction;
-            });
-            restartEvent.cancel();
-            restartEvent.cancel = noAction;
+            events.forEach(cancel);
+            cancel(restartEvent);
         },
         schedule = function(offsetMs, event) {
             event.cancel = Scheduling.inTheFuture(() => {
-                if (!running) return;
                 switch (event.action) {
                     case 'restart':
                         restart();
@@ -109,6 +104,11 @@ function isBeforeLoopEnd(loopEndMs, event) {
 
 function isWithinLoop(startOffsetMs, loopEndMs, event) {
     return isAfterStart(event, startOffsetMs) && isBeforeLoopEnd(loopEndMs, event);
+}
+
+function cancel(event) {
+    event.cancel();
+    event.cancel = noAction;
 }
 
 module.exports = Sequence;
