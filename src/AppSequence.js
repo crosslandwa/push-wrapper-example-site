@@ -50,6 +50,28 @@ module.exports = function(Scheduling, nowMs) {
         return sequence;
     }
 
+    sequence.handlePlayButton = function() {
+        switch (state) {
+            case (states.playback):
+            case (states.overdubbing):
+                state = states.stopped;
+                sequence.stop();
+                break;
+            case (states.stopped):
+                state = states.playback;
+                startTime = nowMs();
+                sequence.start();
+                break;
+            case (states.recording):
+                loopLengthMs = nowMs() - startTime;
+                state = states.playback;
+                sequence.loop(loopLengthMs).start();
+                break;
+        }
+        reportState();
+        return sequence;
+    }
+
     sequence.addEventNow = function(name, data) {
         switch (state) {
             case (states.recording):
@@ -71,28 +93,6 @@ module.exports = function(Scheduling, nowMs) {
                 reportState();
                 break;
         }
-        return sequence;
-    }
-
-    sequence.handlePlayButton = function() {
-        switch (state) {
-            case (states.playback):
-            case (states.overdubbing):
-                state = states.stopped;
-                sequence.stop();
-                break;
-            case (states.stopped):
-                state = states.playback;
-                startTime = nowMs();
-                sequence.start();
-                break;
-            case (states.recording):
-                loopLengthMs = nowMs() - startTime;
-                state = states.playback;
-                sequence.loop(loopLengthMs).start();
-                break;
-        }
-        reportState();
         return sequence;
     }
 
