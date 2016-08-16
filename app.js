@@ -105,16 +105,6 @@ function off_we_go(bound_push) {
 function makeSequence(players, push) {
     let sequence = new Sequence(Scheduling, nowMs);
 
-    sequence.on('play', (meta) => {
-        players[meta.player].cutOff(meta.frequency).play(midiGain(meta.velocity));
-    });
-    sequence.on('changePitch', (meta) => {
-        players[meta.player].modulatePitch(meta.interval);
-    });
-    sequence.on('stopped', (meta) => {
-        foreach(players, (player) => player.modulatePitch(0));
-    });
-
     window.addEventListener('keydown', (event) => {
         switch (event.keyCode) {
             case 32: sequence.handlePlayButton(); break;
@@ -171,27 +161,42 @@ function bind_column_to_player(push, player, x, repetae, sequence) {
         grid_button.on('pressed', (velocity) => {
             mutable_velocity = velocity;
             mutable_frequency = filter_frequencies[y];
-            if (++pressed_pads_in_col == 1) repetae.start(playback);
-            sequence.addEventNow('play', playbackEvent(x - 1, velocity, mutable_frequency));
+            if (++pressed_pads_in_col == 1) {
+                repetae.start(playback);
+                sequence.addEventNow('play_' + x, { velocity: mutable_velocity, frequency: mutable_frequency });
+            }
         });
         grid_button.on('aftertouch', (pressure) => { if (pressure > 0) mutable_velocity = pressure });
         grid_button.on('released', () => {
-            if (--pressed_pads_in_col == 0) repetae.stop();
+            if (--pressed_pads_in_col == 0) {
+                repetae.stop();
+                sequence.addEventNow('stop_' + x, {});
+            }
         });
     });
-}
 
-function playbackEvent(index, velocity, f) {
-    return { player: index, velocity: velocity, frequency: f };
+    sequence.on('play_' + x, (data) => {
+        mutable_velocity = data.velocity;
+        mutable_frequency = data.frequency;
+        repetae.start(playback);
+    });
+    sequence.on('stop_' + x, repetae.stop);
+    sequence.on('stopped', repetae.stop);
 }
 
 function bindQwertyuiToPlayback(players, sequence) {
     let lookup = {113: 0, 119: 1, 101: 2, 114: 3, 116: 4, 121: 5, 117: 6, 105: 7};
     window.addEventListener("keypress", (event) => {
         if (event.charCode in lookup) {
-            players[lookup[event.charCode]].cutOff(filter_frequencies[8]).play(midiGain(110));
-            sequence.addEventNow('play', playbackEvent(lookup[event.charCode], 110, filter_frequencies[8]));
+            let index = lookup[event.charCode],
+                f = filter_frequencies[8],
+                velocity = 110;
+            players[index].cutOff(f).play(midiGain(velocity));
+            sequence.addEventNow('play', { player: index, velocity: velocity, frequency: f });
         }
+    });
+    sequence.on('play', (data) => {
+        players[data.player].cutOff(data.frequency).play(midiGain(data.velocity));
     });
 }
 
