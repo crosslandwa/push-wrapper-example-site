@@ -17,7 +17,7 @@ function Sequence(Scheduling) {
                     isBeforeLoopEnd = (typeof restartEvent.when === 'undefined') ? true : event.when < restartEvent.when;
                 return isAfterStart && isBeforeLoopEnd;
             }).forEach((event) => schedule(event, offsetMs));
-            if (restartEvent.when) schedule(restartEvent);
+            if (restartEvent.when) schedule(restartEvent, offsetMs);
         },
         restart = function() {
             doStart(true, 0);

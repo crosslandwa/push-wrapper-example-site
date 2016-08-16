@@ -58,14 +58,13 @@ describe('Sequence', () => {
         sequence.addEvent(50, 'capture', 'hello1');
         sequence.addEvent(100, 'capture', 'hello2');
         sequence.on('capture', (data) => fired_events.push(data));
-        sequence.loop(125).start(75);
+        sequence.loop(150).start(75);
         setTimeout(() => {
-            expect(fired_events.length).toEqual(3);
-            expect(fired_events[0]).toEqual('hello2');
-            expect(fired_events[1]).toEqual('hello1');
-            expect(fired_events[2]).toEqual('hello2');
+            expect(fired_events.length).toEqual(2);
+            expect(fired_events[0]).toEqual('hello2'); // after 25ms
+            expect(fired_events[1]).toEqual('hello1'); // loops after 75ms, second event after 125ms (3rd after 175ms)
             done();
-        }, 300);
+        }, 150);
     });
 
     it('fires events until stopped', (done) => {
