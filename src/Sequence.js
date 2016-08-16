@@ -12,12 +12,8 @@ function Sequence(Scheduling) {
         scheduleAllEvents = function(force, offsetMs) {
             if (!force && running) return;
             running = true;
-            events.filter((event) => {
-                let isAfterStart = event.when >= offsetMs,
-                    isBeforeLoopEnd = (typeof restartEvent.when === 'undefined') ? true : event.when < restartEvent.when;
-                return isAfterStart && isBeforeLoopEnd;
-            }).forEach((event) => schedule(event, offsetMs));
-            if (restartEvent.when) schedule(restartEvent, offsetMs);
+            events.filter(isWithinLoop.bind(null, offsetMs, restartEvent.when)).forEach(schedule.bind(null, offsetMs));
+            if (restartEvent.when) schedule(offsetMs, restartEvent);
         },
         restart = function() {
             scheduleAllEvents(true, 0);
@@ -30,7 +26,7 @@ function Sequence(Scheduling) {
             restartEvent.cancel();
             restartEvent.cancel = noAction;
         },
-        schedule = function(event, offsetMs) {
+        schedule = function(offsetMs, event) {
             event.cancel = Scheduling.inTheFuture(() => {
                 if (!running) return;
                 switch (event.action) {
@@ -103,5 +99,16 @@ function mapEvent(event) {
     return newEvent;
 }
 
+function isAfterStart(event, startOffsetMs) {
+    return event.when >= startOffsetMs;
+}
+
+function isBeforeLoopEnd(loopEndMs, event) {
+    return (typeof loopEndMs === 'undefined') ? true : event.when < loopEndMs;
+}
+
+function isWithinLoop(startOffsetMs, loopEndMs, event) {
+    return isAfterStart(event, startOffsetMs) && isBeforeLoopEnd(loopEndMs, event);
+}
 
 module.exports = Sequence;
