@@ -17,7 +17,7 @@ module.exports = function(Scheduling, nowMs) {
         },
         state = states.idle,
         startTime = undefined,
-        endTime = undefined,
+        loopLengthMs = undefined,
         running = false,
         reportState = function() { console.log(state); sequence.emit(state); };
 
@@ -62,10 +62,15 @@ module.exports = function(Scheduling, nowMs) {
             case (states.overdubbing):
                 state = states.playback;
                 break;
-            case (states.recording):
-                endTime = nowMs() - startTime;
+            case (states.stopped):
                 state = states.overdubbing;
-                sequence.loop(endTime).start();
+                startTime = nowMs();
+                sequence.start();
+                break;
+            case (states.recording):
+                loopLengthMs = nowMs() - startTime;
+                state = states.overdubbing;
+                sequence.loop(loopLengthMs).start();
                 break;
         }
         reportState();
@@ -82,7 +87,7 @@ module.exports = function(Scheduling, nowMs) {
                 }
             case (states.overdubbing):
                 {
-                    let time = (nowMs() - startTime) % endTime;
+                    let time = (nowMs() - startTime) % loopLengthMs;
                     sequence.addEvent(time, name, data);
                     break;
                 }
@@ -105,12 +110,13 @@ module.exports = function(Scheduling, nowMs) {
                 break;
             case (states.stopped):
                 state = states.playback;
+                startTime = nowMs();
                 sequence.start();
                 break;
             case (states.recording):
-                endTime = nowMs() - startTime;
+                loopLengthMs = nowMs() - startTime;
                 state = states.playback;
-                sequence.loop(endTime).start();
+                sequence.loop(loopLengthMs).start();
                 break;
         }
         reportState();
