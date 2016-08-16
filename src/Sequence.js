@@ -9,7 +9,7 @@ function Sequence(Scheduling) {
     let sequence = this,
         running = false,
         restartEvent = {when: undefined, action: 'restart', cancel: noAction},
-        doStart = function(force, offsetMs) {
+        scheduleAllEvents = function(force, offsetMs) {
             if (!force && running) return;
             running = true;
             events.filter((event) => {
@@ -20,7 +20,7 @@ function Sequence(Scheduling) {
             if (restartEvent.when) schedule(restartEvent, offsetMs);
         },
         restart = function() {
-            doStart(true, 0);
+            scheduleAllEvents(true, 0);
         },
         cancelAllEvents = function() {
             events.forEach((event) => {
@@ -46,7 +46,7 @@ function Sequence(Scheduling) {
         events = [];
 
     this.start = function(offsetMs) {
-        doStart(false, offsetMs > 0 ? offsetMs : 0);
+        scheduleAllEvents(false, offsetMs > 0 ? offsetMs : 0);
         return sequence;
     }
 
