@@ -5,7 +5,7 @@ const Sequence = require('./Sequence.js'),
 
 
 
-module.exports = function(Scheduling, nowMs) {
+module.exports = function(Scheduling, nowMs, bpm) {
     let sequence = new Sequence(Scheduling),
         states = {
             armed: 'armed',
@@ -18,16 +18,18 @@ module.exports = function(Scheduling, nowMs) {
         state = states.idle,
         startTime = undefined,
         loopLengthMs = undefined,
-        numberOfBeats = 8,
+        numberOfBeats = undefined,
         running = false,
         reportState = function() { console.log(state); sequence.emit(state); };
 
     let setLoopLengthAndBroadcastBPM = function() {
         loopLengthMs = nowMs() - startTime;
-        let bpm = Math.round((60000 * numberOfBeats) / loopLengthMs);
-        loopLengthMs = (60000 * numberOfBeats) / bpm;
+        numberOfBeats = Math.round((loopLengthMs * bpm.current) / 60000);
+        sequence.emit('numberOfBeats', numberOfBeats);
+        let calculatedBPM = Math.round(((60000 * numberOfBeats) / loopLengthMs) + 0.25); // + 0.25 as we assume we've pressed slightly early
+        loopLengthMs = (60000 * numberOfBeats) / calculatedBPM;
         sequence.loop(loopLengthMs)
-        sequence.emit('bpm', bpm);
+        sequence.emit('bpm', calculatedBPM);
     }
 
     sequence.handleRecButton = function() {

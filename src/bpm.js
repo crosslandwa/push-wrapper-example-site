@@ -17,8 +17,6 @@ function BPM(initial) {
     }
     this.change_to = function(newBPM) {
         bpm.current = clip(newBPM);
-        console.log(newBPM);
-        console.log(bpm);
         bpm.report();
     }
 }

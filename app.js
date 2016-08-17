@@ -101,10 +101,11 @@ function off_we_go(bound_push) {
     bpm.report();
     sequence.reportState();
     sequence.on('bpm', bpm.change_to);
+    sequence.on('numberOfBeats', numberOfBeats => push.lcd.x[2].y[3].update(`beats=${numberOfBeats}`));
 }
 
-function makeSequence(players, push) {
-    let sequence = new Sequence(Scheduling, nowMs);
+function makeSequence(players, push, bpm) {
+    let sequence = new Sequence(Scheduling, nowMs, bpm);
 
     window.addEventListener('keydown', (event) => {
         switch (event.keyCode) {
