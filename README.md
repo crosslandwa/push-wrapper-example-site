@@ -34,3 +34,31 @@ This example site is only **known** to work in Google Chrome/OS X...
 Initial version of the app based off blog post here: http://www.keithmcmillen.com/blog/making-music-in-the-browser-web-midi-api/
 
 Timing for repeated notes inspired by this: https://github.com/cwilso/metronome
+
+## TODO/Ideas
+
+- In app sequencing
+  - Delete sequence/events in sequence
+  - Record new sequence
+  - Swap playing sequence
+- BPM aware sequence wrapper
+  - responds to changes in global BPM (i.e. adjusts event placement and loop length)
+  - consider using toJSON/load with manipulation event.when before loading
+  - consider the whens as a fraction of loop length rather than absolute ms time...
+    - have to calculate ms every time event scheduled, rather than once per BPM change...
+    - but, serialized version decoupled from BPM
+- BPM synced to (1st) sequence
+  - calculate (approx)/set how many beats long sequence is and adjusts global BPM automatically to match
+- Change sequence length
+  - ~~whilst stopped~~
+  - whilst running
+    - do we need segmented sequencing for this?
+  - Consider immutable sequence
+    - length cannot be changed, instead create new sequence
+    - consider how to handle event listeners
+- UI for recording playback status
+- Look at bug for held/sequenced notes and repetae
+  - should ++ and -- as a result of being sequenced...
+- ~~Sequence through repetae module, not direct to player~~
+  - notes recorded via qwerty are not repetaed. Fix this?
+- ~~ Fix timing when overdubbing notes on subsequent playback~~
