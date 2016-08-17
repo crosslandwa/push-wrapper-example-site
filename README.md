@@ -61,4 +61,4 @@ Timing for repeated notes inspired by this: https://github.com/cwilso/metronome
   - should ++ and -- as a result of being sequenced...
 - ~~Sequence through repetae module, not direct to player~~
   - notes recorded via qwerty are not repetaed. Fix this?
-- ~~ Fix timing when overdubbing notes on subsequent playback~~
+- ~~Fix timing when overdubbing notes on subsequent playback~~
