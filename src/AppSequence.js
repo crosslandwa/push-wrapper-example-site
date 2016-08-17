@@ -18,8 +18,17 @@ module.exports = function(Scheduling, nowMs) {
         state = states.idle,
         startTime = undefined,
         loopLengthMs = undefined,
+        numberOfBeats = 8,
         running = false,
         reportState = function() { console.log(state); sequence.emit(state); };
+
+    let setLoopLengthAndBroadcastBPM = function() {
+        loopLengthMs = nowMs() - startTime;
+        let bpm = Math.round((60000 * numberOfBeats) / loopLengthMs);
+        loopLengthMs = (60000 * numberOfBeats) / bpm;
+        sequence.loop(loopLengthMs)
+        sequence.emit('bpm', bpm);
+    }
 
     sequence.handleRecButton = function() {
         switch (state) {
@@ -41,9 +50,9 @@ module.exports = function(Scheduling, nowMs) {
                 sequence.start();
                 break;
             case (states.recording):
-                loopLengthMs = nowMs() - startTime;
+                setLoopLengthAndBroadcastBPM();
                 state = states.overdubbing;
-                sequence.loop(loopLengthMs).start();
+                sequence.start();
                 break;
         }
         reportState();
@@ -63,9 +72,9 @@ module.exports = function(Scheduling, nowMs) {
                 sequence.start();
                 break;
             case (states.recording):
-                loopLengthMs = nowMs() - startTime;
+                setLoopLengthAndBroadcastBPM();
                 state = states.playback;
-                sequence.loop(loopLengthMs).start();
+                sequence.start();
                 break;
         }
         reportState();

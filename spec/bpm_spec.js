@@ -27,6 +27,11 @@ describe('BPM module', () => {
         expect(emitted_events).toEqual(['bpm=110']);
     });
 
+    it('can have bpm set', () => {
+        bpm.change_to(100);
+        expect(emitted_events).toEqual(['bpm=100']);
+    });
+
     it('supports a max bpm of 300', () => {
         bpm.change_by(500);
         expect(emitted_events).toEqual(['bpm=300']);
@@ -54,50 +59,50 @@ describe('Interval module', () => {
     // timings based on the intervals/notation reported by MaxMSP
     it('reports a quarter note time when bpm changed', () => {
         create_and_listen_to(Interval['4n']);
-        bpm.change_by(60);
-        bpm.change_by(-40);
+        bpm.change_to(120);
+        bpm.change_to(80);
         expect(emitted_events).toEqual(['interval=500ms', 'interval=750ms']);
     });
 
     it('reports a quarter note triplet time when bpm changed', () => {
         create_and_listen_to(Interval['4nt']);
-        bpm.change_by(20);
+        bpm.change_to(80);
         expect(emitted_events).toEqual(['interval=500ms']);
     });
 
     it('reports an eighth note time when bpm changed', () => {
         create_and_listen_to(Interval['8n']);
-        bpm.change_by(60);
+        bpm.change_to(120);
         expect(emitted_events).toEqual(['interval=250ms']);
     });
 
     it('reports an eighth note triplet time when bpm changed', () => {
         create_and_listen_to(Interval['8nt']);
-        bpm.change_by(20);
+        bpm.change_to(80);
         expect(emitted_events).toEqual(['interval=250ms']);
     });
 
     it('reports a sixteenth note time when bpm changed', () => {
         create_and_listen_to(Interval['16n']);
-        bpm.change_by(60);
+        bpm.change_to(120);
         expect(emitted_events).toEqual(['interval=125ms']);
     });
 
     it('reports a sixteenth note triplet time when bpm changed', () => {
         create_and_listen_to(Interval['16nt']);
-        bpm.change_by(20);
+        bpm.change_to(80);
         expect(emitted_events).toEqual(['interval=125ms']);
     });
 
     it('reports a thirty-secondth note time when bpm changed', () => {
         create_and_listen_to(Interval['32n']);
-        bpm.change_by(60);
+        bpm.change_to(120);
         expect(emitted_events).toEqual(['interval=62.5ms']);
     });
 
     it('reports a thirty-secondth note triplet time when bpm changed', () => {
         create_and_listen_to(Interval['32nt']);
-        bpm.change_by(20);
+        bpm.change_to(80);
         expect(emitted_events).toEqual(['interval=62.5ms']);
     });
 });

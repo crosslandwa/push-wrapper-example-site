@@ -15,6 +15,12 @@ function BPM(initial) {
         bpm.current = clip(bpm.current + amount);
         bpm.report();
     }
+    this.change_to = function(newBPM) {
+        bpm.current = clip(newBPM);
+        console.log(newBPM);
+        console.log(bpm);
+        bpm.report();
+    }
 }
 util.inherits(BPM, EventEmitter);
 

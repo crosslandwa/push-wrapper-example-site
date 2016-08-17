@@ -100,6 +100,7 @@ function off_we_go(bound_push) {
     bind_tempo_knob_to_bpm(push, bpm);
     bpm.report();
     sequence.reportState();
+    sequence.on('bpm', bpm.change_to);
 }
 
 function makeSequence(players, push) {
