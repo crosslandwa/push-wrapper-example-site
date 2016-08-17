@@ -57,8 +57,8 @@ Timing for repeated notes inspired by this: https://github.com/cwilso/metronome
     - length cannot be changed, instead create new sequence
     - consider how to handle event listeners
 - UI for recording playback status
-- Look at bug for held/sequenced notes and repetae
-  - should ++ and -- as a result of being sequenced...
+- ~~Look at bug for held/sequenced notes and repetae~~
+  - ~~should ++ and -- as a result of being sequenced...~~
 - ~~Sequence through repetae module, not direct to player~~
   - notes recorded via qwerty are not repetaed. Fix this?
 - ~~Fix timing when overdubbing notes on subsequent playback~~

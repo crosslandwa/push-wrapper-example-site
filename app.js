@@ -155,33 +155,43 @@ function bind_column_to_player(push, player, x, repetae, sequence) {
         player.cutOff(mutable_frequency).play(midiGain(mutable_velocity));
     }
 
+    let padPressed = function(f, velocity) {
+        mutable_velocity = velocity;
+        mutable_frequency = f;
+        if (++pressed_pads_in_col == 1) repetae.start(playback);
+    }
+
+    let padReleased = function() {
+        --pressed_pads_in_col;
+        pressed_pads_in_col = pressed_pads_in_col < 0 ? 0 : pressed_pads_in_col;
+        if (pressed_pads_in_col == 0) repetae.stop();
+    }
+
+    let padAftertouch = function(pressure) {
+        if (pressure > 0) mutable_velocity = pressure;
+    }
+
     foreach([1, 2, 3, 4, 5, 6, 7, 8], (y) => {
         const grid_button = push.grid.x[x].y[y];
-
         grid_button.on('pressed', (velocity) => {
-            mutable_velocity = velocity;
-            mutable_frequency = filter_frequencies[y];
-            if (++pressed_pads_in_col == 1) {
-                repetae.start(playback);
-                sequence.addEventNow('play_' + x, { velocity: mutable_velocity, frequency: mutable_frequency });
-            }
+            padPressed(filter_frequencies[y], velocity);
+            sequence.addEventNow(`play_${x}`, { velocity: mutable_velocity, frequency: filter_frequencies[y] });
         });
-        grid_button.on('aftertouch', (pressure) => { if (pressure > 0) mutable_velocity = pressure });
+        grid_button.on('aftertouch', padAftertouch);
         grid_button.on('released', () => {
-            if (--pressed_pads_in_col == 0) {
-                repetae.stop();
-                sequence.addEventNow('stop_' + x, {});
-            }
+            padReleased();
+            sequence.addEventNow(`stop_${x}`, {});
         });
     });
 
-    sequence.on('play_' + x, (data) => {
-        mutable_velocity = data.velocity;
-        mutable_frequency = data.frequency;
-        repetae.start(playback);
+    sequence.on(`play_${x}`, (data) => {
+        padPressed(data.frequency, data.velocity);
     });
-    sequence.on('stop_' + x, repetae.stop);
-    sequence.on('stopped', repetae.stop);
+    sequence.on(`stop_${x}`, padReleased);
+    sequence.on('stopped', () => {
+        repetae.stop();
+        pressed_pads_in_col = 0;
+    });
 }
 
 function bindQwertyuiToPlayback(players, sequence) {
