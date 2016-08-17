@@ -29,7 +29,15 @@ module.exports = function(Scheduling, nowMs, bpm) {
         let calculatedBPM = Math.round(((60000 * numberOfBeats) / loopLengthMs) + 0.25); // + 0.25 as we assume we've pressed slightly early
         loopLengthMs = (60000 * numberOfBeats) / calculatedBPM;
         sequence.loop(loopLengthMs)
-        sequence.emit('bpm', calculatedBPM);
+        bpm.change_to(calculatedBPM);
+    }
+
+    sequence.changeNumberOfBeatsBy = function(amount) {
+        numberOfBeats += amount;
+        numberOfBeats = numberOfBeats < 0 ? 0 : numberOfBeats;
+        sequence.emit('numberOfBeats', numberOfBeats);
+        let calculatedBPM = ((60000 * numberOfBeats) / loopLengthMs) + 0.25; // + 0.25 as we assume we've pressed slightly early
+        bpm.change_to(calculatedBPM);
     }
 
     sequence.handleRecButton = function() {

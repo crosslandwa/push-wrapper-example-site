@@ -51,7 +51,7 @@ function off_we_go(bound_push) {
     const buttons = document.getElementsByClassName('push-wrapper-button'),
         players = create_players(),
         push = bound_push,
-        sequence = makeSequence(players, push);
+        sequence = makeSequence(players, push, bpm);
 
     push.lcd.clear();
 
@@ -100,7 +100,7 @@ function off_we_go(bound_push) {
     bind_tempo_knob_to_bpm(push, bpm);
     bpm.report();
     sequence.reportState();
-    sequence.on('bpm', bpm.change_to);
+    push.knob['swing'].on('turned', sequence.changeNumberOfBeatsBy);
     sequence.on('numberOfBeats', numberOfBeats => push.lcd.x[2].y[3].update(`beats=${numberOfBeats}`));
 }
 
