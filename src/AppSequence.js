@@ -33,8 +33,9 @@ module.exports = function(Scheduling, nowMs, bpm) {
     }
 
     sequence.changeNumberOfBeatsBy = function(amount) {
+        if (!numberOfBeats) return;
         numberOfBeats += amount;
-        numberOfBeats = numberOfBeats < 0 ? 0 : numberOfBeats;
+        numberOfBeats = numberOfBeats < 1 ? 1 : numberOfBeats;
         sequence.emit('numberOfBeats', numberOfBeats);
         let calculatedBPM = ((60000 * numberOfBeats) / loopLengthMs) + 0.25; // + 0.25 as we assume we've pressed slightly early
         bpm.change_to(calculatedBPM);
