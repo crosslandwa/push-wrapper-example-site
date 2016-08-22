@@ -92,6 +92,13 @@ module.exports = function(Scheduling, nowMs, bpm) {
         return sequence;
     }
 
+    sequence.handleDeleteButton = function() {
+        sequence.reset();
+        state = states.idle;
+        reportState();
+        return sequence;
+    }
+
     sequence.addEventNow = function(name, data) {
         switch (state) {
             case (states.recording):

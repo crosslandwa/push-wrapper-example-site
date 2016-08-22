@@ -109,33 +109,45 @@ function makeSequence(players, push, bpm) {
 
     window.addEventListener('keydown', (event) => {
         switch (event.keyCode) {
-            case 32: sequence.handlePlayButton(); break;
-            case 80: sequence.handleRecButton(); break;
+            case 32: sequence.handlePlayButton(); break; // spacebar
+            case 65: sequence.handleRecButton(); break; // a
+            case 68: sequence.handleDeleteButton(); break; // d
         }
     });
 
     sequence.on('armed', () => {
         push.button['rec'].led_on();
         push.button['play'].led_off();
+        push.button['delete'].led_dim();
+    });
+    sequence.on('recording', () => {
+        push.button['rec'].led_on();
+        push.button['play'].led_off();
+        push.button['delete'].led_on();
     });
     sequence.on('playback', () => {
         push.button['rec'].led_off();
         push.button['play'].led_on();
+        push.button['delete'].led_on();
     });
     sequence.on('overdubbing', () => {
         push.button['rec'].led_dim();
         push.button['play'].led_on();
+        push.button['delete'].led_on();
     });
     sequence.on('stopped', () => {
         push.button['rec'].led_off();
         push.button['play'].led_dim();
+        push.button['delete'].led_on();
     });
     sequence.on('idle', () => {
         push.button['rec'].led_off();
         push.button['play'].led_off();
+        push.button['delete'].led_dim();
     });
     push.button['rec'].on('pressed', sequence.handleRecButton);
     push.button['play'].on('pressed', sequence.handlePlayButton);
+    push.button['delete'].on('pressed', sequence.handleDeleteButton);
 
     return sequence;
 }

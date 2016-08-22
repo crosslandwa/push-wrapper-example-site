@@ -42,9 +42,10 @@ function Sequence(Scheduling) {
     }
 
     this.stop = function() {
+        let emitStopped = running;
         running = false;
         cancelAllEvents();
-        sequence.emit('stopped');
+        if (emitStopped) sequence.emit('stopped');
     }
 
     this.loop = function(endTime) {
@@ -57,6 +58,14 @@ function Sequence(Scheduling) {
 
     this.addEvent = function(when, name, data) {
         events.push({when: when, name: name, args: data, cancel: noAction});
+    }
+
+    this.reset = function() {
+        sequence.stop();
+        events = [];
+        restartEvent.when = undefined;
+        sequence.emit('reset');
+        return sequence;
     }
 
     this.load = function(json) {

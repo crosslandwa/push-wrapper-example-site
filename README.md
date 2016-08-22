@@ -38,7 +38,7 @@ Timing for repeated notes inspired by this: https://github.com/cwilso/metronome
 ## TODO/Ideas
 
 - In app sequencing
-  - Delete sequence/events in sequence
+  - ~~Delete sequence/events in sequence~~
   - Record new sequence
   - Swap playing sequence
 - BPM aware sequence wrapper

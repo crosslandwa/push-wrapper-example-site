@@ -125,4 +125,24 @@ describe('Sequence', () => {
             done();
         }, 300);
     });
+
+    it('can be reset so all event and loop length info is cleared', (done) => {
+        let fired_events = [];
+        sequence.on('capture', (data) => fired_events.push(data));
+
+        sequence.addEvent(25, 'capture', 'hello1');
+        sequence.loop(50);
+
+        sequence.reset();
+        sequence.addEvent(50, 'capture', 'hello2');
+        sequence.loop(100);
+
+        sequence.start();
+        setTimeout(() => {
+            expect(fired_events.length).toEqual(2);
+            expect(fired_events[0]).toEqual('hello2');
+            expect(fired_events[1]).toEqual('hello2');
+            done();
+        }, 170);
+    });
 });
