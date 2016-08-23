@@ -75,7 +75,7 @@ function Sequence(Scheduling) {
     }
 
     this.load = function(json) {
-        cancelAllEvents();
+        sequence.stop(); // TODO should we be able to carry on if new sequence loaded? or should we have separate method to change loop length + event timings
 
         events = json.events.map((event) => {
             let newEvent = mapEvent(event);

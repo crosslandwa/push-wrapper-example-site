@@ -17,17 +17,39 @@ module.exports = function(Scheduling, bpm) {
         startTime = undefined,
         loopLengthMs = undefined,
         numberOfBeats = undefined,
+        calculatedBPM = undefined,
         running = false,
         reportState = function() { console.log(state); sequence.emit(state); };
+
+    let updateSequenceAlignedWithBpmChange = function(bpm) {
+        let rawSequence = sequence.toJSON()
+        let changeFactor = calculatedBPM / bpm.current
+        let newSequence = {events:[], loop:{action: 'restart'}}
+        rawSequence.events.forEach((event, index) => {
+            let newEvent = {
+                name: event.name,
+                args: event.args,
+                when: event.when * changeFactor
+            }
+            newSequence.events.push(newEvent)
+        })
+        newSequence.loop.when = rawSequence.loop.when * changeFactor
+        sequence.load(newSequence)
+        state = states.stopped // TODO call to load() will stop the sequence...
+        calculatedBPM = bpm.current
+        loopLengthMs = newSequence.loop.when
+    }
 
     let setLoopLengthAndBroadcastBPM = function() {
         loopLengthMs = nowMs() - startTime;
         numberOfBeats = Math.round((loopLengthMs * bpm.current) / 60000);
         sequence.emit('numberOfBeats', numberOfBeats);
-        let calculatedBPM = Math.round(((60000 * numberOfBeats) / loopLengthMs) + 0.25); // + 0.25 as we assume we've pressed slightly early
+        calculatedBPM = Math.round(((60000 * numberOfBeats) / loopLengthMs) + 0.25); // + 0.25 as we assume we've pressed slightly early
         loopLengthMs = (60000 * numberOfBeats) / calculatedBPM;
         sequence.loop(loopLengthMs)
+        bpm.removeListener('changed', updateSequenceAlignedWithBpmChange)
         bpm.change_to(calculatedBPM);
+        bpm.on('changed', updateSequenceAlignedWithBpmChange)
     }
 
     sequence.changeNumberOfBeatsBy = function(amount) {
@@ -35,8 +57,10 @@ module.exports = function(Scheduling, bpm) {
         numberOfBeats += amount;
         numberOfBeats = numberOfBeats < 1 ? 1 : numberOfBeats;
         sequence.emit('numberOfBeats', numberOfBeats);
-        let calculatedBPM = ((60000 * numberOfBeats) / loopLengthMs) + 0.25; // + 0.25 as we assume we've pressed slightly early
+        calculatedBPM = ((60000 * numberOfBeats) / loopLengthMs) + 0.25; // + 0.25 as we assume we've pressed slightly early
+        bpm.removeListener('changed', updateSequenceAlignedWithBpmChange)
         bpm.change_to(calculatedBPM);
+        bpm.on('changed', updateSequenceAlignedWithBpmChange)
     }
 
     sequence.handleRecButton = function() {

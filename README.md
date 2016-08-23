@@ -41,9 +41,9 @@ Timing for repeated notes inspired by this: https://github.com/cwilso/metronome
   - ~~Delete sequence/events in sequence~~
   - Record new sequence
   - Swap playing sequence
-- BPM aware sequence wrapper
-  - responds to changes in global BPM (i.e. adjusts event placement and loop length)
-  - consider using toJSON/load with manipulation event.when before loading
+- BPM aware sequence wrapper - this done as proof of concept (forces sequence to stop currently)
+  - ~~responds to changes in global BPM (i.e. adjusts event placement and loop length)~~
+  - ~~consider using toJSON/load with manipulation event.when before loading~~
   - consider the whens as a fraction of loop length rather than absolute ms time...
     - have to calculate ms every time event scheduled, rather than once per BPM change...
     - but, serialized version decoupled from BPM (unless we store both, but only serialize the fractional amount)
@@ -56,12 +56,11 @@ Timing for repeated notes inspired by this: https://github.com/cwilso/metronome
   - ~~whilst stopped~~
   - whilst running
     - do we need segmented sequencing for this?
-  - Consider immutable sequence
-    - length cannot be changed, instead create new sequence
-    - consider how to handle event listeners
 - UI for recording playback status
 - ~~Look at bug for held/sequenced notes and repetae~~
   - ~~should ++ and -- as a result of being sequenced...~~
 - ~~Sequence through repetae module, not direct to player~~
   - notes recorded via qwerty are not repetaed. Fix this?
 - ~~Fix timing when overdubbing notes on subsequent playback~~
+
+- add test/define behaviour around load() method of Sequence when its playing
