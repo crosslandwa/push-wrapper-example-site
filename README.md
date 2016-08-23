@@ -46,7 +46,7 @@ Timing for repeated notes inspired by this: https://github.com/cwilso/metronome
   - consider using toJSON/load with manipulation event.when before loading
   - consider the whens as a fraction of loop length rather than absolute ms time...
     - have to calculate ms every time event scheduled, rather than once per BPM change...
-    - but, serialized version decoupled from BPM
+    - but, serialized version decoupled from BPM (unless we store both, but only serialize the fractional amount)
 - ~~BPM synced to (1st) sequence~~
   - ~~calculate (approx)/set how many beats long sequence is and adjusts global BPM automatically to match~~
   - ~~is timing good enough?~~

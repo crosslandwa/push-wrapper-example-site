@@ -1,12 +1,10 @@
 'use strict'
 
-const Sequence = require('./Sequence.js'),
-    foreach = require('lodash.foreach');
+const Sequence = require('./Sequence.js');
 
-
-
-module.exports = function(Scheduling, nowMs, bpm) {
+module.exports = function(Scheduling, bpm) {
     let sequence = new Sequence(Scheduling),
+        nowMs = Scheduling.nowMs,
         states = {
             armed: 'armed',
             idle: 'idle',

@@ -4,7 +4,6 @@ const Push = require('push-wrapper'),
     partial = require('lodash.partial'),
     Player = require('./src/player.js'),
     context = window.AudioContext ? new window.AudioContext() : new window.webkitAudioContext(),
-    nowMs = function() { return context.currentTime * 1000; },
     Scheduling = require('wac.scheduling')(context),
     Sequence = require('./src/AppSequence.js'),
     Repetae = require('./src/repetae.js'),
@@ -105,7 +104,7 @@ function off_we_go(bound_push) {
 }
 
 function makeSequence(players, push, bpm) {
-    let sequence = new Sequence(Scheduling, nowMs, bpm);
+    let sequence = new Sequence(Scheduling, bpm);
 
     window.addEventListener('keydown', (event) => {
         switch (event.keyCode) {
