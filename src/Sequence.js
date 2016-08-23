@@ -13,11 +13,8 @@ function Sequence(Scheduling) {
     let scheduleAllEvents = function(force, offsetMs) {
         if (!force && running) return;
         running = true;
-        events.filter(isWithinLoop.bind(null, offsetMs, restartEvent.when)).forEach(schedule.bind(null, offsetMs));
-
-        console.log(events.filter(isWithinLoop.bind(null, offsetMs, restartEvent.when)))
-        console.log('domne')
-        if (restartEvent.when) schedule(offsetMs, restartEvent);
+        events.filter(isWithinLoop.bind(null, offsetMs, restartEvent.when)).forEach(schedule);
+        if (restartEvent.when) schedule(restartEvent);
     }
     let restart = function() {
         startedTimeMs += restartEvent.when
@@ -27,11 +24,9 @@ function Sequence(Scheduling) {
         events.forEach(cancel);
         cancel(restartEvent);
     }
-    let schedule = function(offsetMs, event) {
+    let schedule = function(event) {
         let startTime = startedTimeMs
-        console.log('loop started at ' + startTime)
-        let scheduledTimeMs = startedTimeMs + event.when - offsetMs
-        console.log('scheduled at ' + (scheduledTimeMs - startTime))
+        let scheduledTimeMs = startedTimeMs + event.when
         event.cancel = Scheduling.atATime(() => {
             switch (event.action) {
                 case 'restart':
@@ -46,8 +41,9 @@ function Sequence(Scheduling) {
     let events = [];
 
     this.start = function(offsetMs) {
-        startedTimeMs = Scheduling.nowMs()
-        scheduleAllEvents(false, offsetMs > 0 ? offsetMs : 0);
+        let sanitizedOffsetMs = offsetMs > 0 ? offsetMs : 0
+        startedTimeMs = Scheduling.nowMs() - sanitizedOffsetMs
+        scheduleAllEvents(false, sanitizedOffsetMs);
         return sequence;
     }
 

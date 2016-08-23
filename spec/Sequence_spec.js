@@ -53,7 +53,7 @@ describe('Sequence', () => {
         }, 300);
     });
 
-    fit('can be started with some arbitrary offset, specified in ms, when looping', (done) => {
+    it('can be started with some arbitrary offset, specified in ms, when looping', (done) => {
         let fired_events = [];
         sequence.addEvent(50, 'capture', 'hello1');
         sequence.addEvent(100, 'capture', 'hello2');
