@@ -6,37 +6,47 @@ const EventEmitter = require('events'),
 
 function Sequence(Scheduling) {
     EventEmitter.call(this);
-    let sequence = this,
-        running = false,
-        restartEvent = {when: undefined, action: 'restart', cancel: noAction},
-        scheduleAllEvents = function(force, offsetMs) {
-            if (!force && running) return;
-            running = true;
-            events.filter(isWithinLoop.bind(null, offsetMs, restartEvent.when)).forEach(schedule.bind(null, offsetMs));
-            if (restartEvent.when) schedule(offsetMs, restartEvent);
-        },
-        restart = function() {
-            scheduleAllEvents(true, 0);
-        },
-        cancelAllEvents = function() {
-            events.forEach(cancel);
-            cancel(restartEvent);
-        },
-        schedule = function(offsetMs, event) {
-            event.cancel = Scheduling.inTheFuture(() => {
-                switch (event.action) {
-                    case 'restart':
-                        restart();
-                        break;
-                    default:
-                        sequence.emit(event.name, event.args);
-                        break;
-                }
-            }, event.when - offsetMs);
-        },
-        events = [];
+    let sequence = this
+    let running = false
+    let startedTimeMs
+    let restartEvent = {when: undefined, action: 'restart', cancel: noAction}
+    let scheduleAllEvents = function(force, offsetMs) {
+        if (!force && running) return;
+        running = true;
+        events.filter(isWithinLoop.bind(null, offsetMs, restartEvent.when)).forEach(schedule.bind(null, offsetMs));
+
+        console.log(events.filter(isWithinLoop.bind(null, offsetMs, restartEvent.when)))
+        console.log('domne')
+        if (restartEvent.when) schedule(offsetMs, restartEvent);
+    }
+    let restart = function() {
+        startedTimeMs += restartEvent.when
+        scheduleAllEvents(true, 0);
+    }
+    let cancelAllEvents = function() {
+        events.forEach(cancel);
+        cancel(restartEvent);
+    }
+    let schedule = function(offsetMs, event) {
+        let startTime = startedTimeMs
+        console.log('loop started at ' + startTime)
+        let scheduledTimeMs = startedTimeMs + event.when - offsetMs
+        console.log('scheduled at ' + (scheduledTimeMs - startTime))
+        event.cancel = Scheduling.atATime(() => {
+            switch (event.action) {
+                case 'restart':
+                    restart();
+                    break;
+                default:
+                    sequence.emit(event.name, event.args);
+                    break;
+            }
+        }, scheduledTimeMs);
+    }
+    let events = [];
 
     this.start = function(offsetMs) {
+        startedTimeMs = Scheduling.nowMs()
         scheduleAllEvents(false, offsetMs > 0 ? offsetMs : 0);
         return sequence;
     }
@@ -48,8 +58,8 @@ function Sequence(Scheduling) {
         if (emitStopped) sequence.emit('stopped');
     }
 
-    this.loop = function(endTime) {
-        let end = endTime > 0 ? endTime : undefined;
+    this.loop = function(endTimeMs) {
+        let end = endTimeMs > 0 ? endTimeMs : undefined;
         if (end) {
             restartEvent.when = end;
         }

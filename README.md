@@ -49,7 +49,9 @@ Timing for repeated notes inspired by this: https://github.com/cwilso/metronome
     - but, serialized version decoupled from BPM
 - ~~BPM synced to (1st) sequence~~
   - ~~calculate (approx)/set how many beats long sequence is and adjusts global BPM automatically to match~~
-  - is timing good enough?
+  - ~~is timing good enough?~~
+    - ~~yes for repeater when swapped to use atATime instead of inTheFuture~~
+    - ~~need to update sequence repeat functionality to use atATime instead of inTheFuture (wac.scheduling 1.3.0)~~
 - Change sequence length
   - ~~whilst stopped~~
   - whilst running
