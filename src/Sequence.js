@@ -78,12 +78,12 @@ function Sequence(Scheduling) {
         sequence.stop(); // TODO should we be able to carry on if new sequence loaded? or should we have separate method to change loop length + event timings
 
         events = json.events.map((event) => {
-            let newEvent = mapEvent(event);
-                newEvent.cancel = noAction;
+            let newEvent = mapEventForJSONification(event);
+            newEvent.cancel = noAction;
             return newEvent;
         });
 
-        restartEvent = json.loop;
+        restartEvent.when = json.loop.lengthMs > 0 ? json.loop.lengthMs : undefined
         restartEvent.cancel = noAction;
 
         return sequence;
@@ -91,22 +91,15 @@ function Sequence(Scheduling) {
 
     this.toJSON = function() {
         return {
-            loop: mapEvent(restartEvent),
-            events: events.map(mapEvent)
+            loop: { lengthMs: restartEvent.when },
+            events: events.map(mapEventForJSONification)
         };
     }
 }
 util.inherits(Sequence, EventEmitter);
 
-function mapEvent(event) {
-    let newEvent = {when: event.when};
-    if (event.action) {
-        newEvent.action = event.action;
-    } else {
-        newEvent.name = event.name;
-        newEvent.args = event.args;
-    }
-    return newEvent;
+function mapEventForJSONification(event) {
+    return {when: event.when, name: event.name, args: event.args};
 }
 
 function isAfterStart(event, startOffsetMs) {

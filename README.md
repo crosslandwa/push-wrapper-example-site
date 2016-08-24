@@ -62,11 +62,12 @@ Timing for repeated notes inspired by this: https://github.com/cwilso/metronome
 - ~~Sequence through repetae module, not direct to player~~
   - notes recorded via qwerty are not repetaed. Fix this?
 - ~~Fix timing when overdubbing notes on subsequent playback~~
+- ~~remove the 'restart' action from the serialized JSON representation~~
 
 - add test/define behaviour around load() method of Sequence when its playing
-- emit stopped event when unlooped sequence finishes
+- emit stopped event when unlooped sequence finishes(?) - what about real time recording into playing sequence?
 - emit a 'restart' event?
-- remove the 'restart' action from the serialized JSON representation
+- test toJSON/load for unlooped sequence
 
 ### Sequence API
 
