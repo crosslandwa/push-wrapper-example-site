@@ -91,9 +91,21 @@ function Sequence(Scheduling) {
 
     this.scale = function(scaleFactor) {
         if (!scaleFactor || scaleFactor <= 0) return sequence
-        if (running) return sequence //can't handle this yet
+
+        let currentPositionMs = Scheduling.nowMs() - startedTimeMs
+        let offsetMs = currentPositionMs * scaleFactor
+        startedTimeMs = startedTimeMs + offsetMs
+
+        if (running) {
+            cancelAllEvents()
+        }
+
         events.forEach(event => event.when *= scaleFactor)
         if (restartEvent.when) restartEvent.when *= scaleFactor
+
+        if (running) {
+            scheduleAllEvents(true, offsetMs)
+        }
         return sequence
     }
 
