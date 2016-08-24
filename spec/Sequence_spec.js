@@ -23,6 +23,23 @@ describe('Sequence', () => {
         }, 200);
     });
 
+    it('can be run multiple times', (done) => {
+        let fired_events = [];
+        sequence.on('capture', (data) => fired_events.push(data));
+
+        sequence.addEvent(50, 'capture', 'hello1');
+        sequence.start();
+
+        setTimeout(sequence.start, 100)
+
+        setTimeout(() => {
+            expect(fired_events.length).toEqual(2);
+            expect(fired_events[0]).toEqual('hello1');
+            expect(fired_events[1]).toEqual('hello1');
+            done();
+        }, 200);
+    });
+
     it('emits a stopped event when all scheduled events fired', (done) => {
         let fired_events = [];
         sequence.addEvent(50, 'capture', 'hello1');
