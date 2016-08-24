@@ -89,6 +89,14 @@ function Sequence(Scheduling) {
         return sequence;
     }
 
+    this.scale = function(scaleFactor) {
+        if (!scaleFactor || scaleFactor <= 0) return sequence
+        if (running) return sequence //can't handle this yet
+        events.forEach(event => event.when *= scaleFactor)
+        if (restartEvent.when) restartEvent.when *= scaleFactor
+        return sequence
+    }
+
     this.load = function(json) {
         sequence.stop(); // TODO should we be able to carry on if new sequence loaded? or should we have separate method to change loop length + event timings
 

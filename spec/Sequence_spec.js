@@ -141,6 +141,23 @@ fdescribe('Sequence', () => {
             }, 250);
         });
 
+        fit('can be scaled to shorten/expand when events are fired and the loop length ', (done) => {
+            let fired_events = [];
+            sequence.on('capture', (data) => fired_events.push(data));
+            sequence.addEvent(40, 'capture', 'hello1');
+            sequence.addEvent(80, 'capture', 'hello2');
+            sequence.loop(100);
+            sequence.scale(0.5).start();
+            setTimeout(() => {
+                expect(fired_events.length).toEqual(4);
+                expect(fired_events[0]).toEqual('hello1');
+                expect(fired_events[1]).toEqual('hello2');
+                expect(fired_events[2]).toEqual('hello1');
+                expect(fired_events[3]).toEqual('hello2');
+                done();
+            }, 100);
+        })
+
         it('can be serialized to and loaded from JSON', (done) => {
             let fired_events = [];
             sequence.addEvent(50, 'capture', 'hello1');
