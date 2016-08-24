@@ -67,6 +67,21 @@ fdescribe('Sequence', () => {
                 done();
             }, 50);
         });
+
+        it('can be scaled to shorten/expand when events are fired', (done) => {
+            let fired_events = [];
+            sequence.on('capture', (data) => fired_events.push(data));
+            sequence.addEvent(40, 'capture', 'hello1');
+            sequence.addEvent(80, 'capture', 'hello2');
+            sequence.scale(0.5).start();
+            setTimeout(() => {
+                expect(fired_events.length).toEqual(2);
+                expect(fired_events[0]).toEqual('hello1');
+                expect(fired_events[1]).toEqual('hello2');
+                done();
+            }, 50);
+        })
+
     })
     describe('looped', () => {
         it('can repeatedly fire scheduled events', (done) => {
@@ -141,7 +156,7 @@ fdescribe('Sequence', () => {
             }, 250);
         });
 
-        fit('can be scaled to shorten/expand when events are fired and the loop length ', (done) => {
+        it('can be scaled to shorten/expand when events are fired and the loop length ', (done) => {
             let fired_events = [];
             sequence.on('capture', (data) => fired_events.push(data));
             sequence.addEvent(40, 'capture', 'hello1');

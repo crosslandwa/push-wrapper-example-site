@@ -91,4 +91,53 @@ sequence.reset(); // clears all events and loop length
 sequence.toJSON(); // returns a JSON representation of the sequence (that can be JSON stringified for storage)
 sequence.load(json); // stops the sequence (if running) and loads new events/loops specified in json
 
+
+
+sequence.start() // at 120 bpm
+
+//****** loooped + playing
+
+let scaleFactor = 120 / 150 // = 0.8 -- faster
+sequence.scale(scaleFactor)
+
+let scaleFactor = 150 / 120 // = 1.25 -- slower
+sequence.scale(changeFactor) // maybe resize
+
+// want to
+record current position (percentage) within loop
+cancel all events
+re-time all events
+start from position (schedule all events after relative position within loop)
+
+//****** loooped + stopped
+
+let scaleFactor = 120 / 240 // = 0.5 -- faster
+sequence.scale(scaleFactor)
+
+// want to
+re-time all events
+
+
+//****** unloooped + stopped
+
+let scaleFactor = 0.5 (twice as fast)
+sequence.scale(scaleFactor)
+
+// want to
+re-time all events based on time of last event?
+
+//****** unloooped + stopped
+
+let scaleFactor = 0.5 (twice as fast)
+sequence.scale(scaleFactor)
+
+// want to
+record current position (percentage) within sequence, based on time of last event
+cancel all events
+re-time all events
+start from position (schedule all events after relative position within sequence)
+
+
+
+
 ```
