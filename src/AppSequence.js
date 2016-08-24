@@ -22,22 +22,10 @@ module.exports = function(Scheduling, bpm) {
         reportState = function() { console.log(state); sequence.emit(state); };
 
     let updateSequenceAlignedWithBpmChange = function(bpm) {
-        let rawSequence = sequence.toJSON()
         let changeFactor = calculatedBPM / bpm.current
-        let newSequence = {events:[], loop:{action: 'restart'}}
-        rawSequence.events.forEach((event, index) => {
-            let newEvent = {
-                name: event.name,
-                args: event.args,
-                when: event.when * changeFactor
-            }
-            newSequence.events.push(newEvent)
-        })
-        newSequence.loop.when = rawSequence.loop.when * changeFactor
-        sequence.load(newSequence)
-        state = states.stopped // TODO call to load() will stop the sequence...
+        sequence.scale(changeFactor)
         calculatedBPM = bpm.current
-        loopLengthMs = newSequence.loop.when
+        loopLengthMs = sequence.toJSON().loop.lengthMs
     }
 
     let setLoopLengthAndBroadcastBPM = function() {
