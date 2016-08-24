@@ -20,6 +20,20 @@ describe('Sequence', () => {
             expect(fired_events[0]).toEqual('hello1');
             expect(fired_events[1]).toEqual('hello2');
             done();
+        }, 200);
+    });
+
+    it('emits a stopped event when all scheduled events fired', (done) => {
+        let fired_events = [];
+        sequence.addEvent(50, 'capture', 'hello1');
+        sequence.on('capture', (data) => fired_events.push(data));
+        sequence.on('stopped', () => fired_events.push('stopped'));
+        sequence.start();
+        setTimeout(() => {
+            expect(fired_events.length).toEqual(2);
+            expect(fired_events[0]).toEqual('hello1');
+            expect(fired_events[1]).toEqual('stopped');
+            done();
         }, 300);
     });
 
@@ -90,7 +104,7 @@ describe('Sequence', () => {
         }, 300);
     });
 
-    it('does not schedule events beyond the loop end', (done) => {
+    it('does not fire events scheduled beyond the loop end', (done) => {
         let fired_events = [];
         sequence.addEvent(50, 'capture', 'hello1');
         sequence.addEvent(100, 'capture', 'hello2');
@@ -135,15 +149,18 @@ describe('Sequence', () => {
         sequence.addEvent(25, 'capture', 'hello1');
         sequence.loop(50);
 
+        sequence.on('reset', ()=>fired_events.push('reset'))
+
         sequence.reset();
         sequence.addEvent(50, 'capture', 'hello2');
         sequence.loop(100);
 
         sequence.start();
         setTimeout(() => {
-            expect(fired_events.length).toEqual(2);
-            expect(fired_events[0]).toEqual('hello2');
+            expect(fired_events.length).toEqual(3);
+            expect(fired_events[0]).toEqual('reset');
             expect(fired_events[1]).toEqual('hello2');
+            expect(fired_events[2]).toEqual('hello2');
             done();
         }, 170);
     });

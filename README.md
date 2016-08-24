@@ -65,7 +65,7 @@ Timing for repeated notes inspired by this: https://github.com/cwilso/metronome
 - ~~remove the 'restart' action from the serialized JSON representation~~
 
 - add test/define behaviour around load() method of Sequence when its playing
-- emit stopped event when unlooped sequence finishes(?) - what about real time recording into playing sequence?
+- ~~emit stopped event when unlooped sequence finishes~~
 - emit a 'restart' event?
 - test toJSON/load for unlooped sequence
 

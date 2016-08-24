@@ -1,8 +1,9 @@
 'use strict'
 
 const EventEmitter = require('events'),
-    util = require('util'),
-    noAction = function() {};
+    util = require('util');
+
+function noAction() {}
 
 function Sequence(Scheduling) {
     EventEmitter.call(this);
@@ -10,20 +11,30 @@ function Sequence(Scheduling) {
     let running = false
     let startedTimeMs
     let restartEvent = {when: undefined, action: 'restart', cancel: noAction}
+    let stopEvent = { when: 0, action: 'stop', cancel: noAction }
+
     let scheduleAllEvents = function(force, offsetMs) {
         if (!force && running) return;
         running = true;
-        events.filter(isWithinLoop.bind(null, offsetMs, restartEvent.when)).forEach(schedule);
-        if (restartEvent.when) schedule(restartEvent);
+        stopEvent.when = 0
+        events.filter(isWithinLoop.bind(null, offsetMs, restartEvent.when)).forEach((event) => {
+            stopEvent.when = event.when > stopEvent.when ? event.when : stopEvent.when
+            schedule(event)
+        })
+        schedule(restartEvent.when ? restartEvent : stopEvent)
     }
+
     let restart = function() {
         startedTimeMs += restartEvent.when
         scheduleAllEvents(true, 0);
     }
+
     let cancelAllEvents = function() {
         events.forEach(cancel);
         cancel(restartEvent);
+        cancel(stopEvent);
     }
+
     let schedule = function(event) {
         let startTime = startedTimeMs
         let scheduledTimeMs = startedTimeMs + event.when
@@ -31,6 +42,9 @@ function Sequence(Scheduling) {
             switch (event.action) {
                 case 'restart':
                     restart();
+                    break;
+                case 'stop':
+                    sequence.stop();
                     break;
                 default:
                     sequence.emit(event.name, event.args);
@@ -70,6 +84,7 @@ function Sequence(Scheduling) {
         sequence.stop();
         events = [];
         restartEvent.when = undefined;
+        stopEvent.when = 0
         sequence.emit('reset');
         return sequence;
     }
