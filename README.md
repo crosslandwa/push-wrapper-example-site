@@ -64,3 +64,30 @@ Timing for repeated notes inspired by this: https://github.com/cwilso/metronome
 - ~~Fix timing when overdubbing notes on subsequent playback~~
 
 - add test/define behaviour around load() method of Sequence when its playing
+- emit stopped event when unlooped sequence finishes
+- emit a 'restart' event?
+- remove the 'restart' action from the serialized JSON representation
+
+### Sequence API
+
+```javascript
+const context = new window.AudioContext(),
+    Scheduling = require('wac.scheduling')(context),
+    Sequence = require('./src/AppSequence.js');
+    
+let sequence = new Sequence(Scheduling);
+
+sequence.on(eventName, (eventData) => /* do Stuff */);
+sequence.on('stopped', (eventData) => /* sequence stopped actions */);
+
+sequence.addEvent(whenMs, eventName, eventData); // whenMs specifies how far into the sequence the given eventName/eventData will be emitted
+sequence.loop(loopLengthMs); // optional, sets a loop length and sequence will repeat until stopped
+sequence.start([offsetMs]); // starts emitting events [starting from a given offset if provided]
+sequence.stop(); // emits stopped event
+
+sequence.reset(); // clears all events and loop length
+
+sequence.toJSON(); // returns a JSON representation of the sequence (that can be JSON stringified for storage)
+sequence.load(json); // stops the sequence (if running) and loads new events/loops specified in json
+
+```
