@@ -17,7 +17,7 @@ function Sequence(Scheduling) {
         if (!force && running) return;
         running = true;
         stopEvent.when = 0
-        events.filter(isWithinLoop.bind(null, startTimeMs, restartEvent.when)).forEach((event) => {
+        events.filter(occursBetween.bind(null, startTimeMs, restartEvent.when)).forEach((event) => {
             stopEvent.when = event.when > stopEvent.when ? event.when : stopEvent.when
             schedule(event)
         })
@@ -135,16 +135,16 @@ function mapEventForJSONification(event) {
     return {when: event.when, name: event.name, args: event.args};
 }
 
-function isAfterStart(event, startOffsetMs) {
-    return event.when >= startOffsetMs;
+function isAfter(timeMs, event) {
+    return event.when >= timeMs;
 }
 
-function isBeforeLoopEnd(loopEndMs, event) {
-    return (typeof loopEndMs === 'undefined') ? true : event.when < loopEndMs;
+function isBefore(event, endMs) {
+    return (typeof endMs === 'undefined') ? true : event.when < endMs;
 }
 
-function isWithinLoop(startOffsetMs, loopEndMs, event) {
-    return isAfterStart(event, startOffsetMs) && isBeforeLoopEnd(loopEndMs, event);
+function occursBetween(startMs, endMs, event) {
+    return isAfter(startMs, event) && isBefore(event, endMs);
 }
 
 function cancel(event) {
