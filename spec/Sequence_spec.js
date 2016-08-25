@@ -2,10 +2,12 @@
 const Sequence = require('../src/sequence.js'),
     Scheduling = require('wac.scheduling')();
 
-fdescribe('Sequence', () => {
+describe('Sequence', () => {
     let sequence;
+    let clockStartTime
 
     beforeEach(() => {
+        clockStartTime = Scheduling.nowMs()
         sequence = new Sequence(Scheduling);
     })
 
@@ -39,6 +41,25 @@ fdescribe('Sequence', () => {
                 expect(fired_events[1]).toEqual('hello1');
                 done();
             }, 200);
+        });
+
+        it('can be restarted whilst running', (done) => {
+            let fired_events = [];
+            sequence.on('capture', (data) => fired_events.push([data, Scheduling.nowMs() - clockStartTime]))
+
+            sequence.addEvent(50, 'capture', 'hello1');
+            sequence.addEvent(150, 'capture', 'hello2');
+            sequence.start();
+
+            setTimeout(sequence.start, 100)
+
+            setTimeout(() => {
+                console.log(fired_events)
+                expect(fired_events.length).toEqual(2);
+                expectEventAtTime(fired_events[0], 'hello1', 50)
+                expectEventAtTime(fired_events[1], 'hello1', 100)
+                done();
+            }, 150);
         });
 
         it('emits a stopped event when all scheduled events fired', (done) => {
@@ -255,3 +276,8 @@ fdescribe('Sequence', () => {
         });
     })
 });
+
+function expectEventAtTime(event, expectedName, expectedTime) {
+    expect(event[0]).toEqual(expectedName);
+    expect(event[1]).toBeLessThan(expectedTime + 10);
+}
