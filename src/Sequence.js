@@ -9,15 +9,15 @@ function Sequence(Scheduling) {
     EventEmitter.call(this);
     let sequence = this
     let running = false
-    let startedTimeMs
+    let sequenceAbsoluteStartTimeMs
     let restartEvent = {when: undefined, action: 'restart', cancel: noAction}
     let stopEvent = { when: 0, action: 'stop', cancel: noAction }
 
-    let scheduleAllEvents = function(force, offsetMs) {
+    let scheduleAllEvents = function(force, startTimeMs) {
         if (!force && running) return;
         running = true;
         stopEvent.when = 0
-        events.filter(isWithinLoop.bind(null, offsetMs, restartEvent.when)).forEach((event) => {
+        events.filter(isWithinLoop.bind(null, startTimeMs, restartEvent.when)).forEach((event) => {
             stopEvent.when = event.when > stopEvent.when ? event.when : stopEvent.when
             schedule(event)
         })
@@ -25,7 +25,7 @@ function Sequence(Scheduling) {
     }
 
     let restart = function() {
-        startedTimeMs += restartEvent.when
+        sequenceAbsoluteStartTimeMs += restartEvent.when
         scheduleAllEvents(true, 0);
     }
 
@@ -36,8 +36,6 @@ function Sequence(Scheduling) {
     }
 
     let schedule = function(event) {
-        let startTime = startedTimeMs
-        let scheduledTimeMs = startedTimeMs + event.when
         event.cancel = Scheduling.atATime(() => {
             switch (event.action) {
                 case 'restart':
@@ -50,13 +48,13 @@ function Sequence(Scheduling) {
                     sequence.emit(event.name, event.args);
                     break;
             }
-        }, scheduledTimeMs);
+        }, sequenceAbsoluteStartTimeMs + event.when);
     }
     let events = [];
 
     this.start = function(offsetMs) {
         let sanitizedOffsetMs = offsetMs > 0 ? offsetMs : 0
-        startedTimeMs = Scheduling.nowMs() - sanitizedOffsetMs
+        sequenceAbsoluteStartTimeMs = Scheduling.nowMs() - sanitizedOffsetMs
         scheduleAllEvents(false, sanitizedOffsetMs);
         return sequence;
     }
@@ -92,9 +90,9 @@ function Sequence(Scheduling) {
     this.scale = function(scaleFactor) {
         if (!scaleFactor || scaleFactor <= 0) return sequence
 
-        let currentPositionMs = Scheduling.nowMs() - startedTimeMs
+        let currentPositionMs = Scheduling.nowMs() - sequenceAbsoluteStartTimeMs
         let offsetMs = currentPositionMs * scaleFactor
-        startedTimeMs = startedTimeMs + offsetMs
+        sequenceAbsoluteStartTimeMs = sequenceAbsoluteStartTimeMs + offsetMs
 
         if (running) {
             cancelAllEvents()
