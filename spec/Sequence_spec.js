@@ -2,13 +2,27 @@
 const Sequence = require('../src/sequence.js'),
     Scheduling = require('wac.scheduling')();
 
+function expectEventAtTime(event, expectedName, expectedTime) {
+    if (typeof event === 'undefined') return
+    let timingTolerance = 15
+    expect(event[0]).toEqual(expectedName);
+    if (event[1] < expectedTime + timingTolerance) {
+        expect(event[1]).toBeLessThan(expectedTime + timingTolerance);
+    } else {
+        expect(event[1]).toEqual(expectedTime); // this will always fail, but gives a helpful error message
+    }
+}
+
 describe('Sequence', () => {
     let sequence;
     let clockStartTime
+    let fired_events = [];
 
     beforeEach(() => {
         clockStartTime = Scheduling.nowMs()
         sequence = new Sequence(Scheduling);
+        fired_events = []
+        sequence.on('capture', (data) => fired_events.push([data, Scheduling.nowMs() - clockStartTime]))
     })
 
     describe('unlooped', () => {
@@ -27,9 +41,6 @@ describe('Sequence', () => {
         });
 
         it('can be run multiple times', (done) => {
-            let fired_events = [];
-            sequence.on('capture', (data) => fired_events.push(data));
-
             sequence.addEvent(50, 'capture', 'hello1');
             sequence.start();
 
@@ -37,16 +48,13 @@ describe('Sequence', () => {
 
             setTimeout(() => {
                 expect(fired_events.length).toEqual(2);
-                expect(fired_events[0]).toEqual('hello1');
-                expect(fired_events[1]).toEqual('hello1');
+                expectEventAtTime(fired_events[0], 'hello1', 50)
+                expectEventAtTime(fired_events[1], 'hello1', 150)
                 done();
             }, 200);
         });
 
         it('can be restarted whilst running', (done) => {
-            let fired_events = [];
-            sequence.on('capture', (data) => fired_events.push([data, Scheduling.nowMs() - clockStartTime]))
-
             sequence.addEvent(50, 'capture', 'hello1');
             sequence.addEvent(150, 'capture', 'hello2');
             sequence.start();
@@ -54,12 +62,11 @@ describe('Sequence', () => {
             setTimeout(sequence.start, 100)
 
             setTimeout(() => {
-                console.log(fired_events)
                 expect(fired_events.length).toEqual(2);
                 expectEventAtTime(fired_events[0], 'hello1', 50)
                 expectEventAtTime(fired_events[1], 'hello1', 100)
                 done();
-            }, 150);
+            }, 200);
         });
 
         it('emits a stopped event when all scheduled events fired', (done) => {
@@ -121,6 +128,7 @@ describe('Sequence', () => {
             }, 155); // hello3 should happen at 120 + ((200 - 120) / 2) = 160
         })
     })
+
     describe('looped', () => {
         it('can repeatedly fire scheduled events', (done) => {
             let fired_events = [];
@@ -276,9 +284,3 @@ describe('Sequence', () => {
         });
     })
 });
-
-function expectEventAtTime(event, expectedName, expectedTime) {
-    if (typeof event === 'undefined') return
-    expect(event[0]).toEqual(expectedName);
-    expect(event[1]).toBeLessThan(expectedTime + 10);
-}
