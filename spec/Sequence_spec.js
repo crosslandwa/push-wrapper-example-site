@@ -2,59 +2,70 @@
 const Sequence = require('../src/sequence.js'),
     Scheduling = require('wac.scheduling')();
 
-function expectEventAtTime(event, expectedName, expectedTime) {
+function expectEventAtTime(event, expectedName, expectedTime, expectedData) {
     if (typeof event === 'undefined') return
     let timingTolerance = 15
     expect(event[0]).toEqual(expectedName);
-    if (event[1] < expectedTime + timingTolerance) {
-        expect(event[1]).toBeLessThan(expectedTime + timingTolerance);
+    if (expectedData) {
+        expect(event[1]).toEqual(expectedData);
+    }
+    if (event[2] < expectedTime + timingTolerance) {
+        expect(event[2]).toBeLessThan(expectedTime + timingTolerance);
     } else {
-        expect(event[1]).toEqual(expectedTime); // this will always fail, but gives a helpful error message
+        expect(event[2]).toEqual(expectedTime); // this will always fail, but gives a helpful error message
     }
 }
 
-describe('Sequence', () => {
+fdescribe('Sequence', () => {
     let sequence;
     let clockStartTime
-    let fired_events = [];
+
+    let capture = function(events, eventName) {
+        sequence.on(eventName, (data) => events.push([eventName, data, Scheduling.nowMs() - clockStartTime]))
+    }
 
     beforeEach(() => {
         clockStartTime = Scheduling.nowMs()
         sequence = new Sequence(Scheduling);
-        fired_events = []
-        sequence.on('capture', (data) => fired_events.push([data, Scheduling.nowMs() - clockStartTime]))
     })
 
     describe('unlooped', () => {
         it('fires scheduled events', (done) => {
-            let fired_events = [];
+            let events = []
+            capture(events, 'capture')
+
             sequence.addEvent(50, 'capture', 'hello1');
             sequence.addEvent(100, 'capture', 'hello2');
-            sequence.on('capture', (data) => fired_events.push(data));
             sequence.start();
             setTimeout(() => {
-                expect(fired_events.length).toEqual(2);
-                expect(fired_events[0]).toEqual('hello1');
-                expect(fired_events[1]).toEqual('hello2');
+                expect(events.length).toEqual(2);
+                expectEventAtTime(events[0], 'capture', 50, 'hello1')
+                expectEventAtTime(events[1], 'capture', 100, 'hello2')
                 done();
             }, 200);
         });
 
         it('can be run multiple times', (done) => {
+            let events = []
+            capture(events, 'capture')
+
             sequence.addEvent(50, 'capture', 'hello1');
             sequence.start();
 
             setTimeout(sequence.start, 100)
 
             setTimeout(() => {
-                expect(fired_events.length).toEqual(2);
-                expectEventAtTime(fired_events[0], 'hello1', 50)
-                expectEventAtTime(fired_events[1], 'hello1', 150)
+                expect(events.length).toEqual(2);
+                expectEventAtTime(events[0], 'capture', 50, 'hello1')
+                expectEventAtTime(events[1], 'capture', 150, 'hello1')
                 done();
             }, 200);
         });
 
         it('can be restarted whilst running', (done) => {
+            let events = []
+            capture(events, 'capture')
+
             sequence.addEvent(50, 'capture', 'hello1');
             sequence.addEvent(150, 'capture', 'hello2');
             sequence.start();
@@ -62,23 +73,24 @@ describe('Sequence', () => {
             setTimeout(sequence.start, 75)
 
             setTimeout(() => {
-                expect(fired_events.length).toEqual(2);
-                expectEventAtTime(fired_events[0], 'hello1', 50)
-                expectEventAtTime(fired_events[1], 'hello1', 125)
+                expect(events.length).toEqual(2);
+                expectEventAtTime(events[0], 'capture', 50, 'hello1')
+                expectEventAtTime(events[1], 'capture', 125, 'hello1')
                 done();
             }, 150);
         });
 
         it('emits a stopped event when all scheduled events fired', (done) => {
-            let fired_events = [];
+            let events = []
+            capture(events, 'capture')
+            capture(events, 'stopped')
+
             sequence.addEvent(50, 'capture', 'hello1');
-            sequence.on('capture', (data) => fired_events.push(data));
-            sequence.on('stopped', () => fired_events.push('stopped'));
             sequence.start();
             setTimeout(() => {
-                expect(fired_events.length).toEqual(2);
-                expect(fired_events[0]).toEqual('hello1');
-                expect(fired_events[1]).toEqual('stopped');
+                expect(events.length).toEqual(2);
+                expectEventAtTime(events[0], 'capture', 50, 'hello1')
+                expectEventAtTime(events[1], 'stopped', 50)
                 done();
             }, 300);
         });
