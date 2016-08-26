@@ -112,22 +112,24 @@ describe('Sequence', () => {
         });
 
         it('can be scaled to shorten/expand when events are fired', (done) => {
-            let fired_events = [];
-            sequence.on('capture', (data) => fired_events.push(data));
+            let events = []
+            capture(events, 'capture')
+
             sequence.addEvent(40, 'capture', 'hello1');
             sequence.addEvent(80, 'capture', 'hello2');
             sequence.scale(0.5).start();
             setTimeout(() => {
-                expect(fired_events.length).toEqual(2);
-                expect(fired_events[0]).toEqual('hello1');
-                expect(fired_events[1]).toEqual('hello2');
-                done();
+                expect(events.length).toEqual(2);
+                expectEventAtTime(events[0], 'capture', 20, 'hello1')
+                expectEventAtTime(events[1], 'capture', 40, 'hello2')
+                done()
             }, 50);
         })
 
         it('can be scaled while running to shorten/expand when events are fired', (done) => {
-            let fired_events = [];
-            sequence.on('capture', (data) => fired_events.push(data));
+            let events = []
+            capture(events, 'capture')
+
             sequence.addEvent(100, 'capture', 'hello1');
             sequence.addEvent(180, 'capture', 'hello2');
             sequence.addEvent(200, 'capture', 'hello3');
@@ -136,11 +138,12 @@ describe('Sequence', () => {
             setTimeout(() => { sequence.scale(0.5) }, 120)
 
             setTimeout(() => {
-                expect(fired_events.length).toEqual(2);
-                expect(fired_events[0]).toEqual('hello1'); // at 100
-                expect(fired_events[1]).toEqual('hello2'); // at 120 + 30
+                expect(events.length).toEqual(3);
+                expectEventAtTime(events[0], 'capture', 100, 'hello1')
+                expectEventAtTime(events[1], 'capture', 150, 'hello2')
+                expectEventAtTime(events[2], 'capture', 160, 'hello3')
                 done();
-            }, 155); // hello3 should happen at 120 + ((200 - 120) / 2) = 160
+            }, 175);
         })
     })
 

@@ -9,7 +9,7 @@ function Sequence(Scheduling) {
     EventEmitter.call(this);
     let sequence = this
     let running = false
-    let sequenceAbsoluteStartTimeMs
+    let absoluteStartTime
     let restartEvent = {when: undefined, action: 'restart', cancel: noAction}
     let stopEvent = { when: 0, action: 'stop', cancel: noAction }
 
@@ -23,7 +23,7 @@ function Sequence(Scheduling) {
     }
 
     let restart = function() {
-        sequenceAbsoluteStartTimeMs += restartEvent.when
+        absoluteStartTime += restartEvent.when
         scheduleAllEvents(0);
     }
 
@@ -46,16 +46,16 @@ function Sequence(Scheduling) {
                     sequence.emit(event.name, event.args);
                     break;
             }
-        }, sequenceAbsoluteStartTimeMs + event.when);
+        }, absoluteStartTime + event.when);
     }
     let events = [];
 
     this.start = function(offsetMs) {
         let sanitizedOffsetMs = offsetMs > 0 ? offsetMs : 0
-        sequenceAbsoluteStartTimeMs = Scheduling.nowMs() - sanitizedOffsetMs
+        absoluteStartTime = Scheduling.nowMs() - sanitizedOffsetMs
         if (running) {
             cancelAllEvents();
-        };
+        }
         running = true;
         scheduleAllEvents(sanitizedOffsetMs);
         return sequence;
@@ -92,10 +92,6 @@ function Sequence(Scheduling) {
     this.scale = function(scaleFactor) {
         if (!scaleFactor || scaleFactor <= 0) return sequence
 
-        let currentPositionMs = Scheduling.nowMs() - sequenceAbsoluteStartTimeMs
-        let offsetMs = currentPositionMs * scaleFactor
-        sequenceAbsoluteStartTimeMs = sequenceAbsoluteStartTimeMs + offsetMs
-
         if (running) {
             cancelAllEvents()
         }
@@ -104,13 +100,17 @@ function Sequence(Scheduling) {
         if (restartEvent.when) restartEvent.when *= scaleFactor
 
         if (running) {
+            let rightNow = Scheduling.nowMs()
+            let currentPositionMs = rightNow - absoluteStartTime
+            let offsetMs = currentPositionMs * scaleFactor
+            absoluteStartTime = rightNow - offsetMs
             scheduleAllEvents(offsetMs)
         }
         return sequence
     }
 
     this.load = function(json) {
-        sequence.stop(); // TODO should we be able to carry on if new sequence loaded? or should we have separate method to change loop length + event timings
+        sequence.stop(); // TODO should we be able to carry on if new sequence loaded?
 
         events = json.events.map((event) => {
             let newEvent = mapEventForJSONification(event);
