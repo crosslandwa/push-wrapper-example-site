@@ -59,14 +59,14 @@ describe('Sequence', () => {
             sequence.addEvent(150, 'capture', 'hello2');
             sequence.start();
 
-            setTimeout(sequence.start, 100)
+            setTimeout(sequence.start, 75)
 
             setTimeout(() => {
                 expect(fired_events.length).toEqual(2);
                 expectEventAtTime(fired_events[0], 'hello1', 50)
-                expectEventAtTime(fired_events[1], 'hello1', 100)
+                expectEventAtTime(fired_events[1], 'hello1', 125)
                 done();
-            }, 200);
+            }, 150);
         });
 
         it('emits a stopped event when all scheduled events fired', (done) => {

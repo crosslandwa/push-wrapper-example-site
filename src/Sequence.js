@@ -14,9 +14,6 @@ function Sequence(Scheduling) {
     let stopEvent = { when: 0, action: 'stop', cancel: noAction }
 
     let scheduleAllEvents = function(startTimeMs) {
-        if (running) {
-            cancelAllEvents();
-        };
         stopEvent.when = 0
         events.filter(occursBetween.bind(null, startTimeMs, restartEvent.when)).forEach((event) => {
             stopEvent.when = event.when > stopEvent.when ? event.when : stopEvent.when
@@ -27,7 +24,7 @@ function Sequence(Scheduling) {
 
     let restart = function() {
         sequenceAbsoluteStartTimeMs += restartEvent.when
-        scheduleAllEvents(true, 0);
+        scheduleAllEvents(0);
     }
 
     let cancelAllEvents = function() {
@@ -56,6 +53,9 @@ function Sequence(Scheduling) {
     this.start = function(offsetMs) {
         let sanitizedOffsetMs = offsetMs > 0 ? offsetMs : 0
         sequenceAbsoluteStartTimeMs = Scheduling.nowMs() - sanitizedOffsetMs
+        if (running) {
+            cancelAllEvents();
+        };
         running = true;
         scheduleAllEvents(sanitizedOffsetMs);
         return sequence;
