@@ -278,6 +278,7 @@ describe('Sequence', () => {
 });
 
 function expectEventAtTime(event, expectedName, expectedTime) {
+    if (typeof event === 'undefined') return
     expect(event[0]).toEqual(expectedName);
     expect(event[1]).toBeLessThan(expectedTime + 10);
 }
