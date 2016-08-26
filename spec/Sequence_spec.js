@@ -9,14 +9,15 @@ function expectEventAtTime(event, expectedName, expectedTime, expectedData) {
     if (expectedData) {
         expect(event[1]).toEqual(expectedData);
     }
-    if (event[2] < expectedTime + timingTolerance) {
+
+    if ((event[2] >= expectedTime) && (event[2] < expectedTime + timingTolerance)) {
         expect(event[2]).toBeLessThan(expectedTime + timingTolerance);
     } else {
         expect(event[2]).toEqual(expectedTime); // this will always fail, but gives a helpful error message
     }
 }
 
-fdescribe('Sequence', () => {
+describe('Sequence', () => {
     let sequence;
     let clockStartTime
 
@@ -96,14 +97,16 @@ fdescribe('Sequence', () => {
         });
 
         it('can be started with some arbitrary offset, specified in ms', (done) => {
-            let fired_events = [];
+            let events = []
+            capture(events, 'capture')
+
             sequence.addEvent(50, 'capture', 'hello1');
             sequence.addEvent(100, 'capture', 'hello2');
-            sequence.on('capture', (data) => fired_events.push(data));
             sequence.start(75);
+
             setTimeout(() => {
-                expect(fired_events.length).toEqual(1);
-                expect(fired_events[0]).toEqual('hello2');
+                expect(events.length).toEqual(1);
+                expectEventAtTime(events[0], 'capture', 25, 'hello2')
                 done();
             }, 50);
         });
