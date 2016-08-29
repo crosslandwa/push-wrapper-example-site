@@ -42,7 +42,7 @@ Timing for repeated notes inspired by this: https://github.com/cwilso/metronome
   - Record new sequence
   - Swap playing sequence
 - BPM aware sequence wrapper - this done as proof of concept (forces sequence to stop currently)
-  - sort of works while running, need to stop/start to get all notes playing. Likely a bug with the start offset
+  - ~~sort of works while running, need to stop/start to get all notes playing. Likely a bug with the start offset~~ Fixed!
   - ~~responds to changes in global BPM (i.e. adjusts event placement and loop length)~~
   - ~~consider using toJSON/load with manipulation event.when before loading~~
   - consider the whens as a fraction of loop length rather than absolute ms time...
@@ -82,10 +82,11 @@ let sequence = new Sequence(Scheduling);
 sequence.on(eventName, (eventData) => /* do Stuff */);
 sequence.on('stopped', (eventData) => /* sequence stopped actions */);
 
-sequence.addEvent(whenMs, eventName, eventData); // whenMs specifies how far into the sequence the given eventName/eventData will be emitted
+sequence.addEventAt(whenMs, eventName, eventData); // whenMs specifies how far into the sequence the given eventName/eventData will be emitted
+sequence.addEventNow(eventName, eventData); // adds an event at the current point in the (playing) sequence
 sequence.loop(loopLengthMs); // optional, sets a loop length and sequence will repeat until stopped
 sequence.start([offsetMs]); // starts emitting events [starting from a given offset if provided]
-sequence.stop(); // emits stopped event
+sequence.stop(); // stops sequence, emits stopped event
 
 sequence.reset(); // clears all events and loop length
 

@@ -3,17 +3,19 @@ const Sequence = require('../src/sequence.js'),
     Scheduling = require('wac.scheduling')();
 
 function expectEventAtTime(event, expectedName, expectedTime, expectedData) {
-    if (typeof event === 'undefined') return
+    if (typeof event === 'undefined') return // TODO fail
     let timingTolerance = 15
     expect(event[0]).toEqual(expectedName);
     if (expectedData) {
         expect(event[1]).toEqual(expectedData);
     }
 
-    if ((event[2] >= expectedTime) && (event[2] < expectedTime + timingTolerance)) {
-        expect(event[2]).toBeLessThan(expectedTime + timingTolerance);
+    let actualTime = event[2]
+
+    if ((actualTime >= (expectedTime - 1)) && (actualTime < expectedTime + timingTolerance)) {
+        expect(actualTime).toBeLessThan(expectedTime + timingTolerance);
     } else {
-        expect(`${event[2]}ms`).toEqual(`${expectedTime}ms`); // this will always fail, but gives a helpful error message
+        expect(`${actualTime}ms`).toEqual(`${expectedTime}ms`); // this will always fail, but gives a helpful error message
     }
 }
 
@@ -35,8 +37,8 @@ describe('Sequence', () => {
             let events = []
             capture(events, 'capture')
 
-            sequence.addEvent(50, 'capture', 'hello1');
-            sequence.addEvent(100, 'capture', 'hello2');
+            sequence.addEventAt(50, 'capture', 'hello1');
+            sequence.addEventAt(100, 'capture', 'hello2');
             sequence.start();
             setTimeout(() => {
                 expect(events.length).toEqual(2);
@@ -50,7 +52,7 @@ describe('Sequence', () => {
             let events = []
             capture(events, 'capture')
 
-            sequence.addEvent(50, 'capture', 'hello1');
+            sequence.addEventAt(50, 'capture', 'hello1');
             sequence.start();
 
             setTimeout(sequence.start, 100)
@@ -67,8 +69,8 @@ describe('Sequence', () => {
             let events = []
             capture(events, 'capture')
 
-            sequence.addEvent(50, 'capture', 'hello1');
-            sequence.addEvent(150, 'capture', 'hello2');
+            sequence.addEventAt(50, 'capture', 'hello1');
+            sequence.addEventAt(150, 'capture', 'hello2');
             sequence.start();
 
             setTimeout(sequence.start, 75)
@@ -86,7 +88,7 @@ describe('Sequence', () => {
             capture(events, 'capture')
             capture(events, 'stopped')
 
-            sequence.addEvent(50, 'capture', 'hello1');
+            sequence.addEventAt(50, 'capture', 'hello1');
             sequence.start();
             setTimeout(() => {
                 expect(events.length).toEqual(2);
@@ -100,8 +102,8 @@ describe('Sequence', () => {
             let events = []
             capture(events, 'capture')
 
-            sequence.addEvent(50, 'capture', 'hello1');
-            sequence.addEvent(100, 'capture', 'hello2');
+            sequence.addEventAt(50, 'capture', 'hello1');
+            sequence.addEventAt(100, 'capture', 'hello2');
             sequence.start(75);
 
             setTimeout(() => {
@@ -115,8 +117,8 @@ describe('Sequence', () => {
             let events = []
             capture(events, 'capture')
 
-            sequence.addEvent(40, 'capture', 'hello1');
-            sequence.addEvent(80, 'capture', 'hello2');
+            sequence.addEventAt(40, 'capture', 'hello1');
+            sequence.addEventAt(80, 'capture', 'hello2');
             sequence.scale(0.5).start();
             setTimeout(() => {
                 expect(events.length).toEqual(2);
@@ -130,9 +132,9 @@ describe('Sequence', () => {
             let events = []
             capture(events, 'capture')
 
-            sequence.addEvent(100, 'capture', 'hello1');
-            sequence.addEvent(180, 'capture', 'hello2');
-            sequence.addEvent(200, 'capture', 'hello3');
+            sequence.addEventAt(100, 'capture', 'hello1');
+            sequence.addEventAt(180, 'capture', 'hello2');
+            sequence.addEventAt(200, 'capture', 'hello3');
             sequence.start();
 
             setTimeout(() => { sequence.scale(0.5) }, 120)
@@ -152,8 +154,8 @@ describe('Sequence', () => {
             let events = []
             capture(events, 'capture')
 
-            sequence.addEvent(50, 'capture', 'hello1');
-            sequence.addEvent(100, 'capture', 'hello2');
+            sequence.addEventAt(50, 'capture', 'hello1');
+            sequence.addEventAt(100, 'capture', 'hello2');
             sequence.loop(150);
             sequence.start();
 
@@ -171,8 +173,8 @@ describe('Sequence', () => {
             let events = []
             capture(events, 'capture')
 
-            sequence.addEvent(50, 'capture', 'hello1');
-            sequence.addEvent(100, 'capture', 'hello2');
+            sequence.addEventAt(50, 'capture', 'hello1');
+            sequence.addEventAt(100, 'capture', 'hello2');
             sequence.loop(150).start(75);
 
             setTimeout(() => {
@@ -188,8 +190,8 @@ describe('Sequence', () => {
             capture(events, 'capture')
             capture(events, 'stopped')
 
-            sequence.addEvent(50, 'capture', 'hello1');
-            sequence.addEvent(100, 'capture', 'hello2');
+            sequence.addEventAt(50, 'capture', 'hello1');
+            sequence.addEventAt(100, 'capture', 'hello2');
             sequence.loop(150).start();
 
             setTimeout(() => {
@@ -210,9 +212,9 @@ describe('Sequence', () => {
             let events = []
             capture(events, 'capture')
 
-            sequence.addEvent(50, 'capture', 'hello1');
-            sequence.addEvent(100, 'capture', 'hello2');
-            sequence.addEvent(150, 'capture', 'hello3');
+            sequence.addEventAt(50, 'capture', 'hello1');
+            sequence.addEventAt(100, 'capture', 'hello2');
+            sequence.addEventAt(150, 'capture', 'hello3');
             sequence.loop(125);
             sequence.start();
 
@@ -230,8 +232,8 @@ describe('Sequence', () => {
             let events = []
             capture(events, 'capture')
 
-            sequence.addEvent(40, 'capture', 'hello1');
-            sequence.addEvent(80, 'capture', 'hello2');
+            sequence.addEventAt(40, 'capture', 'hello1');
+            sequence.addEventAt(80, 'capture', 'hello2');
             sequence.loop(100);
             sequence.scale(0.5).start();
 
@@ -249,8 +251,8 @@ describe('Sequence', () => {
             let events = []
             capture(events, 'capture')
 
-            sequence.addEvent(60, 'capture', 'hello1');
-            sequence.addEvent(180, 'capture', 'hello2');
+            sequence.addEventAt(60, 'capture', 'hello1');
+            sequence.addEventAt(180, 'capture', 'hello2');
             sequence.loop(240).start();
 
             setTimeout(() => { sequence.scale(0.5) }, 120)
@@ -272,8 +274,8 @@ describe('Sequence', () => {
 
             let sequence2 = new Sequence(Scheduling)
 
-            sequence2.addEvent(50, 'capture', 'hello1');
-            sequence2.addEvent(100, 'capture', 'hello2');
+            sequence2.addEventAt(50, 'capture', 'hello1');
+            sequence2.addEventAt(100, 'capture', 'hello2');
             sequence2.loop(150);
 
             sequence.load(sequence2.toJSON())
@@ -294,11 +296,11 @@ describe('Sequence', () => {
             capture(events, 'capture')
             capture(events, 'reset')
 
-            sequence.addEvent(25, 'capture', 'hello1');
+            sequence.addEventAt(25, 'capture', 'hello1');
             sequence.loop(50);
 
             sequence.reset();
-            sequence.addEvent(50, 'capture', 'hello2');
+            sequence.addEventAt(50, 'capture', 'hello2');
             sequence.loop(100);
 
             sequence.start();

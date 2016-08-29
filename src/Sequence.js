@@ -51,13 +51,13 @@ function Sequence(Scheduling) {
     let events = [];
 
     this.start = function(offsetMs) {
-        let sanitizedOffsetMs = offsetMs > 0 ? offsetMs : 0
-        absoluteStartTime = Scheduling.nowMs() - sanitizedOffsetMs
+        offsetMs = offsetMs > 0 ? offsetMs : 0
+        absoluteStartTime = Scheduling.nowMs() - offsetMs
         if (running) {
             cancelAllEvents();
         }
         running = true;
-        scheduleAllEvents(sanitizedOffsetMs);
+        scheduleAllEvents(offsetMs);
         return sequence;
     }
 
@@ -76,8 +76,13 @@ function Sequence(Scheduling) {
         return sequence;
     }
 
-    this.addEvent = function(when, name, data) {
+    this.addEventAt = function(when, name, data) {
         events.push({when: when, name: name, args: data, cancel: noAction});
+    }
+
+    this.addEventNow = function(name, data) {
+        if (!running) return
+        events.push({when: Scheduling.nowMs() - absoluteStartTime, name: name, args: data, cancel: noAction})
     }
 
     this.reset = function() {
@@ -89,8 +94,8 @@ function Sequence(Scheduling) {
         return sequence;
     }
 
-    this.scale = function(scaleFactor) {
-        if (!scaleFactor || scaleFactor <= 0) return sequence
+    this.scale = function(scaleFactor = 1) {
+        if (scaleFactor < 0 || scaleFactor === 1) return sequence
 
         if (running) {
             cancelAllEvents()

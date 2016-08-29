@@ -109,17 +109,17 @@ module.exports = function(Scheduling, bpm) {
         return sequence;
     }
 
-    sequence.addEventNow = function(name, data) {
+    sequence.addEvent = function(name, data) {
         switch (state) {
             case (states.recording):
-                sequence.addEvent(nowMs() - startTime, name, data);
+                sequence.addEventAt(nowMs() - startTime, name, data);
                 break;
             case (states.overdubbing):
-                sequence.addEvent((nowMs() - startTime) % loopLengthMs, name, data);
+                sequence.addEventNow(name, data);
                 break;
             case (states.armed):
                 startTime = nowMs();
-                sequence.addEvent(0, name, data);
+                sequence.addEventAt(0, name, data);
                 state = states.recording;
                 reportState();
                 break;

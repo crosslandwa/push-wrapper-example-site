@@ -188,12 +188,12 @@ function bind_column_to_player(push, player, x, repetae, sequence) {
         const grid_button = push.grid.x[x].y[y];
         grid_button.on('pressed', (velocity) => {
             padPressed(filter_frequencies[y], velocity);
-            sequence.addEventNow(`play_${x}`, { velocity: mutable_velocity, frequency: filter_frequencies[y] });
+            sequence.addEvent(`play_${x}`, { velocity: mutable_velocity, frequency: filter_frequencies[y] });
         });
         grid_button.on('aftertouch', padAftertouch);
         grid_button.on('released', () => {
             padReleased();
-            sequence.addEventNow(`stop_${x}`, {});
+            sequence.addEvent(`stop_${x}`, {});
         });
     });
 
@@ -215,7 +215,7 @@ function bindQwertyuiToPlayback(players, sequence) {
                 f = filter_frequencies[8],
                 velocity = 110;
             players[index].cutOff(f).play(midiGain(velocity));
-            sequence.addEventNow('play', { player: index, velocity: velocity, frequency: f });
+            sequence.addEvent('play', { player: index, velocity: velocity, frequency: f });
         }
     });
     sequence.on('play', (data) => {
