@@ -3,7 +3,7 @@ const Sequence = require('../src/sequence.js'),
     Scheduling = require('wac.scheduling')();
 
 function expectEventAtTime(event, expectedName, expectedTime, expectedData) {
-    if (typeof event === 'undefined') fail('expected an event but was undefined')
+    if (typeof event === 'undefined') return fail('expected an event but was undefined')
     let timingTolerance = 15
     expect(event[0]).toEqual(expectedName);
     if (expectedData) {
@@ -149,6 +149,26 @@ describe('Sequence', () => {
         })
     })
 
+    describe("that hasn't been started", () => {
+        it('accepts events, and takes the first event as the sequence start', (done) => {
+            let events = []
+            capture(events, 'capture')
+            capture(events, 'stopped')
+
+            setTimeout(() => sequence.addEventNow('capture', 'hello1'), 25)
+            setTimeout(() => sequence.addEventNow('capture', 'hello2'), 50)
+            setTimeout(sequence.start, 75)
+
+            setTimeout(() => {
+                expect(events.length).toEqual(3);
+                expectEventAtTime(events[0], 'capture', 75, 'hello1')
+                expectEventAtTime(events[1], 'capture', 100, 'hello2')
+                expectEventAtTime(events[2], 'stopped', 100)
+                done();
+            }, 150);
+        })
+    })
+
     describe('looped', () => {
         it('can repeatedly fire scheduled events', (done) => {
             let events = []
@@ -159,14 +179,34 @@ describe('Sequence', () => {
             sequence.loop(150);
             sequence.start();
 
+            setTimeout(() => sequence.addEventNow('capture', 'hello3'), 125)
+
             setTimeout(() => {
-                expect(events.length).toEqual(4);
+                expect(events.length).toEqual(5);
                 expectEventAtTime(events[0], 'capture', 50, 'hello1')
                 expectEventAtTime(events[1], 'capture', 100, 'hello2')
                 expectEventAtTime(events[2], 'capture', 200, 'hello1')
                 expectEventAtTime(events[3], 'capture', 250, 'hello2')
+                expectEventAtTime(events[4], 'capture', 275, 'hello3')
                 done();
-            }, 275);
+            }, 300);
+        });
+
+        it('can have events added whilst running', (done) => {
+            let events = []
+            capture(events, 'capture')
+
+            sequence.addEventAt(50, 'capture', 'hello1');
+            sequence.addEventAt(100, 'capture', 'hello2');
+            sequence.loop(150);
+            sequence.start();
+
+            setTimeout(() => {
+                expect(events.length).toEqual(2);
+                expectEventAtTime(events[0], 'capture', 50, 'hello1')
+                expectEventAtTime(events[1], 'capture', 100, 'hello2')
+                done();
+            }, 200);
         });
 
         it('can be started with some arbitrary offset, specified in ms', (done) => {

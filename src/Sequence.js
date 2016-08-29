@@ -81,8 +81,11 @@ function Sequence(Scheduling) {
     }
 
     this.addEventNow = function(name, data) {
-        if (!running) return
-        events.push({when: Scheduling.nowMs() - absoluteStartTime, name: name, args: data, cancel: noAction})
+        let rightNow = Scheduling.nowMs()
+        if (absoluteStartTime === undefined) {
+            absoluteStartTime = rightNow
+        }
+        events.push({when: rightNow - absoluteStartTime, name: name, args: data, cancel: noAction})
     }
 
     this.reset = function() {
