@@ -125,7 +125,7 @@ describe('Sequence', () => {
                 expectEventAtTime(events[0], 'capture', 20, 'hello1')
                 expectEventAtTime(events[1], 'capture', 40, 'hello2')
                 done()
-            }, 50);
+            }, 60);
         })
 
         it('can be scaled while running to shorten/expand when events are fired', (done) => {
@@ -179,15 +179,12 @@ describe('Sequence', () => {
             sequence.loop(150);
             sequence.start();
 
-            setTimeout(() => sequence.addEventNow('capture', 'hello3'), 125)
-
             setTimeout(() => {
-                expect(events.length).toEqual(5);
+                expect(events.length).toEqual(4);
                 expectEventAtTime(events[0], 'capture', 50, 'hello1')
                 expectEventAtTime(events[1], 'capture', 100, 'hello2')
                 expectEventAtTime(events[2], 'capture', 200, 'hello1')
                 expectEventAtTime(events[3], 'capture', 250, 'hello2')
-                expectEventAtTime(events[4], 'capture', 275, 'hello3')
                 done();
             }, 300);
         });
@@ -201,12 +198,17 @@ describe('Sequence', () => {
             sequence.loop(150);
             sequence.start();
 
+            setTimeout(() => sequence.addEventNow('capture', 'hello3'), 125)
+
             setTimeout(() => {
-                expect(events.length).toEqual(2);
+                expect(events.length).toEqual(5);
                 expectEventAtTime(events[0], 'capture', 50, 'hello1')
                 expectEventAtTime(events[1], 'capture', 100, 'hello2')
-                done();
-            }, 200);
+                expectEventAtTime(events[2], 'capture', 200, 'hello1')
+                expectEventAtTime(events[3], 'capture', 250, 'hello2')
+                expectEventAtTime(events[4], 'capture', 275, 'hello3')
+                done()
+            }, 300);
         });
 
         it('can be started with some arbitrary offset, specified in ms', (done) => {
