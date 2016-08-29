@@ -48,6 +48,15 @@ function Sequence(Scheduling) {
             }
         }, absoluteStartTime + event.when);
     }
+
+    let currentPositionData = function() {
+        let rightNow = Scheduling.nowMs()
+        return {
+            nowMs: rightNow,
+            currentMs: absoluteStartTime > 0 ? rightNow - absoluteStartTime : 0
+        }
+    }
+
     let events = [];
 
     this.start = function(offsetMs) {
@@ -81,11 +90,11 @@ function Sequence(Scheduling) {
     }
 
     this.addEventNow = function(name, data) {
-        let rightNow = Scheduling.nowMs()
+        let positionInfo = currentPositionData();
         if (absoluteStartTime === undefined) {
-            absoluteStartTime = rightNow
+            absoluteStartTime = positionInfo.nowMs
         }
-        events.push({when: rightNow - absoluteStartTime, name: name, args: data, cancel: noAction})
+        events.push({when: positionInfo.currentMs, name: name, args: data, cancel: noAction})
     }
 
     this.reset = function() {
@@ -108,10 +117,9 @@ function Sequence(Scheduling) {
         if (restartEvent.when) restartEvent.when *= scaleFactor
 
         if (running) {
-            let rightNow = Scheduling.nowMs()
-            let currentPositionMs = rightNow - absoluteStartTime
-            let offsetMs = currentPositionMs * scaleFactor
-            absoluteStartTime = rightNow - offsetMs
+            let positionInfo = currentPositionData()
+            let offsetMs = positionInfo.currentMs * scaleFactor
+            absoluteStartTime = positionInfo.nowMs - offsetMs
             scheduleAllEvents(offsetMs)
         }
         return sequence
