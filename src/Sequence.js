@@ -43,7 +43,7 @@ function Sequence(Scheduling) {
                     sequence.stop();
                     break;
                 default:
-                    sequence.emit(event.name, event.args);
+                    sequence.emit(event.name, event.data);
                     break;
             }
         }, absoluteStartTime + event.when);
@@ -86,7 +86,7 @@ function Sequence(Scheduling) {
     }
 
     this.addEventAt = function(when, name, data) {
-        events.push({when: when, name: name, args: data, cancel: noAction});
+        events.push({when: when, name: name, data: data, cancel: noAction});
     }
 
     this.addEventNow = function(name, data) {
@@ -94,7 +94,7 @@ function Sequence(Scheduling) {
         if (absoluteStartTime === undefined) {
             absoluteStartTime = positionInfo.nowMs
         }
-        events.push({when: positionInfo.currentMs, name: name, args: data, cancel: noAction})
+        events.push({when: positionInfo.currentMs, name: name, data: data, cancel: noAction})
     }
 
     this.currentPositionMs = function() {
@@ -159,7 +159,7 @@ function Sequence(Scheduling) {
 util.inherits(Sequence, EventEmitter);
 
 function mapEventForJSONification(event) {
-    return {when: event.when, name: event.name, args: event.args};
+    return {when: event.when, name: event.name, data: event.data};
 }
 
 function isAfter(timeMs, event) {
