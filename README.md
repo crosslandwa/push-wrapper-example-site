@@ -69,6 +69,7 @@ Timing for repeated notes inspired by this: https://github.com/cwilso/metronome
 - ~~emit stopped event when unlooped sequence finishes~~
 - emit a 'restart' event?
 - test toJSON/load for unlooped sequence
+- addEventNow slightly undefined behaviour for stoppped
 
 ### Sequence API
 
@@ -95,4 +96,6 @@ sequence.load(json); // stops the sequence (if running) and loads new events/loo
 
 sequence.scale(scaleFactor); // makes the events in the sequence and its loop length (if looping) longer/shorter 
 
+sequence.currentPositionMs(); // returns current position within loop in ms
+sequence.loopLengthMs(); // returns the loop length in ms (or undefined if the sequence is not looped)
 ```

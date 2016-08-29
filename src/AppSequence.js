@@ -4,7 +4,6 @@ const Sequence = require('./Sequence.js');
 
 module.exports = function(Scheduling, bpm) {
     let sequence = new Sequence(Scheduling),
-        nowMs = Scheduling.nowMs,
         states = {
             armed: 'armed',
             idle: 'idle',
@@ -14,27 +13,22 @@ module.exports = function(Scheduling, bpm) {
             overdubbing: 'overdubbing'
         },
         state = states.idle,
-        startTime = undefined,
-        loopLengthMs = undefined,
         numberOfBeats = undefined,
         calculatedBPM = undefined,
-        running = false,
         reportState = function() { console.log(state); sequence.emit(state); };
 
     let updateSequenceAlignedWithBpmChange = function(bpm) {
         let changeFactor = calculatedBPM / bpm.current
         sequence.scale(changeFactor)
         calculatedBPM = bpm.current
-        loopLengthMs = sequence.toJSON().loop.lengthMs
     }
 
     let setLoopLengthAndBroadcastBPM = function() {
-        loopLengthMs = nowMs() - startTime;
-        numberOfBeats = Math.round((loopLengthMs * bpm.current) / 60000);
+        let sequenceLengthMs = sequence.currentPositionMs();
+        numberOfBeats = Math.round((sequenceLengthMs * bpm.current) / 60000);
         sequence.emit('numberOfBeats', numberOfBeats);
-        calculatedBPM = Math.round(((60000 * numberOfBeats) / loopLengthMs) + 0.25); // + 0.25 as we assume we've pressed slightly early
-        loopLengthMs = (60000 * numberOfBeats) / calculatedBPM;
-        sequence.loop(loopLengthMs)
+        calculatedBPM = Math.round(((60000 * numberOfBeats) / sequenceLengthMs) + 0.25); // + 0.25 as we assume we've pressed slightly early
+        sequence.loop((60000 * numberOfBeats) / calculatedBPM)
         bpm.removeListener('changed', updateSequenceAlignedWithBpmChange)
         bpm.change_to(calculatedBPM);
         bpm.on('changed', updateSequenceAlignedWithBpmChange)
@@ -45,7 +39,7 @@ module.exports = function(Scheduling, bpm) {
         numberOfBeats += amount;
         numberOfBeats = numberOfBeats < 1 ? 1 : numberOfBeats;
         sequence.emit('numberOfBeats', numberOfBeats);
-        calculatedBPM = ((60000 * numberOfBeats) / loopLengthMs) + 0.25; // + 0.25 as we assume we've pressed slightly early
+        calculatedBPM = ((60000 * numberOfBeats) / sequence.loopLengthMs());
         bpm.removeListener('changed', updateSequenceAlignedWithBpmChange)
         bpm.change_to(calculatedBPM);
         bpm.on('changed', updateSequenceAlignedWithBpmChange)
@@ -67,7 +61,6 @@ module.exports = function(Scheduling, bpm) {
                 break;
             case (states.stopped):
                 state = states.overdubbing;
-                startTime = nowMs();
                 sequence.start();
                 break;
             case (states.recording):
@@ -89,7 +82,6 @@ module.exports = function(Scheduling, bpm) {
                 break;
             case (states.stopped):
                 state = states.playback;
-                startTime = nowMs();
                 sequence.start();
                 break;
             case (states.recording):
@@ -118,7 +110,6 @@ module.exports = function(Scheduling, bpm) {
                 sequence.addEventNow(name, data);
                 break;
             case (states.armed):
-                startTime = nowMs();
                 sequence.addEventNow(name, data);
                 state = states.recording;
                 reportState();

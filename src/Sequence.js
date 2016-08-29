@@ -97,10 +97,19 @@ function Sequence(Scheduling) {
         events.push({when: positionInfo.currentMs, name: name, args: data, cancel: noAction})
     }
 
+    this.currentPositionMs = function() {
+        return currentPositionData().currentMs
+    }
+
+    this.loopLengthMs = function() {
+        return restartEvent.when
+    }
+
     this.reset = function() {
         sequence.stop();
         events = [];
-        restartEvent.when = undefined;
+        absoluteStartTime = undefined
+        restartEvent.when = undefined
         stopEvent.when = 0
         sequence.emit('reset');
         return sequence;
