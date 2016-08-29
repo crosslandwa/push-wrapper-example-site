@@ -3,7 +3,7 @@ const Sequence = require('../src/sequence.js'),
     Scheduling = require('wac.scheduling')();
 
 function expectEventAtTime(event, expectedName, expectedTime, expectedData) {
-    if (typeof event === 'undefined') return // TODO fail
+    if (typeof event === 'undefined') fail('expected an event but was undefined')
     let timingTolerance = 15
     expect(event[0]).toEqual(expectedName);
     if (expectedData) {
