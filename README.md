@@ -56,7 +56,6 @@ Timing for repeated notes inspired by this: https://github.com/cwilso/metronome
 - Change sequence length
   - ~~whilst stopped~~
   - whilst running
-    - do we need segmented sequencing for this?
 - UI for recording playback status
 - ~~Look at bug for held/sequenced notes and repetae~~
   - ~~should ++ and -- as a result of being sequenced...~~
@@ -65,11 +64,11 @@ Timing for repeated notes inspired by this: https://github.com/cwilso/metronome
 - ~~Fix timing when overdubbing notes on subsequent playback~~
 - ~~remove the 'restart' action from the serialized JSON representation~~
 
-- add test/define behaviour around load() method of Sequence when its playing
+- add tests/define behaviour around load() method of Sequence when its playing
 - ~~emit stopped event when unlooped sequence finishes~~
 - emit a 'restart' event?
 - test toJSON/load for unlooped sequence
-- addEventNow slightly undefined behaviour for stoppped
+- addEventNow slightly undefined behaviour for stopped 
 
 ### Sequence API
 
@@ -80,7 +79,7 @@ const context = new window.AudioContext(),
     
 let sequence = new Sequence(Scheduling);
 
-sequence.on(eventName, (eventData) => /* do Stuff */);
+sequence.on(eventName, (eventData) => /* do stuff */);
 sequence.on('stopped', (eventData) => /* sequence stopped actions */);
 
 sequence.addEventAt(whenMs, eventName, eventData); // whenMs specifies how far into the sequence the given eventName/eventData will be emitted
@@ -98,4 +97,22 @@ sequence.scale(scaleFactor); // makes the events in the sequence and its loop le
 
 sequence.currentPositionMs(); // returns current position within loop in ms
 sequence.loopLengthMs(); // returns the loop length in ms (or undefined if the sequence is not looped)
+```
+
+### Add event now
+
+The addEventNow method has some slightly special behaviour
+
+```javascript    
+let sequence = new Sequence(Scheduling);
+
+// sequence that is not running
+
+sequence.addEventNow(name, data) // first call adds an event at time 0ms and starts the internal timer running
+setTimeout(() => sequence.addEventNow(name, data), 50) // subsequent calls add event at the time called, relative to ths sequence start time (i.e. 50ms in this case)
+
+// sequence that is running
+sequence.start()
+sequence.addEventNow(name, data) // adds the event at current position within the sequence
+
 ```
