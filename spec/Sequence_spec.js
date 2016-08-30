@@ -113,6 +113,21 @@ describe('Sequence', () => {
             }, 50);
         });
 
+        it('stops immediately when started after the last event', (done) => {
+            let events = []
+            capture(events, 'capture')
+            capture(events, 'stopped')
+
+            sequence.addEventAt(50, 'capture', 'hello1');
+            sequence.start(75);
+
+            setTimeout(() => {
+                expect(events.length).toEqual(1);
+                expectEventAtTime(events[0], 'stopped', 0)
+                done();
+            }, 20);
+        });
+
         it('can be scaled to shorten/expand when events are fired', (done) => {
             let events = []
             capture(events, 'capture')
