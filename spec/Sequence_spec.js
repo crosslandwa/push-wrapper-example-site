@@ -242,6 +242,24 @@ describe('Sequence', () => {
             }, 150);
         });
 
+        it('has start position wrapped when started after the loop end', (done) => {
+            let events = []
+            capture(events, 'capture')
+
+            sequence.addEventAt(50, 'capture', 'hello1');
+            sequence.addEventAt(100, 'capture', 'hello2');
+            sequence.loop(150).start(175);
+
+            expectEventAtTime(['currentPosition', {}, sequence.currentPositionMs()], 'currentPosition', 25)
+
+            setTimeout(() => {
+                expect(events.length).toEqual(2);
+                expectEventAtTime(events[0], 'capture', 25, 'hello1')
+                expectEventAtTime(events[1], 'capture', 75, 'hello2')
+                done();
+            }, 100);
+        });
+
         it('fires events until stopped', (done) => {
             let events = []
             capture(events, 'capture')

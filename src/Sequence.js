@@ -61,6 +61,7 @@ function Sequence(Scheduling) {
 
     this.start = function(offsetMs) {
         offsetMs = offsetMs > 0 ? offsetMs : 0
+        if (restartEvent.when) offsetMs = offsetMs % restartEvent.when
         absoluteStartTime = Scheduling.nowMs() - offsetMs
         if (running) {
             cancelAllEvents();
