@@ -27,12 +27,12 @@ describe('Sequence', () => {
         sequence.on(eventName, (data) => events.push([eventName, data, Scheduling.nowMs() - clockStartTime]))
     }
 
-    beforeEach(() => {
-        clockStartTime = Scheduling.nowMs()
-        sequence = new Sequence(Scheduling);
-    })
-
     describe('unlooped', () => {
+        beforeEach(() => {
+            sequence = new Sequence(Scheduling)
+            clockStartTime = Scheduling.nowMs()
+        })
+
         it('fires scheduled events', (done) => {
             let events = []
             capture(events, 'capture')
@@ -95,7 +95,7 @@ describe('Sequence', () => {
                 expectEventAtTime(events[0], 'capture', 50, 'hello1')
                 expectEventAtTime(events[1], 'stopped', 50)
                 done();
-            }, 300);
+            }, 100);
         });
 
         it('can be started with some arbitrary offset, specified in ms', (done) => {
@@ -160,11 +160,16 @@ describe('Sequence', () => {
                 expectEventAtTime(events[1], 'capture', 150, 'hello2')
                 expectEventAtTime(events[2], 'capture', 160, 'hello3')
                 done();
-            }, 175);
+            }, 180);
         })
     })
 
     describe("that hasn't been started", () => {
+        beforeEach(() => {
+            sequence = new Sequence(Scheduling)
+            clockStartTime = Scheduling.nowMs()
+        })
+
         it('accepts events, and takes the first event as the sequence start', (done) => {
             let events = []
             capture(events, 'capture')
@@ -185,6 +190,11 @@ describe('Sequence', () => {
     })
 
     describe('looped', () => {
+        beforeEach(() => {
+            sequence = new Sequence(Scheduling)
+            clockStartTime = Scheduling.nowMs()
+        })
+
         it('can repeatedly fire scheduled events', (done) => {
             let events = []
             capture(events, 'capture')
