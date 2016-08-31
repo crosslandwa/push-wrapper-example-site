@@ -15,7 +15,7 @@ module.exports = function(Scheduling, bpm) {
         state = states.idle,
         numberOfBeats = undefined,
         calculatedBPM = undefined,
-        reportState = function() { console.log(state); sequence.emit(state); sequence.emit('state', state); };
+        reportState = function() { sequence.emit(state); sequence.emit('state', state); };
 
     let updateSequenceAlignedWithBpmChange = function(bpm) {
         let changeFactor = calculatedBPM / bpm.current

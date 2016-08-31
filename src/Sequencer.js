@@ -8,34 +8,41 @@ const Sequence = require('./AppSequence.js');
 // delete: {off, ready, on}
 
 function Sequencer(recIndication, playIndicator, deleteIndicator, selectionIndicators, Scheduling, bpm) {
-    let sequences = selectionIndicators.map(() => new Sequence(Scheduling, bpm))
-    let activeSequence = sequences[0]
+    let sequences = selectionIndicators.map((ind, index) => new Sequence(Scheduling, bpm))
+    let selectedSequence = sequences[0]
     let sequencer = this
 
     this.select = function(sequenceNumber = 1) {
         sequenceNumber = sequenceNumber > 0 ? sequenceNumber : 1
+        let index = sequenceNumber - 1
         selectionIndicators.forEach((selection) => selection.off())
-        selectionIndicators[sequenceNumber - 1].current()
+        selectionIndicators[index].current()
+
+        selectedSequence.removeListener('state', showSequenceState)
+
+        selectedSequence = sequences[index]
+        selectedSequence.addListener('state', showSequenceState)
+        selectedSequence.reportState()
     }
 
-    function clearSequenceBindings() {
-        activeSequence.removeListener('state', showSequenceState)
+    this.rec = function() {
+        return selectedSequence.handleRecButton()
     }
 
     function showSequenceState(state) {
         switch (state) {
             case 'idle':
-                recIndication.off(); playIndicator.off(); deleteIndicator.dim(); break;
+                recIndication.off(); playIndicator.off(); deleteIndicator.ready(); break;
             case 'armed':
-                recIndication.on(); playIndicator.off(); deleteIndicator.dim(); break;
+                recIndication.on(); playIndicator.off(); deleteIndicator.ready(); break;
             case 'recording':
                 recIndication.on(); playIndicator.off(); deleteIndicator.on(); break;
             case 'overdubbing':
-                recIndication.dim(); playIndicator.on(); deleteIndicator.on(); break;
+                recIndication.ready(); playIndicator.on(); deleteIndicator.on(); break;
             case 'playback':
                 recIndication.off(); playIndicator.on(); deleteIndicator.on(); break;
             case 'stopped':
-                recIndication.off(); playIndicator.dim(); deleteIndicator.on(); break;
+                recIndication.off(); playIndicator.ready(); deleteIndicator.on(); break;
         }
     }
 
