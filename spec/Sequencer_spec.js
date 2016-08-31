@@ -75,6 +75,19 @@ describe('Sequencer', () => {
             expect('on').toEqual(play.state())
             expect('on').toEqual(del.state())
             expect('off').toEqual(rec.state())
+            expect('off').toEqual(sel1.state())
+            expect('selected').toEqual(sel2.state())
+            expect('off').toEqual(sel3.state())
+
+            sequencer.select(1)
+
+            expect('off').toEqual(play.state())
+            expect('dim').toEqual(del.state())
+            expect('off').toEqual(rec.state())
+            expect('selected').toEqual(sel1.state())
+            expect('hasSequence').toEqual(sel2.state())
+            expect('off').toEqual(sel3.state())
+
             done()
         }, 110)
     })
