@@ -29,6 +29,18 @@ function Sequencer(recIndication, playIndicator, deleteIndicator, selectionIndic
         return selectedSequence.handleRecButton()
     }
 
+    this.play = function() {
+        return selectedSequence.handlePlayButton()
+    }
+
+    this.del = function() {
+        return selectedSequence.handleDeleteButton()
+    }
+
+    this.addEvent = function(name, data) {
+        return selectedSequence.addEvent(name, data)
+    }
+
     function showSequenceState(state) {
         switch (state) {
             case 'idle':

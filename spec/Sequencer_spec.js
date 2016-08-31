@@ -1,6 +1,7 @@
 'use strict'
-const Sequencer = require('../src/Sequencer.js'),
-    Scheduling = require('wac.scheduling')();
+const Sequencer = require('../src/Sequencer.js')
+const Scheduling = require('wac.scheduling')()
+const BPM = require('../src/bpm.js')
 
 function LedButton() {
     let state = 'not yet set'
@@ -24,7 +25,7 @@ describe('Sequencer', () => {
     let sel1 = new SelectionButton(), sel2 = new SelectionButton(), sel3 = new SelectionButton()
 
     beforeEach(() => {
-        sequencer = new Sequencer(rec, play, del, [sel1, sel2, sel3], Scheduling)
+        sequencer = new Sequencer(rec, play, del, [sel1, sel2, sel3], Scheduling, new BPM(120))
     })
 
     it('shows the selected sequence', () => {
@@ -56,6 +57,26 @@ describe('Sequencer', () => {
         expect('off').toEqual(play.state())
         expect('dim').toEqual(del.state())
         expect('off').toEqual(rec.state())
+    })
+
+    fit('shows the played state of the selected sequence', (done) => {
+        sequencer.select(2)
+
+        expect('off').toEqual(play.state())
+        expect('dim').toEqual(del.state())
+        expect('off').toEqual(rec.state())
+
+        sequencer.rec()
+        sequencer.addEvent('event', {})
+
+        setTimeout(sequencer.play, 100)
+
+        setTimeout(() => {
+            expect('on').toEqual(play.state())
+            expect('on').toEqual(del.state())
+            expect('off').toEqual(rec.state())
+            done()
+        }, 110)
     })
 
 })
