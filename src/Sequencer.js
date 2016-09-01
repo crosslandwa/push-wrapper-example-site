@@ -18,28 +18,32 @@ function Sequencer(recIndication, playIndicator, deleteIndicator, selectionIndic
         s.showSelectionState = showIndividualSequenceState.bind(null, indicator)
         return s
     })
-    let selectedSequence = sequences[0]
+    let selectedSequence
     let sequencer = this
 
     this.select = function(sequenceNumber = 1) {
         sequenceNumber = sequenceNumber > 0 ? sequenceNumber : 1
         let index = sequenceNumber - 1
+        if (selectedSequence === sequences[index]) return
+
         let prevSequence = selectedSequence
         selectedSequence = sequences[index]
 
-        prevSequence.removeListener('state', showPlayRecDelState)
-        prevSequence.removeListener('__sequenced_event__', emitSequencedEvent)
-        prevSequence.removeListener('stopped', emitStoppedEvent)
+        if (prevSequence) {
+            prevSequence.removeListener('state', showPlayRecDelState)
+            prevSequence.removeListener('__sequenced_event__', emitSequencedEvent)
+            prevSequence.removeListener('stopped', emitStoppedEvent)
+
+            prevSequence.addListener('state', prevSequence.showSelectionState)
+            prevSequence.reportState()
+        }
 
         selectedSequence.removeListener('state', selectedSequence.showSelectionState)
-
-        prevSequence.addListener('state', prevSequence.showSelectionState)
 
         selectedSequence.addListener('state', showPlayRecDelState)
         selectedSequence.addListener('__sequenced_event__', emitSequencedEvent)
         selectedSequence.addListener('stopped', emitStoppedEvent)
 
-        prevSequence.reportState()
         selectedSequence.reportState()
         selectedSequence.indicator.selected()
     }
