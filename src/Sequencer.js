@@ -82,7 +82,12 @@ function Sequencer(recIndication, playIndicator, deleteIndicator, selectionIndic
     }
 
     //intialisation
-    selectionIndicators.forEach((selection) => selection.off())
+    sequences.forEach((sequence) => {
+        sequence.addListener('state', sequence.showSelectionState)
+        sequence.reportState()
+    })
+    // this ensures we don't add the same listener again in the select() function
+    sequences[0].removeListener('state', sequences[0].showSelectionState)
     sequencer.select(1)
 }
 
