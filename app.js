@@ -21,14 +21,14 @@ const Push = require('push-wrapper'),
         '1/32t': Interval['32nt'](bpm, '1/32t'),
     },
     samples = [
-        'assets/audio/Bonus_Kick27.mp3',
-        'assets/audio/snare_turnboot.mp3',
-        'assets/audio/HandClap.mp3',
-        'assets/audio/Beat07_Hat.mp3',
-        'assets/audio/HH_KIT09_100_TMB.mp3',
-        'assets/audio/clingfilm.mp3',
-        'assets/audio/tang-1.mp3',
-        'assets/audio/Cassette808_Tom01.mp3'
+        { path: 'assets/audio/Bonus_Kick27.mp3', name: 'kick' },
+        { path: 'assets/audio/snare_turnboot.mp3', name: 'snare' },
+        { path: 'assets/audio/HandClap.mp3', name: 'clap' },
+        { path: 'assets/audio/Beat07_Hat.mp3', name: 'hat' },
+        { path: 'assets/audio/HH_KIT09_100_TMB.mp3', name: 'tamb' },
+        { path: 'assets/audio/clingfilm.mp3', name: 'cloing' },
+        { path: 'assets/audio/tang-1.mp3', name: 'tang' },
+        { path: 'assets/audio/Cassette808_Tom01.mp3', name: 'tom' }
     ],
     filter_frequencies = [0, 100, 200, 400, 800, 2000, 6000, 10000, 20000],
     oneToEight = [1, 2, 3, 4, 5, 6, 7, 8];
@@ -56,9 +56,7 @@ function off_we_go(bound_push) {
     push.lcd.clear();
 
     foreach(players, (player, i) => {
-        var column_number = i + 1,
-            full_path_sample_name = samples[i].split('.')[0],
-            sample_name = full_path_sample_name.split('/').pop(),
+        let column_number = i + 1,
             repetae = new Repetae(intervals['1/4'], context);
 
         push.grid.x[column_number].select.on('pressed', repetae.press);
@@ -76,7 +74,7 @@ function off_we_go(bound_push) {
         });
 
         turn_off_column(push, column_number);
-        push.lcd.x[column_number].y[2].update(sample_name.length > 8 ? sample_name.substr(sample_name.length - 8) : sample_name);
+        push.lcd.x[column_number].y[2].update(samples[i].name);
         player.on('started', partial(turn_button_display_on, buttons[i]));
         player.on('stopped', partial(turn_button_display_off, buttons[i]));
         player.on('started', partial(turn_on_column, push, column_number));
@@ -152,7 +150,7 @@ function makeSequencer(players, push, bpm) {
 function create_players() {
     var players = [];
     for (var  i = 0; i < samples.length; i++) {
-        players[i] = new Player(samples[i], context).toMaster();
+        players[i] = new Player(samples[i].path, context).toMaster();
     }
     return players;
 }

@@ -45,6 +45,7 @@ Timing for repeated notes inspired by this: https://github.com/cwilso/metronome
 - rethink sequencing and repetae interactions
   - sequencing the repatae start/stop leads easily to stuck notes/silence
   - could repetaed notes get recorded into sequence?
+  - or should event include note length (how long held down for)?
 - BPM aware sequence wrapper - this done as proof of concept
   - ~~sort of works while running, need to stop/start to get all notes playing. Likely a bug with the start offset~~ Fixed!
   - ~~responds to changes in global BPM (i.e. adjusts event placement and loop length)~~
