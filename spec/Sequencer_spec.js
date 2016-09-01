@@ -11,27 +11,30 @@ function LedButton() {
     this.state = function() { return state }
 }
 
-function SelectionButton() {
+function SelectionButton(sequenceNumber) {
     let state = 'not yet set'
     this.off = function() { state = 'off' }
     this.hasSequence = function() { state = 'hasSequence' }
-    this.current = function() { state = 'selected' }
+    this.selected = function() { state = 'selected' }
+    this.playing = function() { state = 'playing' }
+    this.recording = function() { state = 'recording' }
     this.state = function() { return state }
+    this.number = sequenceNumber
 }
 
 describe('Sequencer', () => {
     let sequencer
     let rec = new LedButton(), play = new LedButton, del = new LedButton()
-    let sel1 = new SelectionButton(), sel2 = new SelectionButton(), sel3 = new SelectionButton()
+    let sel1 = new SelectionButton(1), sel2 = new SelectionButton(2), sel3 = new SelectionButton(3)
 
     beforeEach(() => {
         sequencer = new Sequencer(rec, play, del, [sel1, sel2, sel3], Scheduling, new BPM(120))
     })
 
     it('shows the selected sequence', () => {
-        expect('selected').toEqual(sel1.state())
-        expect('off').toEqual(sel2.state())
-        expect('off').toEqual(sel3.state())
+        expect(sel1.state()).toEqual('selected')
+        expect(sel2.state()).toEqual('off')
+        expect(sel3.state()).toEqual('off')
 
         sequencer.select(2)
 
@@ -59,7 +62,7 @@ describe('Sequencer', () => {
         expect('off').toEqual(rec.state())
     })
 
-    fit('shows the played state of the selected sequence', (done) => {
+    it('shows the playing state of the selected sequence', (done) => {
         sequencer.select(2)
 
         expect('off').toEqual(play.state())
@@ -72,21 +75,21 @@ describe('Sequencer', () => {
         setTimeout(sequencer.play, 100)
 
         setTimeout(() => {
-            expect('on').toEqual(play.state())
-            expect('on').toEqual(del.state())
-            expect('off').toEqual(rec.state())
-            expect('off').toEqual(sel1.state())
-            expect('selected').toEqual(sel2.state())
-            expect('off').toEqual(sel3.state())
+            expect(play.state()).toEqual('on')
+            expect(del.state()).toEqual('on')
+            expect(rec.state()).toEqual('off')
+            expect(sel1.state()).toEqual('off')
+            expect(sel2.state()).toEqual('selected')
+            expect(sel3.state()).toEqual('off')
 
             sequencer.select(1)
 
-            expect('off').toEqual(play.state())
-            expect('dim').toEqual(del.state())
-            expect('off').toEqual(rec.state())
-            expect('selected').toEqual(sel1.state())
-            expect('hasSequence').toEqual(sel2.state())
-            expect('off').toEqual(sel3.state())
+            expect(play.state()).toEqual('off')
+            expect(del.state()).toEqual('dim')
+            expect(rec.state()).toEqual('off')
+            expect(sel1.state()).toEqual('selected')
+            expect(sel2.state()).toEqual('playing')
+            expect(sel3.state()).toEqual('off')
 
             done()
         }, 110)
