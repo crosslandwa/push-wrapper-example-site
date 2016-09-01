@@ -75,7 +75,7 @@ function Sequencer(recIndication, playIndicator, deleteIndicator, selectionIndic
             case 'playback':
                 indicator.playing(); break;
             case 'stopped':
-                indicator.selected(); break;
+                indicator.hasSequence(); break;
         }
     }
 

@@ -140,6 +140,8 @@ function makeSequencer(players, push, bpm) {
     push.button['play'].on('pressed', sequencer.play);
     push.button['delete'].on('pressed', sequencer.del);
 
+    oneToEight.forEach((x) => push.channel[x].select.on('released', () => sequencer.select(x)))
+
     return sequencer;
 }
 
