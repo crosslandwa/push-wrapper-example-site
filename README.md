@@ -38,10 +38,12 @@ Timing for repeated notes inspired by this: https://github.com/cwilso/metronome
 ## TODO/Ideas
 
 - In app sequencing
-  - ~~Delete sequence/events in sequence~~
-  - Record new sequence
-  - Swap playing sequence
-- BPM aware sequence wrapper - this done as proof of concept (forces sequence to stop currently)
+  - ~~Delete sequence~~
+  - ~~Record new sequence~~
+  - Swap playing sequence. Stop other sequences and 'legato' behaviour
+  - Delete events in sequence
+- rethink sequencing and repetae interactions
+- BPM aware sequence wrapper - this done as proof of concept
   - ~~sort of works while running, need to stop/start to get all notes playing. Likely a bug with the start offset~~ Fixed!
   - ~~responds to changes in global BPM (i.e. adjusts event placement and loop length)~~
   - ~~consider using toJSON/load with manipulation event.when before loading~~
@@ -55,7 +57,7 @@ Timing for repeated notes inspired by this: https://github.com/cwilso/metronome
     - ~~need to update sequence repeat functionality to use atATime instead of inTheFuture (wac.scheduling 1.3.0)~~
 - Change sequence length
   - ~~whilst stopped~~
-  - whilst running
+  - whilst running. why?
 - UI for recording playback status
 - ~~Look at bug for held/sequenced notes and repetae~~
   - ~~should ++ and -- as a result of being sequenced...~~
@@ -68,7 +70,7 @@ Timing for repeated notes inspired by this: https://github.com/cwilso/metronome
 - ~~emit stopped event when unlooped sequence finishes~~
 - emit a 'restart' event?
 - test toJSON/load for unlooped sequence
-- addEventNow slightly undefined behaviour for stopped 
+- addEventNow slightly undefined behaviour for stopped
 
 ### Sequence API
 
