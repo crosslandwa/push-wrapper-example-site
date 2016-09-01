@@ -182,10 +182,6 @@ function bind_column_to_player(push, player, x, repetae, sequencer) {
             if (pressed_pads_in_col == 0) repetae.stop();
         });
     });
-
-    sequencer.on('stopped', () => {
-        repetae.stop();
-    });
 }
 
 function bindQwertyuiToPlayback(players, sequencer) {
