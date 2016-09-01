@@ -15,7 +15,7 @@ module.exports = function(Scheduling, bpm) {
         state = states.idle,
         numberOfBeats = undefined,
         calculatedBPM = undefined,
-        reportState = function() { sequence.emit(state); sequence.emit('state', state); };
+        reportState = function() { sequence.emit('state', state); };
 
     let updateSequenceAlignedWithBpmChange = function(bpm) {
         let changeFactor = calculatedBPM / bpm.current
@@ -25,7 +25,8 @@ module.exports = function(Scheduling, bpm) {
 
     let setLoopLengthAndBroadcastBPM = function() {
         let sequenceLengthMs = sequence.currentPositionMs();
-        numberOfBeats = Math.round((sequenceLengthMs * bpm.current) / 60000);
+        numberOfBeats = Math.round((sequenceLengthMs * bpm.current) / 60000)
+        numberOfBeats = numberOfBeats > 1 ? numberOfBeats : 1
         sequence.emit('numberOfBeats', numberOfBeats);
         calculatedBPM = Math.round(((60000 * numberOfBeats) / sequenceLengthMs) + 0.25); // + 0.25 as we assume we've pressed slightly early
         sequence.loop((60000 * numberOfBeats) / calculatedBPM)
@@ -118,9 +119,7 @@ module.exports = function(Scheduling, bpm) {
         return sequence;
     }
 
-    sequence.reportState = function() {
-        reportState();
-    }
+    sequence.reportState = reportState
 
     return sequence;
 };

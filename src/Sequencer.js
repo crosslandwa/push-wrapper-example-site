@@ -1,6 +1,8 @@
 'use strict'
 
-const Sequence = require('./AppSequence.js');
+const Sequence = require('./AppSequence.js')
+const EventEmitter = require('events')
+const util = require('util')
 
 // selection: {off, hasSequence, selected, playing, recording}
 // rec: {off, ready, on}
@@ -8,6 +10,8 @@ const Sequence = require('./AppSequence.js');
 // delete: {off, ready, on}
 
 function Sequencer(recIndication, playIndicator, deleteIndicator, selectionIndicators, Scheduling, bpm) {
+    EventEmitter.call(this)
+
     let sequences = selectionIndicators.map((indicator) => {
         let s = new Sequence(Scheduling, bpm)
         s.indicator = indicator
@@ -24,11 +28,18 @@ function Sequencer(recIndication, playIndicator, deleteIndicator, selectionIndic
         selectedSequence = sequences[index]
 
         prevSequence.removeListener('state', showPlayRecDelState)
-        prevSequence.addListener('state', prevSequence.showSelectionState)
-        prevSequence.reportState()
+        prevSequence.removeListener('__sequenced_event__', emitSequencedEvent)
+        prevSequence.removeListener('stopped', emitStoppedEvent)
 
         selectedSequence.removeListener('state', selectedSequence.showSelectionState)
+
+        prevSequence.addListener('state', prevSequence.showSelectionState)
+
         selectedSequence.addListener('state', showPlayRecDelState)
+        selectedSequence.addListener('__sequenced_event__', emitSequencedEvent)
+        selectedSequence.addListener('stopped', emitStoppedEvent)
+
+        prevSequence.reportState()
         selectedSequence.reportState()
         selectedSequence.indicator.selected()
     }
@@ -46,7 +57,7 @@ function Sequencer(recIndication, playIndicator, deleteIndicator, selectionIndic
     }
 
     this.addEvent = function(name, data) {
-        return selectedSequence.addEvent(name, data)
+        return selectedSequence.addEvent('__sequenced_event__', {name: name, data: data})
     }
 
     function showIndividualSequenceState(indicator, state) {
@@ -81,6 +92,15 @@ function Sequencer(recIndication, playIndicator, deleteIndicator, selectionIndic
         }
     }
 
+    function emitStoppedEvent() {
+        sequencer.emit('stopped')
+    }
+
+
+    function emitSequencedEvent(wrappedEvent) {
+        sequencer.emit(wrappedEvent.name, wrappedEvent.data)
+    }
+
     //intialisation
     sequences.forEach((sequence) => {
         sequence.addListener('state', sequence.showSelectionState)
@@ -90,6 +110,6 @@ function Sequencer(recIndication, playIndicator, deleteIndicator, selectionIndic
     sequences[0].removeListener('state', sequences[0].showSelectionState)
     sequencer.select(1)
 }
-
+util.inherits(Sequencer, EventEmitter);
 
 module.exports = Sequencer

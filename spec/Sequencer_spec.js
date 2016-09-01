@@ -95,4 +95,34 @@ describe('Sequencer', () => {
         }, 110)
     })
 
+    it('emits sequenced events', (done) => {
+        let emitted = []
+        sequencer.on('sequence1-event', (data) => emitted.push({name: 'sequence1-event', data: data }))
+        sequencer.on('sequence2-event', (data) => emitted.push({name: 'sequence2-event', data: data }))
+        sequencer.on('stopped', (data) => emitted.push('stopped'))
+
+        sequencer.rec()
+        sequencer.addEvent('sequence1-event', {})
+        setTimeout(sequencer.play, 100) //start 1 looping (100ms long)
+        setTimeout(() => {
+            sequencer.select(2)
+            sequencer.rec()
+            sequencer.addEvent('sequence2-event', {})
+        }, 220)
+        setTimeout(sequencer.play, 300) //start 2 looping (80ms long)
+        setTimeout(sequencer.play, 400) //stop
+
+        setTimeout(() => {
+            console.log(emitted)
+            expect(emitted.length).toEqual(5)
+            expect(emitted[0]).toEqual({name: 'sequence1-event', data: {} })
+            expect(emitted[1]).toEqual({name: 'sequence1-event', data: {} })
+            expect(emitted[2]).toEqual({name: 'sequence2-event', data: {} })
+            expect(emitted[3]).toEqual({name: 'sequence2-event', data: {} })
+            expect(emitted[4]).toEqual('stopped')
+
+            done()
+        }, 410)
+    })
+
 })
