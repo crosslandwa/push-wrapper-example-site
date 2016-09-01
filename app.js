@@ -33,6 +33,8 @@ const Push = require('push-wrapper'),
     filter_frequencies = [0, 100, 200, 400, 800, 2000, 6000, 10000, 20000],
     oneToEight = [1, 2, 3, 4, 5, 6, 7, 8];
 
+bpm.setMaxListeners(20)
+
 window.addEventListener('load', () => {
     if (navigator.requestMIDIAccess) {
         navigator.requestMIDIAccess({ sysex: true })
