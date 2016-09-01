@@ -8,29 +8,29 @@ const Sequence = require('./AppSequence.js');
 // delete: {off, ready, on}
 
 function Sequencer(recIndication, playIndicator, deleteIndicator, selectionIndicators, Scheduling, bpm) {
-    let sequences = selectionIndicators.map(() => new Sequence(Scheduling, bpm))
-    let selectedSequenceIndicators = selectionIndicators.map((i) => showIndividualSequenceState.bind(null, i))
+    let sequences = selectionIndicators.map((indicator) => {
+        let s = new Sequence(Scheduling, bpm)
+        s.indicator = indicator
+        s.showSelectionState = showIndividualSequenceState.bind(null, indicator)
+        return s
+    })
     let selectedSequence = sequences[0]
-    let lastSelectedSequence = 1
     let sequencer = this
 
     this.select = function(sequenceNumber = 1) {
         sequenceNumber = sequenceNumber > 0 ? sequenceNumber : 1
         let index = sequenceNumber - 1
-        let lastSelectedIndex = lastSelectedSequence - 1
         let prevSequence = selectedSequence
         selectedSequence = sequences[index]
 
-        prevSequence.removeListener('state', showSelectedSequenceState)
-        prevSequence.addListener('state', selectedSequenceIndicators[lastSelectedIndex])
+        prevSequence.removeListener('state', showPlayRecDelState)
+        prevSequence.addListener('state', prevSequence.showSelectionState)
         prevSequence.reportState()
 
-        selectedSequence.removeListener('state', selectedSequenceIndicators[lastSelectedIndex])
-        selectedSequence.addListener('state', showSelectedSequenceState)
+        selectedSequence.removeListener('state', selectedSequence.showSelectionState)
+        selectedSequence.addListener('state', showPlayRecDelState)
         selectedSequence.reportState()
-        selectionIndicators[index].selected()
-
-        lastSelectedSequence = sequenceNumber
+        selectedSequence.indicator.selected()
     }
 
     this.rec = function() {
@@ -64,7 +64,7 @@ function Sequencer(recIndication, playIndicator, deleteIndicator, selectionIndic
         }
     }
 
-    function showSelectedSequenceState(state) {
+    function showPlayRecDelState(state) {
         switch (state) {
             case 'idle':
                 recIndication.off(); playIndicator.off(); deleteIndicator.ready(); break;
