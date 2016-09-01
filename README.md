@@ -43,6 +43,8 @@ Timing for repeated notes inspired by this: https://github.com/cwilso/metronome
   - Swap playing sequence. Stop other sequences and 'legato' behaviour
   - Delete events in sequence
 - rethink sequencing and repetae interactions
+  - sequencing the repatae start/stop leads easily to stuck notes/silence
+  - could repetaed notes get recorded into sequence?
 - BPM aware sequence wrapper - this done as proof of concept
   - ~~sort of works while running, need to stop/start to get all notes playing. Likely a bug with the start offset~~ Fixed!
   - ~~responds to changes in global BPM (i.e. adjusts event placement and loop length)~~
@@ -59,10 +61,6 @@ Timing for repeated notes inspired by this: https://github.com/cwilso/metronome
   - ~~whilst stopped~~
   - whilst running. why?
 - UI for recording playback status
-- ~~Look at bug for held/sequenced notes and repetae~~
-  - ~~should ++ and -- as a result of being sequenced...~~
-- ~~Sequence through repetae module, not direct to player~~
-  - notes recorded via qwerty are not repetaed. Fix this?
 - ~~Fix timing when overdubbing notes on subsequent playback~~
 - ~~remove the 'restart' action from the serialized JSON representation~~
 

@@ -97,9 +97,13 @@ function off_we_go(bound_push) {
     bind_pitchbend(push, players);
 
     bindQwertyuiToPlayback(players, sequencer);
+
+    sequencer.on('play', (data) => {
+        players[data.player].cutOff(data.frequency).play(midiGain(data.velocity));
+    });
+
     bind_tempo_knob_to_bpm(push, bpm);
     bpm.report();
-//    sequence.reportState(); TODO is this needed for correct initialisation
 // TODO rethink how this works with multiple sequences
 //    push.knob['swing'].on('turned', sequence.changeNumberOfBeatsBy);
 //    sequence.on('numberOfBeats', numberOfBeats => push.lcd.x[2].y[3].update(`beats=${numberOfBeats}`));
@@ -162,18 +166,6 @@ function bind_column_to_player(push, player, x, repetae, sequencer) {
         player.cutOff(mutable_frequency).play(midiGain(mutable_velocity));
     }
 
-    let padPressed = function(f, velocity) {
-        mutable_velocity = velocity;
-        mutable_frequency = f;
-        if (++pressed_pads_in_col == 1) repetae.start(playback);
-    }
-
-    let padReleased = function() {
-        --pressed_pads_in_col;
-        pressed_pads_in_col = pressed_pads_in_col < 0 ? 0 : pressed_pads_in_col;
-        if (pressed_pads_in_col == 0) repetae.stop();
-    }
-
     let padAftertouch = function(pressure) {
         if (pressure > 0) mutable_velocity = pressure;
     }
@@ -181,23 +173,20 @@ function bind_column_to_player(push, player, x, repetae, sequencer) {
     foreach(oneToEight, (y) => {
         const grid_button = push.grid.x[x].y[y];
         grid_button.on('pressed', (velocity) => {
-            padPressed(filter_frequencies[y], velocity);
-            sequencer.addEvent(`play_${x}`, { velocity: mutable_velocity, frequency: filter_frequencies[y] });
+            mutable_velocity = velocity
+            mutable_frequency = filter_frequencies[y]
+            if (++pressed_pads_in_col == 1) repetae.start(playback)
+            sequencer.addEvent('play', { player: x - 1, velocity: mutable_velocity, frequency: mutable_frequency })
         });
         grid_button.on('aftertouch', padAftertouch);
         grid_button.on('released', () => {
-            padReleased();
-            sequencer.addEvent(`stop_${x}`, {});
+            --pressed_pads_in_col;
+            if (pressed_pads_in_col == 0) repetae.stop();
         });
     });
 
-    sequencer.on(`play_${x}`, (data) => {
-        padPressed(data.frequency, data.velocity);
-    });
-    sequencer.on(`stop_${x}`, padReleased);
     sequencer.on('stopped', () => {
         repetae.stop();
-        pressed_pads_in_col = 0;
     });
 }
 
@@ -211,9 +200,6 @@ function bindQwertyuiToPlayback(players, sequencer) {
             players[index].cutOff(f).play(midiGain(velocity));
             sequencer.addEvent('play', { player: index, velocity: velocity, frequency: f });
         }
-    });
-    sequencer.on('play', (data) => {
-        players[data.player].cutOff(data.frequency).play(midiGain(data.velocity));
     });
 }
 
