@@ -5,7 +5,7 @@ const Push = require('push-wrapper'),
     Player = require('./src/player.js'),
     context = window.AudioContext ? new window.AudioContext() : new window.webkitAudioContext(),
     Scheduling = require('wac.scheduling')(context),
-    Sequence = require('./src/AppSequence.js'),
+    Sequencer = require('./src/Sequencer.js'),
     Repetae = require('./src/repetae.js'),
     BPM = require('./src/bpm.js'),
     bpm = new BPM(120),
@@ -30,7 +30,8 @@ const Push = require('push-wrapper'),
         'assets/audio/tang-1.mp3',
         'assets/audio/Cassette808_Tom01.mp3'
     ],
-    filter_frequencies = [0, 100, 200, 400, 800, 2000, 6000, 10000, 20000];
+    filter_frequencies = [0, 100, 200, 400, 800, 2000, 6000, 10000, 20000],
+    oneToEight = [1, 2, 3, 4, 5, 6, 7, 8];
 
 window.addEventListener('load', () => {
     if (navigator.requestMIDIAccess) {
@@ -50,7 +51,7 @@ function off_we_go(bound_push) {
     const buttons = document.getElementsByClassName('push-wrapper-button'),
         players = create_players(),
         push = bound_push,
-        sequence = makeSequence(players, push, bpm);
+        sequencer = makeSequencer(players, push, bpm);
 
     push.lcd.clear();
 
@@ -86,7 +87,7 @@ function off_we_go(bound_push) {
         player.reportPitch();
 
         buttons[i].addEventListener('mousedown', () => { player.cutOff(filter_frequencies[8]).play(midiGain(110)) });
-        bind_column_to_player(push, player, column_number, repetae, sequence);
+        bind_column_to_player(push, player, column_number, repetae, sequencer);
     });
 
     foreach(intervals, (interval, button_name) => {
@@ -95,60 +96,51 @@ function off_we_go(bound_push) {
 
     bind_pitchbend(push, players);
 
-    bindQwertyuiToPlayback(players, sequence);
+    bindQwertyuiToPlayback(players, sequencer);
     bind_tempo_knob_to_bpm(push, bpm);
     bpm.report();
-    sequence.reportState();
-    push.knob['swing'].on('turned', sequence.changeNumberOfBeatsBy);
-    sequence.on('numberOfBeats', numberOfBeats => push.lcd.x[2].y[3].update(`beats=${numberOfBeats}`));
+//    sequence.reportState(); TODO is this needed for correct initialisation
+// TODO rethink how this works with multiple sequences
+//    push.knob['swing'].on('turned', sequence.changeNumberOfBeatsBy);
+//    sequence.on('numberOfBeats', numberOfBeats => push.lcd.x[2].y[3].update(`beats=${numberOfBeats}`));
 }
 
-function makeSequence(players, push, bpm) {
-    let sequence = new Sequence(Scheduling, bpm);
+function makeSequencer(players, push, bpm) {
+    function LedButton(pushButton) {
+        this.off = pushButton.led_off
+        this.ready = pushButton.led_dim
+        this.on = pushButton.led_on
+    }
+
+    function SelectionButton(pushButton) {
+        this.off = pushButton.led_off
+        this.hasSequence = function() { pushButton.yellow(); pushButton.led_on() }
+        this.selected = function() { pushButton.orange(); pushButton.led_on() }
+        this.playing = function() { pushButton.green(); pushButton.led_on() }
+        this.recording = function() { pushButton.red(); pushButton.led_on() }
+    }
+
+    let sequencer = new Sequencer(
+        new LedButton(push.button['rec']),
+        new LedButton(push.button['play']),
+        new LedButton(push.button['delete']),
+        oneToEight.map((x) => new SelectionButton(push.channel[x].select)),
+        Scheduling,
+        bpm);
 
     window.addEventListener('keydown', (event) => {
         switch (event.keyCode) {
-            case 32: sequence.handlePlayButton(); break; // spacebar
-            case 65: sequence.handleRecButton(); break; // a
-            case 68: sequence.handleDeleteButton(); break; // d
+            case 32: sequencer.play(); break; // spacebar
+            case 65: sequencer.rec(); break; // a
+            case 68: sequencer.del(); break; // d
         }
     });
 
-    sequence.on('armed', () => {
-        push.button['rec'].led_on();
-        push.button['play'].led_off();
-        push.button['delete'].led_dim();
-    });
-    sequence.on('recording', () => {
-        push.button['rec'].led_on();
-        push.button['play'].led_off();
-        push.button['delete'].led_on();
-    });
-    sequence.on('playback', () => {
-        push.button['rec'].led_off();
-        push.button['play'].led_on();
-        push.button['delete'].led_on();
-    });
-    sequence.on('overdubbing', () => {
-        push.button['rec'].led_dim();
-        push.button['play'].led_on();
-        push.button['delete'].led_on();
-    });
-    sequence.on('stopped', () => {
-        push.button['rec'].led_off();
-        push.button['play'].led_dim();
-        push.button['delete'].led_on();
-    });
-    sequence.on('idle', () => {
-        push.button['rec'].led_off();
-        push.button['play'].led_off();
-        push.button['delete'].led_dim();
-    });
-    push.button['rec'].on('pressed', sequence.handleRecButton);
-    push.button['play'].on('pressed', sequence.handlePlayButton);
-    push.button['delete'].on('pressed', sequence.handleDeleteButton);
+    push.button['rec'].on('pressed', sequencer.rec);
+    push.button['play'].on('pressed', sequencer.play);
+    push.button['delete'].on('pressed', sequencer.del);
 
-    return sequence;
+    return sequencer;
 }
 
 function create_players() {
@@ -159,7 +151,7 @@ function create_players() {
     return players;
 }
 
-function bind_column_to_player(push, player, x, repetae, sequence) {
+function bind_column_to_player(push, player, x, repetae, sequencer) {
     let mutable_velocity = 127,
         mutable_frequency = filter_frequencies[8],
         pressed_pads_in_col = 0;
@@ -184,30 +176,30 @@ function bind_column_to_player(push, player, x, repetae, sequence) {
         if (pressure > 0) mutable_velocity = pressure;
     }
 
-    foreach([1, 2, 3, 4, 5, 6, 7, 8], (y) => {
+    foreach(oneToEight, (y) => {
         const grid_button = push.grid.x[x].y[y];
         grid_button.on('pressed', (velocity) => {
             padPressed(filter_frequencies[y], velocity);
-            sequence.addEvent(`play_${x}`, { velocity: mutable_velocity, frequency: filter_frequencies[y] });
+            sequencer.addEvent(`play_${x}`, { velocity: mutable_velocity, frequency: filter_frequencies[y] });
         });
         grid_button.on('aftertouch', padAftertouch);
         grid_button.on('released', () => {
             padReleased();
-            sequence.addEvent(`stop_${x}`, {});
+            sequencer.addEvent(`stop_${x}`, {});
         });
     });
 
-    sequence.on(`play_${x}`, (data) => {
+    sequencer.on(`play_${x}`, (data) => {
         padPressed(data.frequency, data.velocity);
     });
-    sequence.on(`stop_${x}`, padReleased);
-    sequence.on('stopped', () => {
+    sequencer.on(`stop_${x}`, padReleased);
+    sequencer.on('stopped', () => {
         repetae.stop();
         pressed_pads_in_col = 0;
     });
 }
 
-function bindQwertyuiToPlayback(players, sequence) {
+function bindQwertyuiToPlayback(players, sequencer) {
     let lookup = {113: 0, 119: 1, 101: 2, 114: 3, 116: 4, 121: 5, 117: 6, 105: 7};
     window.addEventListener("keypress", (event) => {
         if (event.charCode in lookup) {
@@ -215,10 +207,10 @@ function bindQwertyuiToPlayback(players, sequence) {
                 f = filter_frequencies[8],
                 velocity = 110;
             players[index].cutOff(f).play(midiGain(velocity));
-            sequence.addEvent('play', { player: index, velocity: velocity, frequency: f });
+            sequencer.addEvent('play', { player: index, velocity: velocity, frequency: f });
         }
     });
-    sequence.on('play', (data) => {
+    sequencer.on('play', (data) => {
         players[data.player].cutOff(data.frequency).play(midiGain(data.velocity));
     });
 }
@@ -233,7 +225,7 @@ function midiGain(velocity) {
 }
 
 function turn_on_column(push, x, gain) {
-    foreach([1, 2, 3, 4, 5, 6, 7, 8], (y) => {
+    foreach(oneToEight, (y) => {
         if (((gain.velocity() + 15) / 16) >= y) {
             push.grid.x[x].y[y].led_on(gain.velocity());
         } else {
