@@ -113,7 +113,6 @@ describe('Sequencer', () => {
         setTimeout(sequencer.play, 400) //stop
 
         setTimeout(() => {
-            console.log(emitted)
             expect(emitted.length).toEqual(5)
             expect(emitted[0]).toEqual({name: 'sequence1-event', data: {} })
             expect(emitted[1]).toEqual({name: 'sequence1-event', data: {} })
