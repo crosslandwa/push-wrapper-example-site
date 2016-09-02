@@ -133,10 +133,18 @@ function makeSequencer(players, push, bpm) {
         bpm);
 
     window.addEventListener('keydown', (event) => {
-        switch (event.keyCode) {
-            case 32: sequencer.play(); break; // spacebar
-            case 65: sequencer.rec(); break; // a
-            case 68: sequencer.del(); break; // d
+        switch (event.key) {
+            case " ": sequencer.play(); break; // spacebar
+            case "a": sequencer.rec(); break;
+            case "d": sequencer.del(); break;
+            case "1": sequencer.select(1); break;
+            case "2": sequencer.select(2); break;
+            case "3": sequencer.select(3); break;
+            case "4": sequencer.select(4); break;
+            case "5": sequencer.select(5); break;
+            case "6": sequencer.select(6); break;
+            case "7": sequencer.select(7); break;
+            case "8": sequencer.select(8); break;
         }
     });
 
@@ -187,10 +195,10 @@ function bind_column_to_player(push, player, x, repetae, sequencer) {
 }
 
 function bindQwertyuiToPlayback(players, sequencer) {
-    let lookup = {113: 0, 119: 1, 101: 2, 114: 3, 116: 4, 121: 5, 117: 6, 105: 7};
+    let lookup = {'q': 0, 'w': 1, 'e': 2, 'r': 3, 't': 4, 'y': 5, 'u': 6, 'i': 7};
     window.addEventListener("keypress", (event) => {
-        if (event.charCode in lookup) {
-            let index = lookup[event.charCode],
+        if (event.key in lookup) {
+            let index = lookup[event.key],
                 f = filter_frequencies[8],
                 velocity = 110;
             players[index].cutOff(f).play(midiGain(velocity));

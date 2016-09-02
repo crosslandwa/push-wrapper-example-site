@@ -61,7 +61,9 @@ Timing for repeated notes inspired by this: https://github.com/cwilso/metronome
 - Change sequence length
   - ~~whilst stopped~~
   - whilst running. why?
-- UI for recording playback status
+- UI for
+  - recording playback status
+  - selected sequence
 - ~~Fix timing when overdubbing notes on subsequent playback~~
 - ~~remove the 'restart' action from the serialized JSON representation~~
 
