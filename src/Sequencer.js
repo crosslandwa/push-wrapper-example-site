@@ -18,6 +18,7 @@ function Sequencer(recIndication, playIndicator, deleteIndicator, selectionIndic
         return s
     })
     let selectedSequence
+    let activeSequence
     let sequencer = this
 
     this.select = function(sequenceNumber = 1) {
@@ -27,37 +28,44 @@ function Sequencer(recIndication, playIndicator, deleteIndicator, selectionIndic
 
         let prevSequence = selectedSequence
         selectedSequence = sequences[index]
-        let prevSequenceState = 'idle'
-
         if (prevSequence) {
             prevSequence.removeListener('state', showPlayRecDelState)
             prevSequence.removeListener('stopped', emitStoppedEvent)
-            prevSequenceState = prevSequence.currentState()
+
+            switch (prevSequence.currentState()) {
+                case 'armed':
+                    prevSequence.handleRecButton(); break; //disarm
+                case 'recording':
+                    prevSequence.handlePlayButton(); activeSequence = prevSequence; break; //start looping
+                case 'overdubbing':
+                    prevSequence.handleRecButton(); activeSequence = prevSequence; break; //go into playback
+            }
 
             prevSequence.reportState()
         }
-
 
         selectedSequence.addListener('state', showPlayRecDelState)
         selectedSequence.addListener('stopped', emitStoppedEvent)
 
         selectedSequence.reportState()
 
-        if (prevSequenceState === 'recording') {
-            prevSequence.handlePlayButton() // start it looping
+        let activeSequenceState = activeSequence ? activeSequence.currentState() : 'idle'
+
+        if (activeSequenceState === 'recording') {
+            activeSequence.handlePlayButton() // start it looping
         }
 
-        if ((prevSequenceState === 'armed') || (prevSequenceState === 'overdubbing')) {
-            prevSequence.handleRecButton() // unarm || go into playback mode
+        if ((activeSequenceState === 'armed') || (activeSequenceState === 'overdubbing')) {
+            activeSequence.handleRecButton() // unarm || go into playback mode
         }
 
         switch (selectedSequence.currentState()) {
             case 'stopped': // if newSequence hasSequence then start playback
-                switch (prevSequence.currentState()) {
-                    case 'playback':
-                        prevSequence.handlePlayButton(); break; // stop
+                if (activeSequence && (activeSequence.currentState() === 'playback')) {
+                    activeSequence.handlePlayButton() // stop
                 }
                 selectedSequence.handlePlayButton()
+                activeSequence = selectedSequence
                 break;
             case 'idle': // else arm it
                 selectedSequence.handleRecButton(); break;
@@ -65,15 +73,21 @@ function Sequencer(recIndication, playIndicator, deleteIndicator, selectionIndic
     }
 
     this.rec = function() {
-        return selectedSequence.handleRecButton()
+        let result = selectedSequence.handleRecButton()
+        if (selectedSequence.isActive()) activeSequence = selectedSequence
+        return result
     }
 
     this.play = function() {
-        return selectedSequence.handlePlayButton()
+        let result = selectedSequence.handlePlayButton()
+        if (selectedSequence.isActive()) activeSequence = selectedSequence
+        return result
     }
 
     this.del = function() {
-        return selectedSequence.handleDeleteButton()
+        let result = selectedSequence.handleDeleteButton()
+        if (!activeSequence.isActive()) activeSequence = undefined
+        return result
     }
 
     this.addEvent = function(name, data) {

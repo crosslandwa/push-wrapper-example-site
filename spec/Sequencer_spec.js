@@ -131,7 +131,7 @@ describe('Sequencer', () => {
         }, 220)
         setTimeout(sequencer.play, 300) //start 2 looping (80ms long)
         setTimeout(() => {
-//            sequencer.select(3) // arms, leaves 2 playing
+            sequencer.select(3) // arms, leaves 2 playing
             sequencer.select(1) // automatically plays 1, stops 2
         }, 400)
 

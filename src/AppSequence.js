@@ -123,6 +123,8 @@ module.exports = function(Scheduling, bpm) {
 
     sequence.currentState = function() { return state }
 
+    sequence.isActive = function() { return [states.playback, states.overdubbing, states.recording].indexOf(state) != -1 }
+
     sequence.on('stopped', () => {
         state = states.stopped
         reportState()
