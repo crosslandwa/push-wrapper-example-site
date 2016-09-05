@@ -126,7 +126,7 @@ function makeSequencer(players, push, bpm, uiSequenceButtons) {
     }
 
     function SelectionButton(pushButton, uiButton) {
-        this.off = function() { pushButton.led_off; uiButton.off() }
+        this.off = function() { pushButton.led_off(); uiButton.off() }
         this.hasSequence = function() { pushButton.yellow(); pushButton.led_on(); uiButton.hasSequence() }
         this.selected = function() { pushButton.orange(); pushButton.led_on(); uiButton.selected() }
         this.playing = function() { pushButton.green(); pushButton.led_on(); uiButton.playing() }

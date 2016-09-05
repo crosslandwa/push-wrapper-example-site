@@ -36,34 +36,34 @@ describe('Sequencer', () => {
         expect(sel2.state()).toEqual('off')
         expect(sel3.state()).toEqual('off')
 
-        expect('off').toEqual(play.state())
-        expect('dim').toEqual(del.state())
-        expect('off').toEqual(rec.state())
+        expect(play.state()).toEqual('off')
+        expect(del.state()).toEqual('dim')
+        expect(rec.state()).toEqual('off')
     })
 
     it('automatically arms the selected sequence if it has no recorded events', () => {
         sequencer.select(2)
 
-        expect('off').toEqual(sel1.state())
-        expect('red').toEqual(sel2.state())
-        expect('off').toEqual(sel3.state())
+        expect(sel1.state()).toEqual('off')
+        expect(sel2.state()).toEqual('red')
+        expect(sel3.state()).toEqual('off')
 
-        expect('off').toEqual(play.state())
-        expect('dim').toEqual(del.state())
-        expect('on').toEqual(rec.state())
+        expect(play.state()).toEqual('off')
+        expect(del.state()).toEqual('dim')
+        expect(rec.state()).toEqual('on')
     })
 
     it('allows an armed sequence to be disarmed', () => {
         sequencer.select(2) // selected but armed
         sequencer.rec() // disarm
 
-        expect('off').toEqual(play.state())
-        expect('dim').toEqual(del.state())
-        expect('off').toEqual(rec.state())
+        expect(sel1.state()).toEqual('off')
+        expect(sel2.state()).toEqual('orange')
+        expect(sel3.state()).toEqual('off')
 
-        expect('off').toEqual(sel1.state())
-        expect('orange').toEqual(sel2.state())
-        expect('off').toEqual(sel3.state())
+        expect(play.state()).toEqual('off')
+        expect(del.state()).toEqual('dim')
+        expect(rec.state()).toEqual('off')
     })
 
     it('shows the selected sequence to be playing when events recorded and play pressed', (done) => {
@@ -73,21 +73,21 @@ describe('Sequencer', () => {
         setTimeout(sequencer.play, 100)
 
         setTimeout(() => {
-            expect('on').toEqual(play.state())
-            expect('on').toEqual(del.state())
-            expect('off').toEqual(rec.state())
-            expect('off').toEqual(sel1.state())
-            expect('green').toEqual(sel2.state())
-            expect('off').toEqual(sel3.state())
+            expect(play.state()).toEqual('on')
+            expect(del.state()).toEqual('on')
+            expect(rec.state()).toEqual('off')
+            expect(sel1.state()).toEqual('off')
+            expect(sel2.state()).toEqual('green')
+            expect(sel3.state()).toEqual('off')
 
             sequencer.select(1)
 
-            expect('off').toEqual(play.state())
-            expect('dim').toEqual(del.state())
-            expect('on').toEqual(rec.state())
-            expect('red').toEqual(sel1.state())
-            expect('green').toEqual(sel2.state())
-            expect('off').toEqual(sel3.state())
+            expect(play.state()).toEqual('off')
+            expect(del.state()).toEqual('dim')
+            expect(rec.state()).toEqual('on')
+            expect(sel1.state()).toEqual('red')
+            expect(sel2.state()).toEqual('green')
+            expect(sel3.state()).toEqual('off')
 
             done()
         }, 110)
@@ -110,12 +110,12 @@ describe('Sequencer', () => {
         setTimeout(sequencer.play, 400) //stop
 
         setTimeout(() => {
-            expect(5).toEqual(emitted.length)
-            expect({name: 'sequence1-event', data: {} }).toEqual(emitted[0])
-            expect({name: 'sequence1-event', data: {} }).toEqual(emitted[1])
-            expect({name: 'sequence2-event', data: {} }).toEqual(emitted[2])
-            expect({name: 'sequence2-event', data: {} }).toEqual(emitted[3])
-            expect('stopped').toEqual(emitted[4])
+            expect(emitted.length).toEqual(5)
+            expect(emitted[0]).toEqual({name: 'sequence1-event', data: {} })
+            expect(emitted[1]).toEqual({name: 'sequence1-event', data: {} })
+            expect(emitted[2]).toEqual({name: 'sequence2-event', data: {} })
+            expect(emitted[3]).toEqual({name: 'sequence2-event', data: {} })
+            expect(emitted[4]).toEqual('stopped')
 
             done()
         }, 410)
@@ -131,13 +131,14 @@ describe('Sequencer', () => {
         }, 220)
         setTimeout(sequencer.play, 300) //start 2 looping (80ms long)
         setTimeout(() => {
-            sequencer.select(1) // automatically plays
+//            sequencer.select(3) // arms, leaves 2 playing
+            sequencer.select(1) // automatically plays 1, stops 2
         }, 400)
 
         setTimeout(() => {
-            expect('green').toEqual(sel1.state())
-            expect('yellow').toEqual(sel2.state())
-            expect('off').toEqual(sel3.state())
+            expect(sel1.state()).toEqual('green')
+            expect(sel2.state()).toEqual('yellow')
+            expect(sel3.state()).toEqual('off')
 
             done()
         }, 410)
