@@ -14,8 +14,7 @@ function Sequencer(recIndication, playIndicator, deleteIndicator, selectionIndic
 
     let sequences = selectionIndicators.map((indicator) => {
         let s = new Sequence(Scheduling, bpm)
-        s.indicator = indicator
-        s.showSelectionState = showIndividualSequenceState.bind(null, indicator)
+        s.showSelectionState = showIndividualSequenceState.bind(s, indicator)
         return s
     })
     let selectedSequence
@@ -28,22 +27,41 @@ function Sequencer(recIndication, playIndicator, deleteIndicator, selectionIndic
 
         let prevSequence = selectedSequence
         selectedSequence = sequences[index]
+        let prevSequenceState = 'idle'
 
         if (prevSequence) {
             prevSequence.removeListener('state', showPlayRecDelState)
             prevSequence.removeListener('stopped', emitStoppedEvent)
+            prevSequenceState = prevSequence.currentState()
 
-            prevSequence.addListener('state', prevSequence.showSelectionState)
             prevSequence.reportState()
         }
 
-        selectedSequence.removeListener('state', selectedSequence.showSelectionState)
 
         selectedSequence.addListener('state', showPlayRecDelState)
         selectedSequence.addListener('stopped', emitStoppedEvent)
 
         selectedSequence.reportState()
-        selectedSequence.indicator.selected()
+
+        if (prevSequenceState === 'recording') {
+            prevSequence.handlePlayButton() // start it looping
+        }
+
+        if ((prevSequenceState === 'armed') || (prevSequenceState === 'overdubbing')) {
+            prevSequence.handleRecButton() // unarm || go into playback mode
+        }
+
+        switch (selectedSequence.currentState()) {
+            case 'stopped': // if newSequence hasSequence then start playback
+                switch (prevSequence.currentState()) {
+                    case 'playback':
+                        prevSequence.handlePlayButton(); break; // stop
+                }
+                selectedSequence.handlePlayButton()
+                break;
+            case 'idle': // else arm it
+                selectedSequence.handleRecButton(); break;
+        }
     }
 
     this.rec = function() {
@@ -62,18 +80,29 @@ function Sequencer(recIndication, playIndicator, deleteIndicator, selectionIndic
         return selectedSequence.addEvent('__sequenced_event__', {name: name, data: data})
     }
 
+    // this = sequencer instance
     function showIndividualSequenceState(indicator, state) {
         switch (state) {
             case 'idle':
+                if (this === selectedSequence) {
+                    indicator.selected()
+                } else {
+                    indicator.off()
+                }
+                break;
             case 'armed':
-                indicator.off(); break;
             case 'recording':
             case 'overdubbing':
                 indicator.recording(); break;
             case 'playback':
                 indicator.playing(); break;
             case 'stopped':
-                indicator.hasSequence(); break;
+                if (this === selectedSequence) {
+                    indicator.selected()
+                } else {
+                    indicator.hasSequence()
+                }
+                break;
         }
     }
 
@@ -103,23 +132,20 @@ function Sequencer(recIndication, playIndicator, deleteIndicator, selectionIndic
         sequencer.emit(wrappedEvent.name, wrappedEvent.data)
     }
 
-    //intialisation
-    sequences.forEach((sequence) => {
+    //initialisation
+    sequences.forEach((sequence, index) => {
         sequence.addListener('state', sequence.showSelectionState)
         sequence.addListener('__sequenced_event__', emitSequencedEvent)
         sequence.addListener('state', (state) => {
             switch(state) {
                 case 'recording':
-                case 'overdubbing':
-                case 'playback':
                     sequences.forEach((other) => { if (sequence !== other) other.stop() })
             }
         })
         sequence.reportState()
     })
-    // this ensures we don't add the same listener again in the select() function
-    sequences[0].removeListener('state', sequences[0].showSelectionState)
     sequencer.select(1)
+    sequencer.rec() // unarm
 }
 util.inherits(Sequencer, EventEmitter);
 
