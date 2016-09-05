@@ -22,7 +22,10 @@ function Sequencer(recIndication, playIndicator, deleteIndicator, selectionIndic
     this.select = function(sequenceNumber = 1) {
         sequenceNumber = sequenceNumber > 0 ? sequenceNumber : 1
         let index = sequenceNumber - 1
-        if (selectedSequence === sequences[index]) return
+        if (isSelected(sequences[index]) && (sequences[index] === activeSequence)) {
+            activeSequence.currentState() === 'playback' ? activeSequence.start() : activeSequence.handlePlayButton()
+            return
+        }
 
         let prevSequence = selectedSequence
         selectedSequence = sequences[index]

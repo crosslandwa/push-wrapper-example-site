@@ -143,4 +143,36 @@ describe('Sequencer', () => {
             done()
         }, 410)
     })
+
+    it('starts playback when re-selecting a recording loop', (done) => {
+        sequencer.select(2)
+        sequencer.addEvent('sequence2-event', {})
+        setTimeout(() => sequencer.select(2), 100) //start 2 looping (100ms long)
+
+        setTimeout(() => {
+            expect(sel1.state()).toEqual('off')
+            expect(sel2.state()).toEqual('green')
+            expect(sel3.state()).toEqual('off')
+
+            done()
+        }, 110)
+    })
+
+    it('restarts sequence when a playing loop is reselected', (done) => {
+        let emitted = []
+        sequencer.on('sequence1-event', (data) => emitted.push({name: 'sequence1-event', data: data }))
+
+        sequencer.select(1) // arm
+        sequencer.addEvent('sequence1-event', {})
+        setTimeout(sequencer.play, 100) // start 1 looping (100ms long), expect events at 100, 200
+        setTimeout(() => sequencer.select(1), 150) // restart 1
+
+        setTimeout(() => {
+            expect(emitted.length).toEqual(2)
+            expect(emitted[0]).toEqual({name: 'sequence1-event', data: {} })
+            expect(emitted[1]).toEqual({name: 'sequence1-event', data: {} })
+
+            done()
+        }, 160)
+    })
 })
