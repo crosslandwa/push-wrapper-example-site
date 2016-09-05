@@ -121,6 +121,8 @@ module.exports = function(Scheduling, bpm) {
 
     sequence.reportState = reportState
 
+    sequence.currentState = function() { return state }
+
     sequence.on('stopped', () => {
         state = states.stopped
         reportState()
