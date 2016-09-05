@@ -121,4 +121,25 @@ describe('Sequencer', () => {
         }, 410)
     })
 
+    it('automatically plays the selected sequence if it has no recorded events', (done) => {
+        sequencer.rec() // arm
+        sequencer.addEvent('sequence1-event', {})
+        setTimeout(sequencer.play, 100) //start 1 looping (100ms long)
+        setTimeout(() => {
+            sequencer.select(2) // automatically armed
+            sequencer.addEvent('sequence2-event', {})
+        }, 220)
+        setTimeout(sequencer.play, 300) //start 2 looping (80ms long)
+        setTimeout(() => {
+            sequencer.select(1) // automatically plays
+        }, 400)
+
+        setTimeout(() => {
+            expect('green').toEqual(sel1.state())
+            expect('yellow').toEqual(sel2.state())
+            expect('off').toEqual(sel3.state())
+
+            done()
+        }, 410)
+    })
 })
