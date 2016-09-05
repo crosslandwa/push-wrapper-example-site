@@ -12,11 +12,7 @@ const util = require('util')
 function Sequencer(recIndication, playIndicator, deleteIndicator, selectionIndicators, Scheduling, bpm) {
     EventEmitter.call(this)
 
-    let sequences = selectionIndicators.map((indicator) => {
-        let s = new Sequence(Scheduling, bpm)
-        s.showSelectionState = showIndividualSequenceState.bind(s, indicator)
-        return s
-    })
+    let sequences = selectionIndicators.map(() => new Sequence(Scheduling, bpm))
     let selectedSequence
     let activeSequence
     let sequencer = this
@@ -150,7 +146,7 @@ function Sequencer(recIndication, playIndicator, deleteIndicator, selectionIndic
 
     //initialisation
     sequences.forEach((sequence, index) => {
-        sequence.addListener('state', sequence.showSelectionState)
+        sequence.addListener('state', showIndividualSequenceState.bind(sequence, selectionIndicators[index]))
         sequence.addListener('state', showPlayRecDelState.bind(sequence))
         sequence.addListener('__sequenced_event__', emitSequencedEvent)
         sequence.addListener('state', (state) => {
