@@ -28,7 +28,7 @@ ul {
     margin: 20px 0;
     padding: 10px 0;
 }
-.push-wrapper-button {
+.push-wrapper-button, .push-wrapper-sequence-button {
     display: inline-block;
     width: 8%;
     height: 40%;
@@ -39,6 +39,21 @@ ul {
     cursor: pointer;
     border: 2px solid white;
     transition: all 0.2s;
+}
+.push-wrapper-sequence-button {
+    height: 20%;
+}
+.push-wrapper-sequence-button.selected {
+    background-color: #ff9933;
+}
+.push-wrapper-sequence-button.has-sequence {
+    background-color: #ffff4d;
+}
+.push-wrapper-sequence-button.playing {
+    background-color: #33cc33;
+}
+.push-wrapper-sequence-button.recording {
+    background-color: #e60000;
 }
 .push-wrapper-button.active {
     opacity: 0.25;

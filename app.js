@@ -50,10 +50,19 @@ function show_no_midi_warning() {
 }
 
 function off_we_go(bound_push) {
-    const buttons = document.getElementsByClassName('push-wrapper-button'),
-        players = create_players(),
+    const buttons = document.getElementsByClassName('push-wrapper-button');
+    const sequenceButtons = Array.prototype.map.call(document.getElementsByClassName('push-wrapper-sequence-button'),
+        (button) => {
+            button.off = updateSequenceUiButton.bind(button)
+            button.hasSequence = updateSequenceUiButton.bind(button, 'has-sequence')
+            button.playing = updateSequenceUiButton.bind(button, 'playing')
+            button.recording = updateSequenceUiButton.bind(button, 'recording')
+            button.selected = updateSequenceUiButton.bind(button, 'selected')
+            return button
+        });
+    const players = create_players(),
         push = bound_push,
-        sequencer = makeSequencer(players, push, bpm);
+        sequencer = makeSequencer(players, push, bpm, sequenceButtons);
 
     push.lcd.clear();
 
@@ -109,26 +118,26 @@ function off_we_go(bound_push) {
 //    sequence.on('numberOfBeats', numberOfBeats => push.lcd.x[2].y[3].update(`beats=${numberOfBeats}`));
 }
 
-function makeSequencer(players, push, bpm) {
+function makeSequencer(players, push, bpm, uiSequenceButtons) {
     function LedButton(pushButton) {
         this.off = pushButton.led_off
         this.ready = pushButton.led_dim
         this.on = pushButton.led_on
     }
 
-    function SelectionButton(pushButton) {
-        this.off = pushButton.led_off
-        this.hasSequence = function() { pushButton.yellow(); pushButton.led_on() }
-        this.selected = function() { pushButton.orange(); pushButton.led_on() }
-        this.playing = function() { pushButton.green(); pushButton.led_on() }
-        this.recording = function() { pushButton.red(); pushButton.led_on() }
+    function SelectionButton(pushButton, uiButton) {
+        this.off = function() { pushButton.led_off; uiButton.off() }
+        this.hasSequence = function() { pushButton.yellow(); pushButton.led_on(); uiButton.hasSequence() }
+        this.selected = function() { pushButton.orange(); pushButton.led_on(); uiButton.selected() }
+        this.playing = function() { pushButton.green(); pushButton.led_on(); uiButton.playing() }
+        this.recording = function() { pushButton.red(); pushButton.led_on(); uiButton.recording() }
     }
 
     let sequencer = new Sequencer(
         new LedButton(push.button['rec']),
         new LedButton(push.button['play']),
         new LedButton(push.button['delete']),
-        oneToEight.map((x) => new SelectionButton(push.channel[x].select)),
+        oneToEight.map((x) => new SelectionButton(push.channel[x].select, uiSequenceButtons[x -1])),
         Scheduling,
         bpm);
 
@@ -255,4 +264,14 @@ function turn_button_display_off(ui_btn) {
 
 function scale(input, minIn, maxIn, minOut, maxOut) {
     return ((maxOut - minOut) * ((input - minIn) / (maxIn - minIn))) + minOut;
+}
+
+function updateSequenceUiButton(state) {
+    this.classList.remove('has-sequence')
+    this.classList.remove('playing')
+    this.classList.remove('recording')
+    this.classList.remove('selected')
+    if (state) {
+        this.classList.add(state)
+    }
 }
