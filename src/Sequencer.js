@@ -94,12 +94,7 @@ function Sequencer(recIndication, playIndicator, deleteIndicator, selectionIndic
     function showIndividualSequenceState(indicator, state) {
         switch (state) {
             case 'idle':
-                if (this === selectedSequence) {
-                    indicator.selected()
-                } else {
-                    indicator.off()
-                }
-                break;
+                isSelected(this) ? indicator.selected() : indicator.off(); break;
             case 'armed':
             case 'recording':
             case 'overdubbing':
@@ -107,12 +102,7 @@ function Sequencer(recIndication, playIndicator, deleteIndicator, selectionIndic
             case 'playback':
                 indicator.playing(); break;
             case 'stopped':
-                if (this === selectedSequence) {
-                    indicator.selected()
-                } else {
-                    indicator.hasSequence()
-                }
-                break;
+                isSelected(this) ? indicator.selected() : indicator.hasSequence(); break;
         }
     }
 
