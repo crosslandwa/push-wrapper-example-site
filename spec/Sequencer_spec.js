@@ -66,7 +66,7 @@ describe('Sequencer', () => {
         expect('off').toEqual(sel3.state())
     })
 
-    fit('shows the selected sequence to be playing when events recorded and play pressed', (done) => {
+    it('shows the selected sequence to be playing when events recorded and play pressed', (done) => {
         sequencer.select(2)
         sequencer.addEvent('event', {})
 
@@ -93,33 +93,32 @@ describe('Sequencer', () => {
         }, 110)
     })
 
-//    it('emits sequenced events', (done) => {
-//        let emitted = []
-//        sequencer.on('sequence1-event', (data) => emitted.push({name: 'sequence1-event', data: data }))
-//        sequencer.on('sequence2-event', (data) => emitted.push({name: 'sequence2-event', data: data }))
-//        sequencer.on('stopped', (data) => emitted.push('stopped'))
-//
-//        sequencer.rec()
-//        sequencer.addEvent('sequence1-event', {})
-//        setTimeout(sequencer.play, 100) //start 1 looping (100ms long)
-//        setTimeout(() => {
-//            sequencer.select(2)
-//            sequencer.rec()
-//            sequencer.addEvent('sequence2-event', {})
-//        }, 220)
-//        setTimeout(sequencer.play, 300) //start 2 looping (80ms long)
-//        setTimeout(sequencer.play, 400) //stop
-//
-//        setTimeout(() => {
-//            expect(emitted.length).toEqual(5)
-//            expect(emitted[0]).toEqual({name: 'sequence1-event', data: {} })
-//            expect(emitted[1]).toEqual({name: 'sequence1-event', data: {} })
-//            expect(emitted[2]).toEqual({name: 'sequence2-event', data: {} })
-//            expect(emitted[3]).toEqual({name: 'sequence2-event', data: {} })
-//            expect(emitted[4]).toEqual('stopped')
-//
-//            done()
-//        }, 410)
-//    })
+    it('allows only one sequence to be active and emits its sequenced events', (done) => {
+        let emitted = []
+        sequencer.on('sequence1-event', (data) => emitted.push({name: 'sequence1-event', data: data }))
+        sequencer.on('sequence2-event', (data) => emitted.push({name: 'sequence2-event', data: data }))
+        sequencer.on('stopped', (data) => emitted.push('stopped'))
+
+        sequencer.rec() // arm
+        sequencer.addEvent('sequence1-event', {})
+        setTimeout(sequencer.play, 100) //start 1 looping (100ms long)
+        setTimeout(() => {
+            sequencer.select(2) // automatically armed
+            sequencer.addEvent('sequence2-event', {})
+        }, 220)
+        setTimeout(sequencer.play, 300) //start 2 looping (80ms long)
+        setTimeout(sequencer.play, 400) //stop
+
+        setTimeout(() => {
+            expect(5).toEqual(emitted.length)
+            expect({name: 'sequence1-event', data: {} }).toEqual(emitted[0])
+            expect({name: 'sequence1-event', data: {} }).toEqual(emitted[1])
+            expect({name: 'sequence2-event', data: {} }).toEqual(emitted[2])
+            expect({name: 'sequence2-event', data: {} }).toEqual(emitted[3])
+            expect('stopped').toEqual(emitted[4])
+
+            done()
+        }, 410)
+    })
 
 })
