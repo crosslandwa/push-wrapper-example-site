@@ -26,33 +26,22 @@ function Sequencer(recIndication, playIndicator, deleteIndicator, selectionIndic
 
         let prevSequence = selectedSequence
         selectedSequence = sequences[index]
+
         if (prevSequence) {
             prevSequence.removeListener('stopped', emitStoppedEvent)
-
-            switch (prevSequence.currentState()) {
-                case 'armed':
-                    prevSequence.handleRecButton(); break; //disarm
-                case 'recording':
-                    prevSequence.handlePlayButton(); break; //start looping
-                case 'overdubbing':
-                    prevSequence.handleRecButton(); break; //go into playback
+            if (prevSequence.currentState() === 'armed') {
+                prevSequence.handleRecButton() //disarm
             }
-
             prevSequence.reportState()
         }
 
         selectedSequence.addListener('stopped', emitStoppedEvent)
 
-        selectedSequence.reportState()
-
         let activeSequenceState = activeSequence ? activeSequence.currentState() : 'idle'
-
         if (activeSequenceState === 'recording') {
             activeSequence.handlePlayButton() // start it looping
-        }
-
-        if ((activeSequenceState === 'armed') || (activeSequenceState === 'overdubbing')) {
-            activeSequence.handleRecButton() // unarm || go into playback mode
+        } else if (activeSequenceState === 'overdubbing') {
+            activeSequence.handleRecButton() // go into playback mode
         }
 
         switch (selectedSequence.currentState()) {
