@@ -93,7 +93,7 @@ describe('Sequence', () => {
             setTimeout(() => {
                 expect(events.length).toEqual(2);
                 expectEventAtTime(events[0], 'capture', 50, 'hello1')
-                expectEventAtTime(events[1], 'stopped', 50)
+                expectEventAtTime(events[1], 'stopped', 60)
                 done();
             }, 100);
         });
@@ -183,7 +183,7 @@ describe('Sequence', () => {
                 expect(events.length).toEqual(3);
                 expectEventAtTime(events[0], 'capture', 75, 'hello1')
                 expectEventAtTime(events[1], 'capture', 100, 'hello2')
-                expectEventAtTime(events[2], 'stopped', 100)
+                expectEventAtTime(events[2], 'stopped', 110)
                 done();
             }, 150);
         })

@@ -19,6 +19,7 @@ function Sequence(Scheduling) {
             stopEvent.when = event.when > stopEvent.when ? event.when : stopEvent.when
             schedule(event)
         })
+        stopEvent.when += 10 // this ensures the stop event occurs AFTER the last event
         schedule(restartEvent.when ? restartEvent : stopEvent)
     }
 
