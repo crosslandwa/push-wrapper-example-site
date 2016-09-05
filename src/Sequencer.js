@@ -69,25 +69,22 @@ function Sequencer(recIndication, playIndicator, deleteIndicator, selectionIndic
     }
 
     this.rec = function() {
-        let result = selectedSequence.handleRecButton()
+        selectedSequence.handleRecButton()
         if (selectedSequence.isActive()) activeSequence = selectedSequence
-        return result
     }
 
     this.play = function() {
-        let result = selectedSequence.handlePlayButton()
+        selectedSequence.handlePlayButton()
         if (selectedSequence.isActive()) activeSequence = selectedSequence
-        return result
     }
 
     this.del = function() {
-        let result = selectedSequence.handleDeleteButton()
+        selectedSequence.handleDeleteButton()
         if (!activeSequence.isActive()) activeSequence = undefined
-        return result
     }
 
     this.addEvent = function(name, data) {
-        return selectedSequence.addEvent('__sequenced_event__', {name: name, data: data})
+        selectedSequence.addEvent('__sequenced_event__', {name: name, data: data})
     }
 
     // this = sequencer instance
