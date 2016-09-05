@@ -21,6 +21,8 @@ function Sequencer(recIndication, playIndicator, deleteIndicator, selectionIndic
     let activeSequence
     let sequencer = this
 
+    function isSelected(sequence) { return sequence === selectedSequence }
+
     this.select = function(sequenceNumber = 1) {
         sequenceNumber = sequenceNumber > 0 ? sequenceNumber : 1
         let index = sequenceNumber - 1
@@ -29,7 +31,6 @@ function Sequencer(recIndication, playIndicator, deleteIndicator, selectionIndic
         let prevSequence = selectedSequence
         selectedSequence = sequences[index]
         if (prevSequence) {
-            prevSequence.removeListener('state', showPlayRecDelState)
             prevSequence.removeListener('stopped', emitStoppedEvent)
 
             switch (prevSequence.currentState()) {
@@ -44,7 +45,6 @@ function Sequencer(recIndication, playIndicator, deleteIndicator, selectionIndic
             prevSequence.reportState()
         }
 
-        selectedSequence.addListener('state', showPlayRecDelState)
         selectedSequence.addListener('stopped', emitStoppedEvent)
 
         selectedSequence.reportState()
@@ -120,7 +120,9 @@ function Sequencer(recIndication, playIndicator, deleteIndicator, selectionIndic
         }
     }
 
+    // this = sequencer instance
     function showPlayRecDelState(state) {
+        if (!isSelected(this)) return
         switch (state) {
             case 'idle':
                 recIndication.off(); playIndicator.off(); deleteIndicator.ready(); break;
@@ -149,6 +151,7 @@ function Sequencer(recIndication, playIndicator, deleteIndicator, selectionIndic
     //initialisation
     sequences.forEach((sequence, index) => {
         sequence.addListener('state', sequence.showSelectionState)
+        sequence.addListener('state', showPlayRecDelState.bind(sequence))
         sequence.addListener('__sequenced_event__', emitSequencedEvent)
         sequence.addListener('state', (state) => {
             switch(state) {
