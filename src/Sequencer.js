@@ -47,11 +47,13 @@ function Sequencer(recIndication, playIndicator, deleteIndicator, selectionIndic
 
         selectedSequence.addListener('stopped', emitStoppedEvent)
 
-        let activeSequenceState = activeSequence ? activeSequence.currentState() : 'idle'
-        if (activeSequenceState === 'recording') {
-            activeSequence.handlePlayButton() // start it looping
-        } else if (activeSequenceState === 'overdubbing') {
-            activeSequence.handleRecButton() // go into playback mode
+        if (activeSequence) {
+            switch (activeSequence.currentState()) {
+                case 'recording':
+                    activeSequence.handlePlayButton(); break; // start it looping
+                case 'overdubbing':
+                    activeSequence.handleRecButton(); break; // go into playback mode
+            }
         }
 
         switch (selectedSequence.currentState()) {
