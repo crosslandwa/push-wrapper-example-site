@@ -22,7 +22,7 @@ function SelectionButton(sequenceNumber) {
     this.number = sequenceNumber
 }
 
-describe('Sequencer', () => {
+fdescribe('Sequencer', () => {
     let sequencer
     let rec = new LedButton(), play = new LedButton, del = new LedButton()
     let sel1 = new SelectionButton(1), sel2 = new SelectionButton(2), sel3 = new SelectionButton(3)
@@ -171,6 +171,21 @@ describe('Sequencer', () => {
             expect(emitted.length).toEqual(2)
             expect(emitted[0]).toEqual({name: 'sequence1-event', data: {} })
             expect(emitted[1]).toEqual({name: 'sequence1-event', data: {} })
+
+            done()
+        }, 160)
+    })
+
+    it('reverts to playback when an overdubbing sequence is reselected', (done) => {
+        sequencer.select(1) // arm
+        sequencer.addEvent('sequence1-event', {}) // recording
+        setTimeout(sequencer.rec, 100) // start 1 looping and overdubbing
+        setTimeout(() => sequencer.select(1), 150) // change from overdubbing to playback
+
+        setTimeout(() => {
+            expect(sel1.state()).toEqual('green')
+            expect(sel2.state()).toEqual('off')
+            expect(sel3.state()).toEqual('off')
 
             done()
         }, 160)
