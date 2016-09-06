@@ -126,6 +126,13 @@ module.exports = function(Scheduling, bpm) {
 
     sequence.currentState = function() { return state }
 
+    sequence.disarm = function() {
+        if (state === states.armed) {
+            state = states.idle
+            reportState()
+        }
+    }
+
     sequence.on('stopped', () => {
         state = states.stopped
         reportState()

@@ -39,9 +39,7 @@ function Sequencer(recIndication, playIndicator, deleteIndicator, selectionIndic
 
         if (prevSequence) {
             prevSequence.removeListener('stopped', emitStoppedEvent)
-            if (prevSequence.currentState() === 'armed') {
-                prevSequence.handleRecButton() //disarm
-            }
+            prevSequence.disarm()
             prevSequence.reportState()
         }
 
