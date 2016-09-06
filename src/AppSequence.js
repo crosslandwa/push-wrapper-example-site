@@ -14,8 +14,11 @@ module.exports = function(Scheduling, bpm) {
         },
         state = states.idle,
         numberOfBeats = undefined,
-        calculatedBPM = undefined,
-        reportState = function() { sequence.emit('state', state); };
+        calculatedBPM = undefined;
+
+    function isActive() { return [states.playback, states.overdubbing, states.recording].indexOf(state) != -1 }
+
+    function reportState() { sequence.emit('state', state); if (isActive()) sequence.emit('active') }
 
     let updateSequenceAlignedWithBpmChange = function(bpm) {
         let changeFactor = calculatedBPM / bpm.current
@@ -122,8 +125,6 @@ module.exports = function(Scheduling, bpm) {
     sequence.reportState = reportState
 
     sequence.currentState = function() { return state }
-
-    sequence.isActive = function() { return [states.playback, states.overdubbing, states.recording].indexOf(state) != -1 }
 
     sequence.on('stopped', () => {
         state = states.stopped
