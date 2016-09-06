@@ -290,7 +290,7 @@ describe('Sequence', () => {
                 expectEventAtTime(events[2], 'capture', 200, 'hello1')
                 expectEventAtTime(events[3], 'stopped', 225)
                 done();
-            }, 250);
+            }, 500); // leave this long enough to ensure no more 'capture' events are fired after the 'stopped' event
         });
 
         it('does not fire events scheduled beyond the loop end', (done) => {

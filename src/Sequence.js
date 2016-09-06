@@ -73,10 +73,12 @@ function Sequence(Scheduling) {
     }
 
     this.stop = function() {
-        let emitStopped = running;
-        running = false;
-        cancelAllEvents();
-        if (emitStopped) sequence.emit('stopped');
+        let wasRunning = running
+        running = false
+        if (wasRunning) {
+            cancelAllEvents()
+            sequence.emit('stopped')
+        }
     }
 
     this.loop = function(endTimeMs) {

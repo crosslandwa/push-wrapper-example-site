@@ -22,7 +22,7 @@ function SelectionButton(sequenceNumber) {
     this.number = sequenceNumber
 }
 
-fdescribe('Sequencer', () => {
+describe('Sequencer', () => {
     let sequencer
     let rec = new LedButton(), play = new LedButton, del = new LedButton()
     let sel1 = new SelectionButton(1), sel2 = new SelectionButton(2), sel3 = new SelectionButton(3)
