@@ -133,8 +133,8 @@ function Sequencer(recIndication, playIndicator, deleteIndicator, selectionIndic
     //initialisation
     sequences.forEach((sequence, index) => {
         sequence.addListener('state', showIndividualSequenceState.bind(sequence, selectionIndicators[index]))
-        sequence.addListener('state', showPlayRecDelState.bind(sequence))
-        sequence.addListener('active', captureActiveSequence.bind(sequence))
+        sequence.addListener('state', showPlayRecDelState)
+        sequence.addListener('active', captureActiveSequence)
         sequence.addListener('__sequenced_event__', emitSequencedEvent)
         sequence.addListener('state', (state) => {
             switch(state) {
