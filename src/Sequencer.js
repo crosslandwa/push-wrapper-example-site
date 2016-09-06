@@ -56,8 +56,8 @@ function Sequencer(recIndication, playIndicator, deleteIndicator, selectionIndic
 
         switch (selectedSequence.currentState()) {
             case 'stopped': // if newSequence hasSequence then start playback
-                if (activeSequence && (activeSequence.currentState() === 'playback')) {
-                    activeSequence.handlePlayButton() // stop
+                if (activeSequence) {
+                    activeSequence.stop()
                 }
                 selectedSequence.handlePlayButton()
                 break;
