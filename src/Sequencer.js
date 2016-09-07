@@ -18,7 +18,7 @@ function Sequencer(recIndication, playIndicator, selectionIndicators, Scheduling
 
     function isSelected(sequence) { return sequence === selectedSequence }
 
-    this.select = function(sequenceNumber = 1) {
+    this.select = function(sequenceNumber = 1, legato = false) {
         sequenceNumber = sequenceNumber > 0 ? sequenceNumber : 1
         let index = sequenceNumber - 1
         if (isSelected(sequences[index]) && (sequences[index] === activeSequence)) {
@@ -44,7 +44,7 @@ function Sequencer(recIndication, playIndicator, selectionIndicators, Scheduling
         if (selectedSequence.hasEvents()) {
             let offset = 0
             if (activeSequence){
-                offset = activeSequence.currentPositionMs()
+                if (legato) offset = activeSequence.currentPositionMs()
                 activeSequence.stop()
             }
             selectedSequence.play(offset)

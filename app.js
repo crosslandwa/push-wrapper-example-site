@@ -159,14 +159,26 @@ function makeSequencer(players, push, bpm, uiSequenceButtons) {
     push.button['rec'].on('pressed', sequencer.recordButtonPressed);
     push.button['play'].on('pressed', sequencer.playButtonPressed);
 
-    let deletePressed = false
+    let deleteOrShift = 'off'
 
     push.button['delete'].led_dim()
-    push.button['delete'].on('pressed', () => { deletePressed = true; push.button['delete'].led_on() });
-    push.button['delete'].on('released', () => { deletePressed = false; push.button['delete'].led_dim() });
+    push.button['shift'].led_dim()
+    push.button['delete'].on('pressed', () => { deleteOrShift = 'delete'; push.button['delete'].led_on() });
+    push.button['shift'].on('pressed', () => { deleteOrShift = 'shift'; push.button['shift'].led_on() });
+    push.button['delete'].on('released', () => { if (deleteOrShift === 'delete') deleteOrShift = 'off'; push.button['delete'].led_dim() });
+    push.button['shift'].on('released', () => { if (deleteOrShift === 'shift') deleteOrShift = 'off'; push.button['shift'].led_dim() });
 
     oneToEight.forEach((x) => {
-        push.channel[x].select.on('pressed', () => deletePressed ? sequencer.deleteSequence(x) : sequencer.select(x))
+        push.channel[x].select.on('pressed', () => {
+            switch (deleteOrShift) {
+                case 'off':
+                    sequencer.select(x); break;
+                case 'delete':
+                    sequencer.deleteSequence(x); break;
+                case 'shift':
+                    sequencer.select(x, true); break;
+            }
+        })
     })
 
     return sequencer;
