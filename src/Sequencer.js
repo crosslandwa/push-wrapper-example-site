@@ -54,16 +54,20 @@ function Sequencer(recIndication, playIndicator, deleteIndicator, selectionIndic
         }
     }
 
-    this.rec = function() {
+    this.recordButtonPressed = function() {
         selectedSequence.arm() || selectedSequence.disarm() || selectedSequence.overdub()  || selectedSequence.play()
     }
 
-    this.play = function() {
+    this.playButtonPressed = function() {
         selectedSequence.stop() || selectedSequence.play()
     }
 
-    this.del = function() {
-        selectedSequence.reset()
+    this.deleteSequence = function(number = 0) {
+        if (number > 0 && number <= sequences.length) {
+            sequences[number - 1].reset()
+        } else {
+            selectedSequence.reset()
+        }
     }
 
     this.addEvent = function(name, data) {
@@ -113,7 +117,6 @@ function Sequencer(recIndication, playIndicator, deleteIndicator, selectionIndic
     function emitStoppedEvent() {
         sequencer.emit('stopped')
     }
-
 
     function emitSequencedEvent(wrappedEvent) {
         sequencer.emit(wrappedEvent.name, wrappedEvent.data)

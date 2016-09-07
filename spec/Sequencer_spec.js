@@ -55,7 +55,7 @@ describe('Sequencer', () => {
 
     it('allows an armed sequence to be disarmed', () => {
         sequencer.select(2) // selected but armed
-        sequencer.rec() // disarm
+        sequencer.recordButtonPressed() // disarm
 
         expect(sel1.state()).toEqual('off')
         expect(sel2.state()).toEqual('orange')
@@ -70,7 +70,7 @@ describe('Sequencer', () => {
         sequencer.select(2)
         sequencer.addEvent('event', {})
 
-        setTimeout(sequencer.play, 100)
+        setTimeout(sequencer.playButtonPressed, 100)
 
         setTimeout(() => {
             expect(play.state()).toEqual('on')
@@ -99,15 +99,15 @@ describe('Sequencer', () => {
         sequencer.on('sequence2-event', (data) => emitted.push({name: 'sequence2-event', data: data }))
         sequencer.on('stopped', (data) => emitted.push('stopped'))
 
-        sequencer.rec() // arm
+        sequencer.recordButtonPressed() // arm
         sequencer.addEvent('sequence1-event', {})
-        setTimeout(sequencer.play, 100) //start 1 looping (100ms long)
+        setTimeout(sequencer.playButtonPressed, 100) //start 1 looping (100ms long)
         setTimeout(() => {
             sequencer.select(2) // automatically armed
             sequencer.addEvent('sequence2-event', {})
         }, 220)
-        setTimeout(sequencer.play, 300) //start 2 looping (80ms long)
-        setTimeout(sequencer.play, 400) //stop
+        setTimeout(sequencer.playButtonPressed, 300) //start 2 looping (80ms long)
+        setTimeout(sequencer.playButtonPressed, 400) //stop
 
         setTimeout(() => {
             expect(emitted.length).toEqual(5)
@@ -122,14 +122,14 @@ describe('Sequencer', () => {
     })
 
     it('automatically plays the selected sequence if it has no recorded events', (done) => {
-        sequencer.rec() // arm
+        sequencer.recordButtonPressed() // arm
         sequencer.addEvent('sequence1-event', {})
-        setTimeout(sequencer.play, 100) //start 1 looping (100ms long)
+        setTimeout(sequencer.playButtonPressed, 100) //start 1 looping (100ms long)
         setTimeout(() => {
             sequencer.select(2) // automatically armed
             sequencer.addEvent('sequence2-event', {})
         }, 220)
-        setTimeout(sequencer.play, 300) //start 2 looping (80ms long)
+        setTimeout(sequencer.playButtonPressed, 300) //start 2 looping (80ms long)
         setTimeout(() => {
             sequencer.select(3) // arms 3, leaves 2 playing
             sequencer.select(1) // automatically plays 1, stops 2
@@ -164,7 +164,7 @@ describe('Sequencer', () => {
 
         sequencer.select(1) // arm
         sequencer.addEvent('sequence1-event', {})
-        setTimeout(sequencer.play, 100) // start 1 looping (100ms long), expect events at 100, 200
+        setTimeout(sequencer.playButtonPressed, 100) // start 1 looping (100ms long), expect events at 100, 200
         setTimeout(() => sequencer.select(1), 150) // restart 1
 
         setTimeout(() => {
@@ -179,7 +179,7 @@ describe('Sequencer', () => {
     it('reverts to playback when an overdubbing sequence is reselected', (done) => {
         sequencer.select(1) // arm
         sequencer.addEvent('sequence1-event', {}) // recording
-        setTimeout(sequencer.rec, 100) // start 1 looping and overdubbing
+        setTimeout(sequencer.recordButtonPressed, 100) // start 1 looping and overdubbing
         setTimeout(() => sequencer.select(1), 150) // change from overdubbing to playback
 
         setTimeout(() => {
@@ -196,7 +196,7 @@ describe('Sequencer', () => {
         sequencer.on('sequence1-event', (data) => emitted.push({name: 'sequence1-event', data: data }))
         sequencer.on('sequence2-event', (data) => emitted.push({name: 'sequence2-event', data: data }))
 
-        sequencer.rec()
+        sequencer.recordButtonPressed()
         sequencer.addEvent('sequence1-event', {x: 1}) // recording
         setTimeout(() => {
             sequencer.addEvent('sequence1-event', {x: 2}) // sequence1 events at 0, 50
@@ -205,7 +205,7 @@ describe('Sequencer', () => {
             sequencer.select(2) // start 1 playing, 100ms long
             sequencer.addEvent('sequence2-event', {x: 1}) // recording (this STOPS sequence 1)
         }, 100)
-        setTimeout(sequencer.play, 200) // start 2 playing 100ms, events at 0
+        setTimeout(sequencer.playButtonPressed, 200) // start 2 playing 100ms, events at 0
         setTimeout(() => sequencer.select(1), 225) // select sequence 1, next event (at 250) should have x = 2
 
         setTimeout(() => {
