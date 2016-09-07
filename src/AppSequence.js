@@ -28,11 +28,11 @@ function AppSequence(Scheduling, bpm) {
         if (state === states.stopped) sequence.emit('stopped')
     }
 
-    let updateSequenceAlignedWithBpmChange = function(bpm) {
-        let changeFactor = calculatedBPM / bpm.current
-        wrapped.scale(changeFactor)
-        calculatedBPM = bpm.current
-    }
+//    let updateSequenceAlignedWithBpmChange = function(bpm) {
+//        let changeFactor = calculatedBPM / bpm.current
+//        wrapped.scale(changeFactor)
+//        calculatedBPM = bpm.current
+//    }
 
     let setLoopLengthAndBroadcastBPM = function() {
         let sequenceLengthMs = wrapped.currentPositionMs();
@@ -42,114 +42,117 @@ function AppSequence(Scheduling, bpm) {
         calculatedBPM = Math.round(((60000 * numberOfBeats) / sequenceLengthMs) + 0.25); // + 0.25 as we assume we've pressed slightly early
         wrapped.loop((60000 * numberOfBeats) / calculatedBPM)
 //        bpm.removeListener('changed', updateSequenceAlignedWithBpmChange)
-        bpm.change_to(calculatedBPM);
+//        bpm.change_to(calculatedBPM);
 //        bpm.on('changed', updateSequenceAlignedWithBpmChange) // TODO rethink this
     }
 
-    this.changeNumberOfBeatsBy = function(amount) {
-        if (!numberOfBeats) return;
-        numberOfBeats += amount;
-        numberOfBeats = numberOfBeats < 1 ? 1 : numberOfBeats;
-        sequence.emit('numberOfBeats', numberOfBeats);
-        calculatedBPM = ((60000 * numberOfBeats) / wrapped.loopLengthMs());
-        bpm.removeListener('changed', updateSequenceAlignedWithBpmChange)
-        bpm.change_to(calculatedBPM);
-        bpm.on('changed', updateSequenceAlignedWithBpmChange)
-    }
-
-    this.handleRecButton = function() {
-        switch (state) {
-            case (states.idle):
-                state = states.armed;
-                break;
-            case (states.armed):
-                state = states.idle;
-                break;
-            case (states.playback):
-                state = states.overdubbing;
-                break;
-            case (states.overdubbing):
-                state = states.playback;
-                break;
-            case (states.stopped):
-                state = states.overdubbing;
-                wrapped.start();
-                break;
-            case (states.recording):
-                setLoopLengthAndBroadcastBPM();
-                state = states.overdubbing;
-                wrapped.start();
-                break;
-        }
-        reportState();
-    }
-
-    this.handlePlayButton = function(offset = 0) {
-        offset = offset > 0 ? offset : 0
-        switch (state) {
-            case (states.playback):
-            case (states.overdubbing):
-                state = states.stopped;
-                wrapped.stop();
-                break;
-            case (states.stopped):
-                state = states.playback;
-                wrapped.start(offset);
-                break;
-            case (states.recording):
-                setLoopLengthAndBroadcastBPM();
-                state = states.playback;
-                wrapped.start(offset);
-                break;
-        }
-        reportState();
-    }
-
-    this.handleDeleteButton = function() {
-        wrapped.reset();
-        state = states.idle;
-        reportState();
-    }
+//    this.changeNumberOfBeatsBy = function(amount) {
+//        if (!numberOfBeats) return;
+//        numberOfBeats += amount;
+//        numberOfBeats = numberOfBeats < 1 ? 1 : numberOfBeats;
+//        sequence.emit('numberOfBeats', numberOfBeats);
+//        calculatedBPM = ((60000 * numberOfBeats) / wrapped.loopLengthMs());
+//        bpm.removeListener('changed', updateSequenceAlignedWithBpmChange)
+//        bpm.change_to(calculatedBPM);
+//        bpm.on('changed', updateSequenceAlignedWithBpmChange)
+//    }
 
     this.addEvent = function(name, data) {
-        let wrappedEvent = { name: name, data: data}
-
         switch (state) {
             case (states.recording):
-                wrapped.addEventNow('__app_sequence__', wrappedEvent);
-                break;
             case (states.overdubbing):
-                wrapped.addEventNow('__app_sequence__', wrappedEvent);
-                break;
             case (states.armed):
-                wrapped.addEventNow('__app_sequence__', wrappedEvent);
-                state = states.recording;
-                reportState();
-                break;
+                wrapped.addEventNow('__app_sequence__', { name: name, data: data});
         }
     }
 
     this.reportState = reportState
 
-    this.currentState = function() { return state }
+    this.arm = function() {
+        if (state === states.idle) {
+            state = states.armed
+            reportState()
+            return true
+        }
+        return false
+    }
 
     this.disarm = function() {
         if (state === states.armed) {
             state = states.idle
             reportState()
+            return true
         }
+        return false
+    }
+
+    this.record = function() {
+        if (state === states.armed) {
+            state = states.recording
+            reportState()
+            return true
+        }
+        return false
+    }
+
+    this.play = function(offset = 0) {
+        offset = offset > 0 ? offset : 0
+        if (state === states.stopped || state === states.overdubbing || state === states.recording) {
+            if (state === states.recording) {
+                setLoopLengthAndBroadcastBPM()
+                wrapped.start(offset)
+            }
+            if (state === states.stopped) wrapped.start(offset)
+            state = states.playback
+            reportState()
+            return true
+        }
+        return false
+    }
+
+    this.restart = function() {
+        if (state === states.playback) {
+            wrapped.start() // no state change
+            return true
+        }
+        return false
+    }
+
+    this.overdub = function() {
+        if (state === states.stopped || state === states.playback || state === states.recording) {
+            if (state === states.recording) {
+                setLoopLengthAndBroadcastBPM()
+                wrapped.start()
+            }
+            if (state === states.stopped) wrapped.start()
+            state = states.overdubbing
+            reportState()
+            return true
+        }
+        return false
     }
 
     this.stop = function() {
-        wrapped.stop()
+        if (state === states.playback || state === states.overdubbing ) {
+            wrapped.stop() // the on 'stopped' handler actions necessary state change
+            return true
+        }
+        return false
+    }
+
+    this.reset = function() {
+        wrapped.reset();
+        state = states.idle;
+        reportState();
+        return true
     }
 
     this.currentPositionMs = function() {
         return wrapped.currentPositionMs()
     }
 
-    this.start = function() {
-        wrapped.start()
+    this.hasEvents = function() {
+        return (state !== states.idle) && (state !== states.armed)
     }
 
     wrapped.on('stopped', () => {

@@ -23,14 +23,7 @@ function Sequencer(recIndication, playIndicator, deleteIndicator, selectionIndic
         sequenceNumber = sequenceNumber > 0 ? sequenceNumber : 1
         let index = sequenceNumber - 1
         if (isSelected(sequences[index]) && (sequences[index] === activeSequence)) {
-            switch (activeSequence.currentState()) {
-                case 'playback':
-                    activeSequence.start(); break; // restart
-                case 'overdubbing':
-                    activeSequence.handleRecButton(); break; // playback
-                default:
-                    activeSequence.handlePlayButton()
-            }
+            activeSequence.restart() || activeSequence.play()
             return
         }
 
@@ -46,41 +39,35 @@ function Sequencer(recIndication, playIndicator, deleteIndicator, selectionIndic
         selectedSequence.addListener('stopped', emitStoppedEvent)
 
         if (activeSequence) {
-            switch (activeSequence.currentState()) {
-                case 'recording':
-                    activeSequence.handlePlayButton(); break; // start it looping
-                case 'overdubbing':
-                    activeSequence.handleRecButton(); break; // go into playback mode
-            }
+            activeSequence.play()  // stop it recording
         }
 
-        switch (selectedSequence.currentState()) {
-            case 'stopped': // if newSequence hasSequence then start playback
-                let offset = 0
-                if (activeSequence) {
-                    offset = activeSequence.currentPositionMs()
-                    activeSequence.stop()
-                }
-                selectedSequence.handlePlayButton(offset)
-                break;
-            case 'idle': // else arm it
-                selectedSequence.handleRecButton(); break;
+        if (selectedSequence.hasEvents()) {
+            let offset = 0
+            if (activeSequence){
+                offset = activeSequence.currentPositionMs()
+                activeSequence.stop()
+            }
+            selectedSequence.play(offset)
+        } else {
+            selectedSequence.arm()
         }
     }
 
     this.rec = function() {
-        selectedSequence.handleRecButton()
+        selectedSequence.arm() || selectedSequence.disarm() || selectedSequence.overdub()  || selectedSequence.play()
     }
 
     this.play = function() {
-        selectedSequence.handlePlayButton()
+        selectedSequence.stop() || selectedSequence.play()
     }
 
     this.del = function() {
-        selectedSequence.handleDeleteButton()
+        selectedSequence.reset()
     }
 
     this.addEvent = function(name, data) {
+        selectedSequence.record()
         selectedSequence.addEvent('__sequenced_event__', {name: name, data: data})
     }
 
@@ -147,7 +134,7 @@ function Sequencer(recIndication, playIndicator, deleteIndicator, selectionIndic
         sequence.reportState()
     })
     sequencer.select(1)
-    sequencer.rec() // unarm
+    sequences[0].disarm()
 }
 util.inherits(Sequencer, EventEmitter);
 
