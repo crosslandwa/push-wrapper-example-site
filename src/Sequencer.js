@@ -56,10 +56,12 @@ function Sequencer(recIndication, playIndicator, deleteIndicator, selectionIndic
 
         switch (selectedSequence.currentState()) {
             case 'stopped': // if newSequence hasSequence then start playback
+                let offset = 0
                 if (activeSequence) {
+                    offset = activeSequence.currentPositionMs()
                     activeSequence.stop()
                 }
-                selectedSequence.handlePlayButton()
+                selectedSequence.handlePlayButton(offset)
                 break;
             case 'idle': // else arm it
                 selectedSequence.handleRecButton(); break;

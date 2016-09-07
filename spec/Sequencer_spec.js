@@ -190,4 +190,29 @@ describe('Sequencer', () => {
             done()
         }, 160)
     })
+
+    it('transitions between playing sequences in legato manner', (done) => {
+        let emitted = []
+        sequencer.on('sequence1-event', (data) => emitted.push({name: 'sequence1-event', data: data }))
+        sequencer.on('sequence2-event', (data) => emitted.push({name: 'sequence2-event', data: data }))
+
+        sequencer.rec()
+        sequencer.addEvent('sequence1-event', {x: 1}) // recording
+        setTimeout(() => {
+            sequencer.addEvent('sequence1-event', {x: 2}) // sequence1 events at 0, 50
+        }, 50)
+        setTimeout(() => {
+            sequencer.select(2) // start 1 playing, 100ms long
+            sequencer.addEvent('sequence2-event', {x: 1}) // recording (this STOPS sequence 1)
+        }, 100)
+        setTimeout(sequencer.play, 200) // start 2 playing 100ms, events at 0
+        setTimeout(() => sequencer.select(1), 225) // select sequence 1, next event (at 250) should have x = 2
+
+        setTimeout(() => {
+            expect(emitted.length).toEqual(2)
+            expect(emitted[0]).toEqual({name: 'sequence2-event', data: {x: 1} })
+            expect(emitted[1]).toEqual({name: 'sequence1-event', data: {x: 2} })
+            done()
+        }, 265)
+    })
 })

@@ -39,9 +39,11 @@ Timing for repeated notes inspired by this: https://github.com/cwilso/metronome
 
 - In app sequencing
   - ~~Delete sequence~~
+   - want to do this without having to select it
   - ~~Record new sequence~~
   - Swap playing sequence. Stop other sequences and 'legato' behaviour
   - Delete events in sequence
+- rethink bpm locking to 1st/subsequent sequences and changing number of beats sequence represents
 - rethink sequencing and repetae interactions
   - sequencing the repatae start/stop leads easily to stuck notes/silence
   - could repetaed notes get recorded into sequence?
