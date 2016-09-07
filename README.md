@@ -37,43 +37,24 @@ Timing for repeated notes inspired by this: https://github.com/cwilso/metronome
 
 ## TODO/Ideas
 
+- Select button to arm a sequence I've just deleted (when re-selecting)
 - In app sequencing
-  - ~~Delete sequence~~
-   - want to do this without having to select it
-  - ~~Record new sequence~~
-  - Swap playing sequence. Stop other sequences and 'legato' behaviour
   - Delete events in sequence
 - rethink bpm locking to 1st/subsequent sequences and changing number of beats sequence represents
 - rethink sequencing and repetae interactions
   - sequencing the repatae start/stop leads easily to stuck notes/silence
   - could repetaed notes get recorded into sequence?
   - or should event include note length (how long held down for)?
-- BPM aware sequence wrapper - this done as proof of concept
-  - ~~sort of works while running, need to stop/start to get all notes playing. Likely a bug with the start offset~~ Fixed!
-  - ~~responds to changes in global BPM (i.e. adjusts event placement and loop length)~~
-  - ~~consider using toJSON/load with manipulation event.when before loading~~
-  - consider the whens as a fraction of loop length rather than absolute ms time...
-    - have to calculate ms every time event scheduled, rather than once per BPM change...
-    - but, serialized version decoupled from BPM (unless we store both, but only serialize the fractional amount)
-- ~~BPM synced to (1st) sequence~~
-  - ~~calculate (approx)/set how many beats long sequence is and adjusts global BPM automatically to match~~
-  - ~~is timing good enough?~~
-    - ~~yes for repeater when swapped to use atATime instead of inTheFuture~~
-    - ~~need to update sequence repeat functionality to use atATime instead of inTheFuture (wac.scheduling 1.3.0)~~
-- Change sequence length
-  - ~~whilst stopped~~
-  - whilst running. why?
-- UI for
-  - recording playback status
-  - selected sequence
-- ~~Fix timing when overdubbing notes on subsequent playback~~
-- ~~remove the 'restart' action from the serialized JSON representation~~
-
-- add tests/define behaviour around load() method of Sequence when its playing
-- ~~emit stopped event when unlooped sequence finishes~~
+- consider the storing the whens in the sequence events as a fraction of loop length rather than absolute ms time...
+  - serialized version would be decoupled from BPM (i.e. could load sequence at a different BPM)
+  - don't want to have to calculate ms every time event scheduled
+  - consider internally storing bpm time + ms time but only serialize the fractional amount
+- Change sequence length whilst running (no in app need yet, but would be good for completeness)
+- UI for recording + playback status
+- add tests/define behaviour around load() method of Sequence when its playing (probably can't load if playing...)
+  - what about a merge events from another sequence functionality?
 - emit a 'restart' event?
 - test toJSON/load for unlooped sequence
-- addEventNow slightly undefined behaviour for stopped
 
 ### Sequence API
 
