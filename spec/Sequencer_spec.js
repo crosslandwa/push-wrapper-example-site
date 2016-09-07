@@ -24,11 +24,11 @@ function SelectionButton(sequenceNumber) {
 
 describe('Sequencer', () => {
     let sequencer
-    let rec = new LedButton(), play = new LedButton, del = new LedButton()
+    let rec = new LedButton(), play = new LedButton
     let sel1 = new SelectionButton(1), sel2 = new SelectionButton(2), sel3 = new SelectionButton(3)
 
     beforeEach(() => {
-        sequencer = new Sequencer(rec, play, del, [sel1, sel2, sel3], Scheduling, new BPM(120))
+        sequencer = new Sequencer(rec, play, [sel1, sel2, sel3], Scheduling, new BPM(120))
     })
 
     it('initialises with sequence 1 selected but not armed', () => {
@@ -37,7 +37,6 @@ describe('Sequencer', () => {
         expect(sel3.state()).toEqual('off')
 
         expect(play.state()).toEqual('off')
-        expect(del.state()).toEqual('dim')
         expect(rec.state()).toEqual('off')
     })
 
@@ -49,7 +48,6 @@ describe('Sequencer', () => {
         expect(sel3.state()).toEqual('off')
 
         expect(play.state()).toEqual('off')
-        expect(del.state()).toEqual('dim')
         expect(rec.state()).toEqual('on')
     })
 
@@ -62,7 +60,6 @@ describe('Sequencer', () => {
         expect(sel3.state()).toEqual('off')
 
         expect(play.state()).toEqual('off')
-        expect(del.state()).toEqual('dim')
         expect(rec.state()).toEqual('off')
     })
 
@@ -74,7 +71,6 @@ describe('Sequencer', () => {
 
         setTimeout(() => {
             expect(play.state()).toEqual('on')
-            expect(del.state()).toEqual('on')
             expect(rec.state()).toEqual('off')
             expect(sel1.state()).toEqual('off')
             expect(sel2.state()).toEqual('green')
@@ -83,7 +79,6 @@ describe('Sequencer', () => {
             sequencer.select(1)
 
             expect(play.state()).toEqual('off')
-            expect(del.state()).toEqual('dim')
             expect(rec.state()).toEqual('on')
             expect(sel1.state()).toEqual('red')
             expect(sel2.state()).toEqual('green')

@@ -7,9 +7,8 @@ const util = require('util')
 // selection: {off, hasSequence, selected, playing, recording}
 // rec: {off, ready, on}
 // play: {off, ready, on}
-// delete: {off, ready, on}
 
-function Sequencer(recIndication, playIndicator, deleteIndicator, selectionIndicators, Scheduling, bpm) {
+function Sequencer(recIndication, playIndicator, selectionIndicators, Scheduling, bpm) {
     EventEmitter.call(this)
 
     let sequences = selectionIndicators.map(() => new Sequence(Scheduling, bpm))
@@ -96,21 +95,21 @@ function Sequencer(recIndication, playIndicator, deleteIndicator, selectionIndic
     }
 
     // this = sequencer instance
-    function showPlayRecDelState(state) {
+    function showPlayRecButtonState(state) {
         if (!isSelected(this)) return
         switch (state) {
             case 'idle':
-                recIndication.off(); playIndicator.off(); deleteIndicator.ready(); break;
+                recIndication.off(); playIndicator.off(); break;
             case 'armed':
-                recIndication.on(); playIndicator.off(); deleteIndicator.ready(); break;
+                recIndication.on(); playIndicator.off(); break;
             case 'recording':
-                recIndication.on(); playIndicator.off(); deleteIndicator.on(); break;
+                recIndication.on(); playIndicator.off(); break;
             case 'overdubbing':
-                recIndication.ready(); playIndicator.on(); deleteIndicator.on(); break;
+                recIndication.ready(); playIndicator.on(); break;
             case 'playback':
-                recIndication.off(); playIndicator.on(); deleteIndicator.on(); break;
+                recIndication.off(); playIndicator.on(); break;
             case 'stopped':
-                recIndication.off(); playIndicator.ready(); deleteIndicator.on(); break;
+                recIndication.off(); playIndicator.ready(); break;
         }
     }
 
@@ -125,7 +124,7 @@ function Sequencer(recIndication, playIndicator, deleteIndicator, selectionIndic
     //initialisation
     sequences.forEach((sequence, index) => {
         sequence.addListener('state', showIndividualSequenceState.bind(sequence, selectionIndicators[index]))
-        sequence.addListener('state', showPlayRecDelState)
+        sequence.addListener('state', showPlayRecButtonState)
         sequence.addListener('active', captureActiveSequence)
         sequence.addListener('__sequenced_event__', emitSequencedEvent)
         sequence.addListener('state', (state) => {

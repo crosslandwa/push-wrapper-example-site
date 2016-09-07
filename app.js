@@ -136,7 +136,6 @@ function makeSequencer(players, push, bpm, uiSequenceButtons) {
     let sequencer = new Sequencer(
         new LedButton(push.button['rec']),
         new LedButton(push.button['play']),
-        new LedButton(push.button['up']),
         oneToEight.map((x) => new SelectionButton(push.channel[x].select, uiSequenceButtons[x -1])),
         Scheduling,
         bpm);
