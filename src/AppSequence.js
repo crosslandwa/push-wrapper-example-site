@@ -1,9 +1,12 @@
 'use strict'
 
-const Sequence = require('./Sequence.js');
+const Sequence = require('./Sequence.js')
+const EventEmitter = require('events')
+const util = require('util')
 
-module.exports = function(Scheduling, bpm) {
-    let sequence = new Sequence(Scheduling),
+function AppSequence(Scheduling, bpm) {
+    EventEmitter.call(this)
+    let wrapped = new Sequence(Scheduling),
         states = {
             armed: 'armed',
             idle: 'idle',
@@ -15,41 +18,46 @@ module.exports = function(Scheduling, bpm) {
         state = states.idle,
         numberOfBeats = undefined,
         calculatedBPM = undefined;
+    let sequence = this
 
     function isActive() { return [states.playback, states.overdubbing, states.recording].indexOf(state) != -1 }
 
-    function reportState() { sequence.emit('state', state); if (isActive()) sequence.emit('active') }
+    function reportState() {
+        sequence.emit('state', state)
+        if (isActive()) sequence.emit('active')
+        if (state === states.stopped) sequence.emit('stopped')
+    }
 
     let updateSequenceAlignedWithBpmChange = function(bpm) {
         let changeFactor = calculatedBPM / bpm.current
-        sequence.scale(changeFactor)
+        wrapped.scale(changeFactor)
         calculatedBPM = bpm.current
     }
 
     let setLoopLengthAndBroadcastBPM = function() {
-        let sequenceLengthMs = sequence.currentPositionMs();
+        let sequenceLengthMs = wrapped.currentPositionMs();
         numberOfBeats = Math.round((sequenceLengthMs * bpm.current) / 60000)
         numberOfBeats = numberOfBeats > 1 ? numberOfBeats : 1
         sequence.emit('numberOfBeats', numberOfBeats);
         calculatedBPM = Math.round(((60000 * numberOfBeats) / sequenceLengthMs) + 0.25); // + 0.25 as we assume we've pressed slightly early
-        sequence.loop((60000 * numberOfBeats) / calculatedBPM)
+        wrapped.loop((60000 * numberOfBeats) / calculatedBPM)
 //        bpm.removeListener('changed', updateSequenceAlignedWithBpmChange)
         bpm.change_to(calculatedBPM);
 //        bpm.on('changed', updateSequenceAlignedWithBpmChange) // TODO rethink this
     }
 
-    sequence.changeNumberOfBeatsBy = function(amount) {
+    this.changeNumberOfBeatsBy = function(amount) {
         if (!numberOfBeats) return;
         numberOfBeats += amount;
         numberOfBeats = numberOfBeats < 1 ? 1 : numberOfBeats;
         sequence.emit('numberOfBeats', numberOfBeats);
-        calculatedBPM = ((60000 * numberOfBeats) / sequence.loopLengthMs());
+        calculatedBPM = ((60000 * numberOfBeats) / wrapped.loopLengthMs());
         bpm.removeListener('changed', updateSequenceAlignedWithBpmChange)
         bpm.change_to(calculatedBPM);
         bpm.on('changed', updateSequenceAlignedWithBpmChange)
     }
 
-    sequence.handleRecButton = function() {
+    this.handleRecButton = function() {
         switch (state) {
             case (states.idle):
                 state = states.armed;
@@ -65,79 +73,96 @@ module.exports = function(Scheduling, bpm) {
                 break;
             case (states.stopped):
                 state = states.overdubbing;
-                sequence.start();
+                wrapped.start();
                 break;
             case (states.recording):
                 setLoopLengthAndBroadcastBPM();
                 state = states.overdubbing;
-                sequence.start();
+                wrapped.start();
                 break;
         }
         reportState();
-        return sequence;
     }
 
-    sequence.handlePlayButton = function(offset = 0) {
+    this.handlePlayButton = function(offset = 0) {
         offset = offset > 0 ? offset : 0
         switch (state) {
             case (states.playback):
             case (states.overdubbing):
                 state = states.stopped;
-                sequence.stop();
+                wrapped.stop();
                 break;
             case (states.stopped):
                 state = states.playback;
-                sequence.start(offset);
+                wrapped.start(offset);
                 break;
             case (states.recording):
                 setLoopLengthAndBroadcastBPM();
                 state = states.playback;
-                sequence.start(offset);
+                wrapped.start(offset);
                 break;
         }
         reportState();
-        return sequence;
     }
 
-    sequence.handleDeleteButton = function() {
-        sequence.reset();
+    this.handleDeleteButton = function() {
+        wrapped.reset();
         state = states.idle;
         reportState();
-        return sequence;
     }
 
-    sequence.addEvent = function(name, data) {
+    this.addEvent = function(name, data) {
+        let wrappedEvent = { name: name, data: data}
+
         switch (state) {
             case (states.recording):
-                sequence.addEventNow(name, data);
+                wrapped.addEventNow('__app_sequence__', wrappedEvent);
                 break;
             case (states.overdubbing):
-                sequence.addEventNow(name, data);
+                wrapped.addEventNow('__app_sequence__', wrappedEvent);
                 break;
             case (states.armed):
-                sequence.addEventNow(name, data);
+                wrapped.addEventNow('__app_sequence__', wrappedEvent);
                 state = states.recording;
                 reportState();
                 break;
         }
-        return sequence;
     }
 
-    sequence.reportState = reportState
+    this.reportState = reportState
 
-    sequence.currentState = function() { return state }
+    this.currentState = function() { return state }
 
-    sequence.disarm = function() {
+    this.disarm = function() {
         if (state === states.armed) {
             state = states.idle
             reportState()
         }
     }
 
-    sequence.on('stopped', () => {
-        state = states.stopped
-        reportState()
+    this.stop = function() {
+        wrapped.stop()
+    }
+
+    this.currentPositionMs = function() {
+        return wrapped.currentPositionMs()
+    }
+
+    this.start = function() {
+        wrapped.start()
+    }
+
+    wrapped.on('stopped', () => {
+        if (state !== states.stopped) {
+            state = states.stopped
+            reportState()
+        }
     })
 
-    return sequence;
-};
+    wrapped.on('__app_sequence__', (wrappedEvent) => {
+        sequence.emit(wrappedEvent.name, wrappedEvent.data)
+    })
+}
+util.inherits(AppSequence, EventEmitter)
+
+module.exports = AppSequence
