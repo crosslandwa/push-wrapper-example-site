@@ -3,21 +3,21 @@
 const Sequence = require('./Sequence.js')
 const EventEmitter = require('events')
 const util = require('util')
+const states = {
+    armed: 'armed',
+    idle: 'idle',
+    recording: 'recording',
+    playback: 'playback',
+    stopped: 'stopped',
+    overdubbing: 'overdubbing'
+}
 
 function AppSequence(Scheduling, bpm) {
     EventEmitter.call(this)
-    let wrapped = new Sequence(Scheduling),
-        states = {
-            armed: 'armed',
-            idle: 'idle',
-            recording: 'recording',
-            playback: 'playback',
-            stopped: 'stopped',
-            overdubbing: 'overdubbing'
-        },
-        state = states.idle,
-        numberOfBeats = undefined,
-        calculatedBPM = undefined;
+    let wrapped = new Sequence(Scheduling)
+    let state = states.idle
+    let numberOfBeats = undefined
+    let calculatedBPM = undefined
     let sequence = this
 
     function isActive() { return [states.playback, states.overdubbing, states.recording].indexOf(state) != -1 }
@@ -28,22 +28,23 @@ function AppSequence(Scheduling, bpm) {
         if (state === states.stopped) sequence.emit('stopped')
     }
 
-//    let updateSequenceAlignedWithBpmChange = function(bpm) {
-//        let changeFactor = calculatedBPM / bpm.current
-//        wrapped.scale(changeFactor)
-//        calculatedBPM = bpm.current
-//    }
+    function scaleSequenceLength(bpm) {
+        let changeFactor = calculatedBPM / bpm.current
+        wrapped.scale(changeFactor)
+        calculatedBPM = bpm.current
+    }
 
     let setLoopLengthAndBroadcastBPM = function() {
-        let sequenceLengthMs = wrapped.currentPositionMs();
-        numberOfBeats = Math.round((sequenceLengthMs * bpm.current) / 60000)
+        let sequenceLengthMs = wrapped.currentPositionMs()
+        numberOfBeats = Math.round(beatsFrom(sequenceLengthMs, bpm.current))
         numberOfBeats = numberOfBeats > 1 ? numberOfBeats : 1
-        sequence.emit('numberOfBeats', numberOfBeats);
-        calculatedBPM = Math.round(((60000 * numberOfBeats) / sequenceLengthMs) + 0.25); // + 0.25 as we assume we've pressed slightly early
-        wrapped.loop((60000 * numberOfBeats) / calculatedBPM)
-//        bpm.removeListener('changed', updateSequenceAlignedWithBpmChange)
+        sequence.emit('numberOfBeats', numberOfBeats)
+        calculatedBPM = Math.round(bpmFrom(sequenceLengthMs, numberOfBeats) + 0.25) // + 0.25 to allow for pressing slightly early
+        wrapped.loop(lengthMsFrom(calculatedBPM, numberOfBeats))
+//        console.log('calculated beats', numberOfBeats, 'at bpm', calculatedBPM, 'loop length', lengthMsFrom(calculatedBPM, numberOfBeats))
+//        bpm.removeListener('changed', scaleSequenceLength)  // TODO rethink this
 //        bpm.change_to(calculatedBPM);
-//        bpm.on('changed', updateSequenceAlignedWithBpmChange) // TODO rethink this
+        bpm.on('changed', scaleSequenceLength)
     }
 
 //    this.changeNumberOfBeatsBy = function(amount) {
@@ -52,9 +53,9 @@ function AppSequence(Scheduling, bpm) {
 //        numberOfBeats = numberOfBeats < 1 ? 1 : numberOfBeats;
 //        sequence.emit('numberOfBeats', numberOfBeats);
 //        calculatedBPM = ((60000 * numberOfBeats) / wrapped.loopLengthMs());
-//        bpm.removeListener('changed', updateSequenceAlignedWithBpmChange)
+//        bpm.removeListener('changed', scaleSequenceLength)
 //        bpm.change_to(calculatedBPM);
-//        bpm.on('changed', updateSequenceAlignedWithBpmChange)
+//        bpm.on('changed', scaleSequenceLength)
 //    }
 
     this.addEvent = function(name, data) {
@@ -167,5 +168,17 @@ function AppSequence(Scheduling, bpm) {
     })
 }
 util.inherits(AppSequence, EventEmitter)
+
+function lengthMsFrom(bpm, beats) {
+    return beats * (60 / bpm) * 1000
+}
+
+function bpmFrom(lengthMs, beats) {
+    return (beats * 60) / (lengthMs / 1000)
+}
+
+function beatsFrom(lengthMs, bpm) {
+    return (lengthMs / 1000) * (bpm / 60)
+}
 
 module.exports = AppSequence
