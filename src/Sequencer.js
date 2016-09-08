@@ -18,8 +18,16 @@ function Sequencer(recIndication, playIndicator, selectionIndicators, Scheduling
 
     function isSelected(sequence) { return sequence === selectedSequence }
 
-    this.select = function(sequenceNumber = 1, legato = false) {
-        sequenceNumber = sequenceNumber > 0 ? sequenceNumber : 1
+    function validSequenceNumber(number) {
+        return number > 0 && number <= sequences.length
+    }
+
+    this.selectSequence = function(number) { select(number) }
+
+    this.selectSequenceLegato = function(number) { select(number, true) }
+
+    function select(sequenceNumber = 1, legato = false) {
+        if (!validSequenceNumber(sequenceNumber)) return
         let index = sequenceNumber - 1
         if (isSelected(sequences[index]) && (sequences[index] === activeSequence)) {
             activeSequence.restart() || activeSequence.play()
@@ -62,7 +70,7 @@ function Sequencer(recIndication, playIndicator, selectionIndicators, Scheduling
     }
 
     this.deleteSequence = function(number = 0) {
-        if (number > 0 && number <= sequences.length) {
+        if (validSequenceNumber(number)) {
             sequences[number - 1].reset()
         } else {
             selectedSequence.reset()
@@ -135,7 +143,7 @@ function Sequencer(recIndication, playIndicator, selectionIndicators, Scheduling
         })
         sequence.reportState()
     })
-    sequencer.select(1)
+    select(1)
     sequences[0].disarm()
 }
 util.inherits(Sequencer, EventEmitter);

@@ -145,14 +145,14 @@ function makeSequencer(players, push, bpm, uiSequenceButtons) {
             case " ": sequencer.playButtonPressed(); break; // spacebar
             case "a": sequencer.recordButtonPressed(); break;
             case "d": sequencer.deleteSequence(); break;
-            case "1": sequencer.select(1); break;
-            case "2": sequencer.select(2); break;
-            case "3": sequencer.select(3); break;
-            case "4": sequencer.select(4); break;
-            case "5": sequencer.select(5); break;
-            case "6": sequencer.select(6); break;
-            case "7": sequencer.select(7); break;
-            case "8": sequencer.select(8); break;
+            case "1": sequencer.selectSequence(1); break;
+            case "2": sequencer.selectSequence(2); break;
+            case "3": sequencer.selectSequence(3); break;
+            case "4": sequencer.selectSequence(4); break;
+            case "5": sequencer.selectSequence(5); break;
+            case "6": sequencer.selectSequence(6); break;
+            case "7": sequencer.selectSequence(7); break;
+            case "8": sequencer.selectSequence(8); break;
         }
     });
 
@@ -172,11 +172,11 @@ function makeSequencer(players, push, bpm, uiSequenceButtons) {
         push.channel[x].select.on('pressed', () => {
             switch (deleteOrShift) {
                 case 'off':
-                    sequencer.select(x); break;
+                    sequencer.selectSequence(x); break;
                 case 'delete':
                     sequencer.deleteSequence(x); break;
                 case 'shift':
-                    sequencer.select(x, true); break;
+                    sequencer.selectSequenceLegato(x, true); break;
             }
         })
     })
