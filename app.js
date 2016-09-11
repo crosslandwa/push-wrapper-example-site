@@ -112,14 +112,14 @@ function off_we_go(bound_push) {
     });
 
     bind_tempo_knob_to_bpm(push, bpm);
-    setupMetronome(bpm, players[3])
+    setupMetronome(bpm, push, players[3])
     bpm.report();
 // TODO rethink how this works with multiple sequences
 //    push.knob['swing'].on('turned', sequence.changeNumberOfBeatsBy);
 //    sequence.on('numberOfBeats', numberOfBeats => push.lcd.x[2].y[3].update(`beats=${numberOfBeats}`));
 }
 
-function setupMetronome(bpm, player) {
+function setupMetronome(bpm, push, player) {
     let metronome = Scheduling.Metronome(4, 120)
     bpm.on('changed', bpm => metronome.updateBPM(bpm.current))
     let running = false
@@ -127,15 +127,22 @@ function setupMetronome(bpm, player) {
     metronome.on('accent', () => player.play(midiGain(100)))
     metronome.on('tick', () => player.play(midiGain(30)))
 
-    window.addEventListener("keypress", (event) => {
-        if (event.key === 'm') {
-            running = !running
-            if (running) {
-                metronome.start()
-            } else {
-                metronome.stop()
-            }
+    function toggleMetronome() {
+        running = !running
+        if (running) {
+            push.button['metronome'].led_on()
+            metronome.start()
+        } else {
+            push.button['metronome'].led_dim()
+            metronome.stop()
         }
+    }
+
+    push.button['metronome'].on('pressed', toggleMetronome);
+    push.button['metronome'].led_dim()
+
+    window.addEventListener("keypress", (event) => {
+        if (event.key === 'm') toggleMetronome()
     });
 
 }
