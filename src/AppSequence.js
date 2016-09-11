@@ -1,6 +1,5 @@
 'use strict'
 
-const Sequence = require('./Sequence.js')
 const EventEmitter = require('events')
 const util = require('util')
 const states = {
@@ -14,7 +13,7 @@ const states = {
 
 function AppSequence(Scheduling, bpm) {
     EventEmitter.call(this)
-    let wrapped = new Sequence(Scheduling)
+    let wrapped = Scheduling.Sequence()
     let state = states.idle
     let numberOfBeats = undefined
     let calculatedBPM = undefined
