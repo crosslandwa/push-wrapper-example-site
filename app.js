@@ -124,9 +124,6 @@ function setupMetronome(bpm, push, player) {
     bpm.on('changed', bpm => metronome.updateBPM(bpm.current))
     let running = false
 
-    metronome.on('accent', () => player.play(midiGain(100)))
-    metronome.on('tick', () => player.play(midiGain(30)))
-
     function toggleMetronome() {
         running = !running
         if (running) {
