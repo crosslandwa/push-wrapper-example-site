@@ -63,7 +63,21 @@ function AppSequence(Scheduling, bpm) {
             case (states.recording):
             case (states.overdubbing):
             case (states.armed):
-                wrapped.addEventNow('__app_sequence__', { name: name, data: data});
+                // 1,  3/4, 1/2, 1/3, 1/4, 1/6, 1/8, 1/12, 1/16, 1/24, 1/32 (division of a beat)
+                // 96, 72,  48,  32,  24,  16,  12,  8,    6,    4,    3
+                let currentTimeMs = wrapped.currentPositionMs();
+
+                let quantisationFactor = (lengthMsFrom(bpm.current, 1) / 96) * 24
+                let quantisedTime = Math.round(currentTimeMs / quantisationFactor) * quantisationFactor
+
+                console.log(currentTimeMs, bpm.current, 'beatlengthMs', lengthMsFrom(bpm.current, 1), 'quantised', quantisedTime);
+
+                // quantise to nearest 96th of a beat
+                if (quantisedTime > 0) {
+                    wrapped.addEventAt(quantisedTime, '__app_sequence__', { name: name, data: data});
+                } else {
+                    wrapped.addEventNow('__app_sequence__', { name: name, data: data});
+                }
         }
     }
 

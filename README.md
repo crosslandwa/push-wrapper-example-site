@@ -37,6 +37,9 @@ Timing for repeated notes inspired by this: https://github.com/cwilso/metronome
 
 ## TODO/Ideas
 
+- pursue quantisation? The the nearest 96th (96PPQ) seems sensible, but this makes the decision the "app" is tied in to bpm
+  - need selectable quantisation?
+  - need to avoid sequence multiple instances of same note (event) at same time
 - consolidate bpm code, in particular the rounding that occurs (make this 1 or 2 dp)
 - Select button to arm a sequence I've just deleted (when re-selecting)
 - Don't start playback when stopped and selecting a new sequence IF current selection has sequence
