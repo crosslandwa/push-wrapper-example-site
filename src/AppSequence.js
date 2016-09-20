@@ -35,12 +35,13 @@ function AppSequence(Scheduling, bpm) {
 
     let setLoopLengthAndBroadcastBPM = function() {
         let sequenceLengthMs = wrapped.currentPositionMs()
-        numberOfBeats = Math.round(beatsFrom(sequenceLengthMs, bpm.current))
+        let beatLengthMs = lengthMsFrom(bpm.current, 1)
+        numberOfBeats = Math.round(sequenceLengthMs / beatLengthMs)
         numberOfBeats = numberOfBeats > 1 ? numberOfBeats : 1
         sequence.emit('numberOfBeats', numberOfBeats)
-        calculatedBPM = Math.round(bpmFrom(sequenceLengthMs, numberOfBeats) + 0.25) // + 0.25 to allow for pressing slightly early
-        wrapped.loop(lengthMsFrom(calculatedBPM, numberOfBeats))
-//        console.log('calculated beats', numberOfBeats, 'at bpm', calculatedBPM, 'loop length', lengthMsFrom(calculatedBPM, numberOfBeats))
+        calculatedBPM = bpm.current
+        wrapped.loop(numberOfBeats * beatLengthMs)
+        console.log('calculated beats', numberOfBeats, 'at bpm', calculatedBPM, 'loop length unrounded', sequenceLengthMs, 'loop length', numberOfBeats * beatLengthMs)
 //        bpm.removeListener('changed', scaleSequenceLength)  // TODO rethink this
 //        bpm.change_to(calculatedBPM);
         bpm.on('changed', scaleSequenceLength)
