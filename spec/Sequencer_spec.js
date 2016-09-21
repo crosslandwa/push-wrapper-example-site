@@ -153,7 +153,7 @@ describe('Sequencer', () => {
         }, 110)
     })
 
-    it('arms when re-selecting a loop thats just been deleted', () => {
+    it('arms when re-selecting a loop that has just been deleted', () => {
         sequencer.selectSequence(1)
         sequencer.addEvent('sequence2-event', {})
         sequencer.deleteSequence(1)
@@ -200,6 +200,23 @@ describe('Sequencer', () => {
 
             done()
         }, 160)
+    })
+
+    it('does not start playback when stopped and the currently selected sequence has events, and an empty sequence is selected', () => {
+        sequencer.selectSequence(1) // arm
+        sequencer.addEvent('sequence1-event', {}) // recording
+        sequencer.playButtonPressed() // play
+        sequencer.playButtonPressed() // stop
+
+        expect(sel1.state()).toEqual('orange')
+        expect(sel2.state()).toEqual('off')
+        expect(sel3.state()).toEqual('off')
+
+        sequencer.selectSequence(2)
+
+        expect(sel1.state()).toEqual('yellow')
+        expect(sel2.state()).toEqual('red')
+        expect(sel3.state()).toEqual('off')
     })
 
     it('transitions between playing sequences in legato manner', (done) => {

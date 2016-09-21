@@ -38,12 +38,12 @@ function Sequencer(recIndication, playIndicator, selectionIndicators, Scheduling
         selectedSequence = sequences[index]
 
         if (prevSequence) {
-            prevSequence.removeListener('stopped', emitStoppedEvent)
+            prevSequence.removeListener('stopped', sequencerStopped)
             prevSequence.disarm()
             prevSequence.reportState()
         }
 
-        selectedSequence.addListener('stopped', emitStoppedEvent)
+        selectedSequence.addListener('stopped', sequencerStopped)
 
         if (activeSequence) {
             activeSequence.play()  // stop it recording
@@ -123,7 +123,8 @@ function Sequencer(recIndication, playIndicator, selectionIndicators, Scheduling
         }
     }
 
-    function emitStoppedEvent() {
+    function sequencerStopped() {
+        activeSequence = undefined
         sequencer.emit('stopped')
     }
 
