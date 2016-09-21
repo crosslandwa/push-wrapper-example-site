@@ -40,8 +40,9 @@ function AppSequence(Scheduling, bpm) {
         numberOfBeats = numberOfBeats > 1 ? numberOfBeats : 1
         sequence.emit('numberOfBeats', numberOfBeats)
         calculatedBPM = bpm.current
-        wrapped.loop(numberOfBeats * beatLengthMs)
-        console.log('calculated beats', numberOfBeats, 'at bpm', calculatedBPM, 'loop length unrounded', sequenceLengthMs, 'loop length', numberOfBeats * beatLengthMs)
+//        wrapped.loop(numberOfBeats * beatLengthMs) // this makes loop length equal whole number of beats, but breaks tests
+        wrapped.loop(sequenceLengthMs)
+//        console.log('calculated beats', numberOfBeats, 'at bpm', calculatedBPM, 'loop length unrounded', sequenceLengthMs, 'loop length', numberOfBeats * beatLengthMs)
 //        bpm.removeListener('changed', scaleSequenceLength)  // TODO rethink this
 //        bpm.change_to(calculatedBPM);
         bpm.on('changed', scaleSequenceLength)
@@ -70,7 +71,7 @@ function AppSequence(Scheduling, bpm) {
                 let quantisationFactor = (lengthMsFrom(bpm.current, 1) / 96) * 24
                 let quantisedTime = Math.round(currentTimeMs / quantisationFactor) * quantisationFactor
 
-                console.log(currentTimeMs, bpm.current, 'beatlengthMs', lengthMsFrom(bpm.current, 1), 'quantised', quantisedTime);
+//                console.log(currentTimeMs, bpm.current, 'beatlengthMs', lengthMsFrom(bpm.current, 1), 'quantised', quantisedTime);
 
                 // quantise to nearest 96th of a beat
                 if (quantisedTime > 0) {

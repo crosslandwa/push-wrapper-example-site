@@ -70,11 +70,13 @@ function Sequencer(recIndication, playIndicator, selectionIndicators, Scheduling
     }
 
     this.deleteSequence = function(number = 0) {
+        let toReset = selectedSequence;
         if (validSequenceNumber(number)) {
-            sequences[number - 1].reset()
-        } else {
-            selectedSequence.reset()
+            toReset = sequences[number - 1]
         }
+        toReset.reset()
+
+        if (activeSequence === toReset) activeSequence = undefined
     }
 
     this.addEvent = function(name, data) {

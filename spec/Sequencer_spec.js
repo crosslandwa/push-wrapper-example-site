@@ -153,6 +153,22 @@ describe('Sequencer', () => {
         }, 110)
     })
 
+    it('arms when re-selecting a loop thats just been deleted', () => {
+        sequencer.selectSequence(1)
+        sequencer.addEvent('sequence2-event', {})
+        sequencer.deleteSequence(1)
+
+        expect(sel1.state()).toEqual('orange')
+        expect(sel2.state()).toEqual('off')
+        expect(sel3.state()).toEqual('off')
+
+        sequencer.selectSequence(1)
+
+        expect(sel1.state()).toEqual('red')
+        expect(sel2.state()).toEqual('off')
+        expect(sel3.state()).toEqual('off')
+    })
+
     it('restarts sequence when a playing loop is reselected', (done) => {
         let emitted = []
         sequencer.on('sequence1-event', (data) => emitted.push({name: 'sequence1-event', data: data }))
