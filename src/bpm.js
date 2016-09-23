@@ -9,6 +9,8 @@ const rounded2dp = (amount) => Math.round(amount * 100) / 100
 const clippedBetween20And300 = compose(min(300), max(20))
 const sanitize = compose(rounded2dp, clippedBetween20And300, defaultTo120)
 
+const beatLengthMs = (bpm) => (60 / bpm) * 1000
+
 function BPM(initial) {
     EventEmitter.call(this)
     let bpm = this
@@ -23,6 +25,9 @@ function BPM(initial) {
     this.report = () => bpm.emit('changed', bpm)
     this.change_by = (amount) => updateAndReport(sum([current, amount]))
     this.change_to = (amount) => updateAndReport(amount)
+    this.beatLength = () => {
+        return { toMs: () => { return beatLengthMs(current) } }
+    }
 }
 util.inherits(BPM, EventEmitter)
 

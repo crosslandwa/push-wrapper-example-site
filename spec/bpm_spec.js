@@ -48,6 +48,10 @@ describe('BPM module', () => {
         bpm.change_by(1.005)
         expect(emitted_events).toEqual(['bpm=120.06', 'bpm=121.07']);
     })
+
+    it('can be queried to report current beat length in Ms', () => {
+        expect(bpm.beatLength().toMs()).toEqual(500);
+    })
 });
 
 describe('Interval module', () => {

@@ -35,7 +35,7 @@ function AppSequence(Scheduling, bpm) {
 
     let setLoopLengthAndBroadcastBPM = function() {
         let sequenceLengthMs = wrapped.currentPositionMs()
-        let beatLengthMs = lengthMsFrom(bpm.current(), 1)
+        let beatLengthMs = bpm.beatLength().toMs()
         numberOfBeats = Math.round(sequenceLengthMs / beatLengthMs)
         numberOfBeats = numberOfBeats > 1 ? numberOfBeats : 1
         sequence.emit('numberOfBeats', numberOfBeats)
@@ -68,10 +68,10 @@ function AppSequence(Scheduling, bpm) {
                 // 96, 72,  48,  32,  24,  16,  12,  8,    6,    4,    3
                 let currentTimeMs = wrapped.currentPositionMs();
 
-                let quantisationFactor = (lengthMsFrom(bpm.current(), 1) / 96) * 24
+                let quantisationFactor = (bpm.beatLength().toMs() / 96) * 24
                 let quantisedTime = Math.round(currentTimeMs / quantisationFactor) * quantisationFactor
 
-//                console.log(currentTimeMs, bpm.current, 'beatlengthMs', lengthMsFrom(bpm.current, 1), 'quantised', quantisedTime);
+//                console.log(currentTimeMs, bpm.current, 'beatlengthMs', bpm.beatLength().toMs(), 'quantised', quantisedTime);
 
                 // quantise to nearest 96th of a beat
                 if (quantisedTime > 0) {
@@ -183,17 +183,5 @@ function AppSequence(Scheduling, bpm) {
     })
 }
 util.inherits(AppSequence, EventEmitter)
-
-function lengthMsFrom(bpm, beats) {
-    return beats * (60 / bpm) * 1000
-}
-
-function bpmFrom(lengthMs, beats) {
-    return (beats * 60) / (lengthMs / 1000)
-}
-
-function beatsFrom(lengthMs, bpm) {
-    return (lengthMs / 1000) * (bpm / 60)
-}
 
 module.exports = AppSequence
