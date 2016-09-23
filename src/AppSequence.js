@@ -11,6 +11,10 @@ const states = {
     overdubbing: 'overdubbing'
 }
 
+// division of a beat (quarter note) expressed in 96ths (96PPQ)
+const ppq = { '1': 96, '3/4': 72, '1/2': 48, '1/3': 32, '1/4': 24,
+      '1/6': 16, '1/8': 12, '1/12': 8, '1/16': 6, '1/24': 4, '1/32': 3 }
+
 function AppSequence(Scheduling, bpm) {
     EventEmitter.call(this)
     let wrapped = Scheduling.Sequence()
@@ -64,14 +68,12 @@ function AppSequence(Scheduling, bpm) {
             case (states.recording):
             case (states.overdubbing):
             case (states.armed):
-                // 1,  3/4, 1/2, 1/3, 1/4, 1/6, 1/8, 1/12, 1/16, 1/24, 1/32 (division of a beat)
-                // 96, 72,  48,  32,  24,  16,  12,  8,    6,    4,    3
                 let currentTimeMs = wrapped.currentPositionMs();
 
-                let quantisationFactor = (bpm.beatLength().toMs() / 96) * 24
+                let quantisationFactor = (bpm.beatLength().toMs() / 96) * ppq['1/4']
                 let quantisedTime = Math.round(currentTimeMs / quantisationFactor) * quantisationFactor
 
-//                console.log(currentTimeMs, bpm.current, 'beatlengthMs', bpm.beatLength().toMs(), 'quantised', quantisedTime);
+//                console.log(currentTimeMs, bpm.current(), 'beatlengthMs', bpm.beatLength().toMs(), 'quantised', quantisedTime);
 
                 // quantise to nearest 96th of a beat
                 if (quantisedTime > 0) {
