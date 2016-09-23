@@ -3,7 +3,7 @@
 const BPM = require('../src/bpm.js'),
     Interval = require('../src/interval.js');
 
-describe('BPM module', () => {
+fdescribe('BPM module', () => {
     var bpm, emitted_events;
 
     beforeEach(() => {
@@ -41,6 +41,13 @@ describe('BPM module', () => {
         bpm.change_by(-500);
         expect(emitted_events).toEqual(['bpm=20']);
     });
+
+    it('supports BPM specified up to 2dp', () => {
+        bpm.change_to(120.055)
+        expect(emitted_events).toEqual(['bpm=120.06']);
+        bpm.change_by(1.005)
+        expect(emitted_events).toEqual(['bpm=120.06', 'bpm=121.07']);
+    })
 });
 
 describe('Interval module', () => {

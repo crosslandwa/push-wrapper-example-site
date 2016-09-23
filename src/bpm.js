@@ -7,15 +7,15 @@ function BPM(initial) {
     EventEmitter.call(this);
     let bpm = this;
 
-    this.current = clip(initial) ? clip(initial) : 120;
+    this.current = clip(initial ? initial : 120);
 
     this.report = function() { bpm.emit('changed', bpm) }
     this.change_by = function(amount) {
-        bpm.current = clip(bpm.current + amount);
+        bpm.current = twoDP(clip(bpm.current + amount));
         bpm.report();
     }
     this.change_to = function(newBPM) {
-        bpm.current = clip(newBPM);
+        bpm.current = twoDP(clip(newBPM));
         bpm.report();
     }
 }
@@ -23,6 +23,10 @@ util.inherits(BPM, EventEmitter);
 
 function clip(bpm) {
     return bpm < 20 ? 20 : (bpm > 300 ? 300 : bpm);
+}
+
+function twoDP(amount) {
+    return Math.round(amount * 100) / 100
 }
 
 module.exports = BPM;
