@@ -1,8 +1,7 @@
 'use strict'
 
 const EventEmitter = require('events'),
-    util = require('util'),
-    foreach = require('lodash.foreach');
+    util = require('util');
 
 function BPM(initial) {
     EventEmitter.call(this);
