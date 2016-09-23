@@ -28,18 +28,18 @@ function AppSequence(Scheduling, bpm) {
     }
 
     function scaleSequenceLength(bpm) {
-        let changeFactor = calculatedBPM / bpm.current
+        let changeFactor = calculatedBPM / bpm.current()
         wrapped.scale(changeFactor)
-        calculatedBPM = bpm.current
+        calculatedBPM = bpm.current()
     }
 
     let setLoopLengthAndBroadcastBPM = function() {
         let sequenceLengthMs = wrapped.currentPositionMs()
-        let beatLengthMs = lengthMsFrom(bpm.current, 1)
+        let beatLengthMs = lengthMsFrom(bpm.current(), 1)
         numberOfBeats = Math.round(sequenceLengthMs / beatLengthMs)
         numberOfBeats = numberOfBeats > 1 ? numberOfBeats : 1
         sequence.emit('numberOfBeats', numberOfBeats)
-        calculatedBPM = bpm.current
+        calculatedBPM = bpm.current()
 //        wrapped.loop(numberOfBeats * beatLengthMs) // this makes loop length equal whole number of beats, but breaks tests
         wrapped.loop(sequenceLengthMs)
 //        console.log('calculated beats', numberOfBeats, 'at bpm', calculatedBPM, 'loop length unrounded', sequenceLengthMs, 'loop length', numberOfBeats * beatLengthMs)
@@ -68,7 +68,7 @@ function AppSequence(Scheduling, bpm) {
                 // 96, 72,  48,  32,  24,  16,  12,  8,    6,    4,    3
                 let currentTimeMs = wrapped.currentPositionMs();
 
-                let quantisationFactor = (lengthMsFrom(bpm.current, 1) / 96) * 24
+                let quantisationFactor = (lengthMsFrom(bpm.current(), 1) / 96) * 24
                 let quantisedTime = Math.round(currentTimeMs / quantisationFactor) * quantisationFactor
 
 //                console.log(currentTimeMs, bpm.current, 'beatlengthMs', lengthMsFrom(bpm.current, 1), 'quantised', quantisedTime);

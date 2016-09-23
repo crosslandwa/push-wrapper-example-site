@@ -3,13 +3,13 @@
 const BPM = require('../src/bpm.js'),
     Interval = require('../src/interval.js');
 
-fdescribe('BPM module', () => {
+describe('BPM module', () => {
     var bpm, emitted_events;
 
     beforeEach(() => {
         bpm = new BPM();
         emitted_events = [];
-        bpm.on('changed', (bpm) => emitted_events.push('bpm=' + bpm.current));
+        bpm.on('changed', (bpm) => emitted_events.push('bpm=' + bpm.current()));
     })
 
     it('reports bpm', () => {

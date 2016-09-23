@@ -1,32 +1,29 @@
 'use strict'
 
-const EventEmitter = require('events'),
-    util = require('util');
+const EventEmitter = require('events')
+const util = require('util')
+const { compose, min, max, sum } = require('ramda')
+
+const defaultTo120 = (amount) => amount ? amount : 120
+const rounded2dp = (amount) => Math.round(amount * 100) / 100
+const clippedBetween20And300 = compose(min(300), max(20))
+const sanitize = compose(rounded2dp, clippedBetween20And300, defaultTo120)
 
 function BPM(initial) {
-    EventEmitter.call(this);
-    let bpm = this;
+    EventEmitter.call(this)
+    let bpm = this
+    let current = sanitize(initial)
 
-    this.current = clip(initial ? initial : 120);
-
-    this.report = function() { bpm.emit('changed', bpm) }
-    this.change_by = function(amount) {
-        bpm.current = twoDP(clip(bpm.current + amount));
-        bpm.report();
+    let updateAndReport = function(newBpm) {
+        current = sanitize(newBpm)
+        bpm.report()
     }
-    this.change_to = function(newBPM) {
-        bpm.current = twoDP(clip(newBPM));
-        bpm.report();
-    }
-}
-util.inherits(BPM, EventEmitter);
 
-function clip(bpm) {
-    return bpm < 20 ? 20 : (bpm > 300 ? 300 : bpm);
+    this.current = () => current
+    this.report = () => bpm.emit('changed', bpm)
+    this.change_by = (amount) => updateAndReport(sum([current, amount]))
+    this.change_to = (amount) => updateAndReport(amount)
 }
+util.inherits(BPM, EventEmitter)
 
-function twoDP(amount) {
-    return Math.round(amount * 100) / 100
-}
-
-module.exports = BPM;
+module.exports = BPM

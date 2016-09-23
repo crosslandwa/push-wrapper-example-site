@@ -128,7 +128,7 @@ function setupMetronome(bpm, push, player) {
     })
 
     let metronome = Scheduling.Metronome(4, 120)
-    bpm.on('changed', bpm => metronome.updateBPM(bpm.current))
+    bpm.on('changed', bpm => metronome.updateBPM(bpm.current()))
     let running = false
 
     function toggleMetronome() {
@@ -306,7 +306,7 @@ function bind_pitchbend(push, players) {
 
 function bind_tempo_knob_to_bpm(push, bpm) {
     push.knob['tempo'].on('turned', bpm.change_by);
-    bpm.on('changed', bpm => push.lcd.x[1].y[3].update('bpm= ' + bpm.current));
+    bpm.on('changed', bpm => push.lcd.x[1].y[3].update('bpm= ' + bpm.current()));
 }
 
 function turn_button_display_on(ui_btn) {
