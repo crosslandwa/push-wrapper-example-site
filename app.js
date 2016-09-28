@@ -120,10 +120,7 @@ function off_we_go(bound_push) {
 
 function setupMetronome(bpm, push, player) {
     let tap = Scheduling.Tap()
-    tap.on('average', result => {
-        console.log(Scheduling.BPMForBeatLength(result).current())
-        bpm.changeTo(Scheduling.BPMForBeatLength(result).current())
-    })
+    tap.on('average', bpm.changeTo)
 
     let metronome = Scheduling.Metronome(4, bpm)
     bpm.on('changed', metronome.updateBPM)
