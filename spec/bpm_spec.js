@@ -52,6 +52,10 @@ describe('BPM module', () => {
     it('can be queried to report current beat length in Ms', () => {
         expect(bpm.beatLength().toMs()).toEqual(500);
     })
+
+    it('can be created from a beat length in Ms', () => {
+        expect(BPM.fromBeatLength(500).current()).toEqual(120);
+    })
 });
 
 describe('Interval module', () => {

@@ -40,7 +40,6 @@ Timing for repeated notes inspired by this: https://github.com/cwilso/metronome
 - pursue quantisation? The the nearest 96th (96PPQ) seems sensible, but this makes the decision the "app" is tied in to bpm
   - need selectable quantisation?
   - need to avoid sequence multiple instances of same note (event) at same time
-- consolidate bpm code, in particular the rounding that occurs (make this 1 or 2 dp)
 - In app sequencing
   - Delete events in sequence
 - rethink bpm locking to 1st/subsequent sequences and changing number of beats sequence represents
@@ -48,5 +47,4 @@ Timing for repeated notes inspired by this: https://github.com/cwilso/metronome
   - sequencing the repatae start/stop leads easily to stuck notes/silence
   - could repetaed notes get recorded into sequence?
   - or should event include note length (how long held down for)?
-- UI for recording + playback status
 

@@ -9,7 +9,11 @@ const rounded2dp = (amount) => Math.round(amount * 100) / 100
 const clippedBetween20And300 = compose(min(300), max(20))
 const sanitize = compose(rounded2dp, clippedBetween20And300, defaultTo120)
 
-const beatLengthMs = (bpm) => (60 / bpm) * 1000
+const bpmToBeatLengthMs = (bpm) => (60 / bpm) * 1000
+const beatLengthMsToBpm = bpmToBeatLengthMs
+
+const toMs = (candidate) => (candidate && (typeof candidate.toMs === 'function')) ? candidate.toMs() : candidate
+
 
 function BPM(initial) {
     EventEmitter.call(this)
@@ -26,9 +30,11 @@ function BPM(initial) {
     this.change_by = (amount) => updateAndReport(sum([current, amount]))
     this.change_to = (amount) => updateAndReport(amount)
     this.beatLength = () => {
-        return { toMs: () => { return beatLengthMs(current) } }
+        return { toMs: () => { return bpmToBeatLengthMs(current) } }
     }
 }
 util.inherits(BPM, EventEmitter)
+
+BPM.fromBeatLength = (beatLength) => new BPM(beatLengthMsToBpm(toMs(beatLength)))
 
 module.exports = BPM
