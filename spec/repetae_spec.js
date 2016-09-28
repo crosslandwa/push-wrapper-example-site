@@ -1,13 +1,13 @@
 'use strict'
-const Repetae = require('../src/repetae.js'),
-    BPM = require('../src/bpm.js'),
-    Interval = require('../src/interval.js');
+const Interval = require('../src/interval.js');
+const Repetae = require('../src/repetae.js')
+const Scheduling = require('wac.scheduling')()
 
 describe('Example app repetae', () => {
     var repetae, emitted_events, bpm, interval_4n, interval_16n, interval_32n;
 
     beforeEach(() => {
-        bpm = new BPM(60);
+        bpm = Scheduling.BPM(60);
         interval_4n = Interval['4n'](bpm); // 1000ms at 60BPM
         interval_16n = Interval['16n'](bpm); // 250ms at 60BPM
         interval_32n = Interval['32n'](bpm); // 125ms at 60BPM
@@ -135,7 +135,7 @@ describe('Example app repetae', () => {
     })
 
     it('automatically changes interval when BPM changes', () => {
-        bpm.change_by(60);
+        bpm.changeBy(60);
         expect(emitted_events).toEqual(['repeater-interval-500']);
     })
 });

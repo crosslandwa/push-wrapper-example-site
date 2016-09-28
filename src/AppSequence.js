@@ -48,7 +48,7 @@ function AppSequence(Scheduling, bpm) {
         wrapped.loop(sequenceLengthMs)
 //        console.log('calculated beats', numberOfBeats, 'at bpm', calculatedBPM, 'loop length unrounded', sequenceLengthMs, 'loop length', numberOfBeats * beatLengthMs)
 //        bpm.removeListener('changed', scaleSequenceLength)  // TODO rethink this
-//        bpm.change_to(calculatedBPM);
+//        bpm.changeTo(calculatedBPM);
         bpm.on('changed', scaleSequenceLength)
     }
 
@@ -59,7 +59,7 @@ function AppSequence(Scheduling, bpm) {
 //        sequence.emit('numberOfBeats', numberOfBeats);
 //        calculatedBPM = ((60000 * numberOfBeats) / wrapped.loopLengthMs());
 //        bpm.removeListener('changed', scaleSequenceLength)
-//        bpm.change_to(calculatedBPM);
+//        bpm.changeTo(calculatedBPM);
 //        bpm.on('changed', scaleSequenceLength)
 //    }
 

@@ -7,8 +7,7 @@ const Push = require('push-wrapper'),
     Scheduling = require('wac.scheduling')(context),
     Sequencer = require('./src/Sequencer.js'),
     Repetae = require('./src/repetae.js'),
-    BPM = require('./src/bpm.js'),
-    bpm = new BPM(120),
+    bpm = Scheduling.BPM(120),
     Interval = require('./src/interval.js'),
     intervals = {
         '1/4': Interval['4n'](bpm, '1/4'),
@@ -122,7 +121,8 @@ function off_we_go(bound_push) {
 function setupMetronome(bpm, push, player) {
     let tap = Scheduling.Tap()
     tap.on('average', result => {
-        bpm.change_to(BPM.fromBeatLength(result).current())
+        console.log(Scheduling.BPMForBeatLength(result).current())
+        bpm.changeTo(Scheduling.BPMForBeatLength(result).current())
     })
 
     let metronome = Scheduling.Metronome(4, 120)
@@ -303,7 +303,7 @@ function bind_pitchbend(push, players) {
 }
 
 function bind_tempo_knob_to_bpm(push, bpm) {
-    push.knob['tempo'].on('turned', bpm.change_by);
+    push.knob['tempo'].on('turned', bpm.changeBy);
     bpm.on('changed', bpm => push.lcd.x[1].y[3].update('bpm= ' + bpm.current()));
 }
 

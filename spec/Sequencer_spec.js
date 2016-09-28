@@ -1,7 +1,6 @@
 'use strict'
 const Sequencer = require('../src/Sequencer.js')
 const Scheduling = require('wac.scheduling')()
-const BPM = require('../src/bpm.js')
 
 function LedButton() {
     let state = 'not yet set'
@@ -28,7 +27,7 @@ describe('Sequencer', () => {
     let sel1 = new SelectionButton(1), sel2 = new SelectionButton(2), sel3 = new SelectionButton(3)
 
     beforeEach(() => {
-        sequencer = new Sequencer(rec, play, [sel1, sel2, sel3], Scheduling, new BPM(120))
+        sequencer = new Sequencer(rec, play, [sel1, sel2, sel3], Scheduling, Scheduling.BPM(120))
     })
 
     it('initialises with sequence 1 selected but not armed', () => {
