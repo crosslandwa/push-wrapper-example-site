@@ -8,7 +8,7 @@ function Interval(bpm, multiplier, value) {
     let interval = this;
 
     this.value = value;
-    this.report = function() { interval.emit('changed', (60 / bpm.current()) * multiplier * 1000); };
+    this.report = function() { interval.emit('changed', bpm.beatLength().toMs() * multiplier); };
 
     bpm.on('changed', interval.report);
 }

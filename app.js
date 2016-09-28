@@ -125,8 +125,8 @@ function setupMetronome(bpm, push, player) {
         bpm.changeTo(Scheduling.BPMForBeatLength(result).current())
     })
 
-    let metronome = Scheduling.Metronome(4, 120)
-    bpm.on('changed', bpm => metronome.updateBPM(bpm.current()))
+    let metronome = Scheduling.Metronome(4, bpm)
+    bpm.on('changed', metronome.updateBPM)
     let running = false
 
     function toggleMetronome() {
