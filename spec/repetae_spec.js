@@ -98,7 +98,7 @@ describe('Example app repetae', () => {
 
         repetae.start(() => called_count++);
 
-        // but we update interval after 0.7s, so expect invocations at 750, 875, 1000, 1125, 1250, 1375, 1500
+        // but we update interval after 0.7s, so expect invocations at 625, 750, 875, 1000, 1125, 1250, 1375, 1500
         setTimeout(() => {
             repetae.press();
             repetae.interval(interval_32n);
@@ -107,7 +107,7 @@ describe('Example app repetae', () => {
 
         setTimeout(function () {
             repetae.stop();
-            expect(called_count).toEqual(9);
+            expect(called_count).toEqual(10);
             done();
         }, 1400);
     });
