@@ -61,7 +61,8 @@ function off_we_go(bound_push) {
         });
     const players = create_players(),
         push = bound_push,
-        sequencer = makeSequencer(players, push, bpm, sequenceButtons);
+        metronome = setupMetronome(bpm, push),
+        sequencer = makeSequencer(players, push, bpm, sequenceButtons, metronome);
 
     push.lcd.clear();
 
@@ -111,14 +112,14 @@ function off_we_go(bound_push) {
     });
 
     bind_tempo_knob_to_bpm(push, bpm);
-    setupMetronome(bpm, push, players[3])
+
     bpm.report();
 // TODO rethink how this works with multiple sequences
 //    push.knob['swing'].on('turned', sequence.changeNumberOfBeatsBy);
 //    sequence.on('numberOfBeats', numberOfBeats => push.lcd.x[2].y[3].update(`beats=${numberOfBeats}`));
 }
 
-function setupMetronome(bpm, push, player) {
+function setupMetronome(bpm, push) {
     let tap = Scheduling.Tap()
     tap.on('average', bpm.changeTo)
 
@@ -147,10 +148,10 @@ function setupMetronome(bpm, push, player) {
         if (event.key === 'm') toggleMetronome()
         if (event.key === 'n') tap.again()
     });
-
+    return metronome
 }
 
-function makeSequencer(players, push, bpm, uiSequenceButtons) {
+function makeSequencer(players, push, bpm, uiSequenceButtons, metronome) {
     function LedButton(pushButton) {
         this.off = pushButton.led_off
         this.ready = pushButton.led_dim
@@ -170,7 +171,8 @@ function makeSequencer(players, push, bpm, uiSequenceButtons) {
         new LedButton(push.button['play']),
         oneToEight.map((x) => new SelectionButton(push.channel[x].select, uiSequenceButtons[x -1])),
         Scheduling,
-        bpm);
+        bpm,
+        metronome);
 
     window.addEventListener('keydown', (event) => {
         switch (event.key) {

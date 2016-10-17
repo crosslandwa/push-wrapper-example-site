@@ -8,10 +8,10 @@ const util = require('util')
 // rec: {off, ready, on}
 // play: {off, ready, on}
 
-function Sequencer(recIndication, playIndicator, selectionIndicators, Scheduling, bpm) {
+function Sequencer(recIndication, playIndicator, selectionIndicators, Scheduling, bpm, metronome) {
     EventEmitter.call(this)
 
-    let sequences = selectionIndicators.map(() => new Sequence(Scheduling, bpm))
+    let sequences = selectionIndicators.map(() => new Sequence(Scheduling, bpm, metronome))
     let selectedSequence
     let activeSequence
     let sequencer = this
