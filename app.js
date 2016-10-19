@@ -150,6 +150,8 @@ function setupMetronome(bpm, push) {
     let tick = new Player('assets/audio/metronome-tick.mp3', context).toMaster()
     metronome.on('accent', accent.play)
     metronome.on('tick', tick.play)
+
+    return metronome
 }
 
 function makeSequencer(players, push, bpm, metronome) {
