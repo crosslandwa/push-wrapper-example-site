@@ -62,7 +62,7 @@ function off_we_go(bound_push) {
     const players = create_players(),
         push = bound_push,
         metronome = setupMetronome(bpm, push),
-        sequencer = makeSequencer(players, push, bpm, sequenceButtons, metronome);
+        sequencer = makeSequencer(players, push, bpm, metronome);
 
     push.lcd.clear();
 
@@ -86,8 +86,6 @@ function off_we_go(bound_push) {
 
         turn_off_column(push, column_number);
         push.lcd.x[column_number].y[2].update(samples[i].name);
-        player.on('started', partial(turn_button_display_on, buttons[i]));
-        player.on('stopped', partial(turn_button_display_off, buttons[i]));
         player.on('started', partial(turn_on_column, push, column_number));
         player.on('stopped', partial(turn_off_column, push, column_number));
 
@@ -95,7 +93,6 @@ function off_we_go(bound_push) {
         push.channel[column_number].knob.on('turned', player.changePitchByInterval);
         player.reportPitch();
 
-        buttons[i].addEventListener('mousedown', () => { player.cutOff(filter_frequencies[8]).play(midiGain(110)) });
         bind_column_to_player(push, player, column_number, repetae, sequencer);
     });
 
@@ -105,7 +102,7 @@ function off_we_go(bound_push) {
 
     bind_pitchbend(push, players);
 
-    bindQwertyuiToPlayback(players, sequencer);
+    bindQwertyButtonsToPlayback(players, sequencer);
 
     sequencer.on('play', (data) => {
         players[data.player].cutOff(data.frequency).play(midiGain(data.velocity));
@@ -148,10 +145,14 @@ function setupMetronome(bpm, push) {
         if (event.key === 'm') toggleMetronome()
         if (event.key === 'n') tap.again()
     });
-    return metronome
+
+    let accent = new Player('assets/audio/metronome-accent.mp3', context).toMaster()
+    let tick = new Player('assets/audio/metronome-tick.mp3', context).toMaster()
+    metronome.on('accent', accent.play)
+    metronome.on('tick', tick.play)
 }
 
-function makeSequencer(players, push, bpm, uiSequenceButtons, metronome) {
+function makeSequencer(players, push, bpm, metronome) {
     function LedButton(pushButton) {
         this.off = pushButton.led_off
         this.ready = pushButton.led_dim
@@ -166,10 +167,23 @@ function makeSequencer(players, push, bpm, uiSequenceButtons, metronome) {
         this.recording = function() { pushButton.red(); pushButton.led_on(); uiButton.recording() }
     }
 
+    const uiSequenceButtons = document.getElementsByClassName('push-wrapper-sequence-button')
+    const sequenceButtons = Array.prototype.map.call(
+        uiSequenceButtons,
+        (button) => {
+            button.off = updateSequenceUiButton.bind(button)
+            button.hasSequence = updateSequenceUiButton.bind(button, 'has-sequence')
+            button.playing = updateSequenceUiButton.bind(button, 'playing')
+            button.recording = updateSequenceUiButton.bind(button, 'recording')
+            button.selected = updateSequenceUiButton.bind(button, 'selected')
+            return button
+        });
+
+
     let sequencer = new Sequencer(
         new LedButton(push.button['rec']),
         new LedButton(push.button['play']),
-        oneToEight.map((x) => new SelectionButton(push.channel[x].select, uiSequenceButtons[x -1])),
+        oneToEight.map((x) => new SelectionButton(push.channel[x].select, sequenceButtons[x -1])),
         Scheduling,
         bpm,
         metronome);
@@ -189,6 +203,12 @@ function makeSequencer(players, push, bpm, uiSequenceButtons, metronome) {
             case "8": sequencer.selectSequence(8); break;
         }
     });
+
+    Array.prototype.forEach.call(
+        uiSequenceButtons,
+        (button, i) => {
+            button.addEventListener('mousedown', () => { sequencer.selectSequence(i + 1) })
+        })
 
     push.button['rec'].on('pressed', sequencer.recordButtonPressed);
     push.button['play'].on('pressed', sequencer.playButtonPressed);
@@ -255,14 +275,26 @@ function bind_column_to_player(push, player, x, repetae, sequencer) {
     });
 }
 
-function bindQwertyuiToPlayback(players, sequencer) {
+function bindQwertyButtonsToPlayback(players, sequencer) {
+    const buttons = document.getElementsByClassName('push-wrapper-button');
+    const velocity = 110
+    const midiVelocity = midiGain(velocity)
+    const f = filter_frequencies[8]
+
+    foreach(players, (player, i) => {
+        player.on('started', partial(turn_button_display_on, buttons[i]));
+        player.on('stopped', partial(turn_button_display_off, buttons[i]));
+        buttons[i].addEventListener('mousedown', () => {
+            player.cutOff(f).play(midiVelocity)
+            sequencer.addEvent('play', { player: i, velocity: velocity, frequency: f });
+        });
+    })
+
     let lookup = {'q': 0, 'w': 1, 'e': 2, 'r': 3, 't': 4, 'y': 5, 'u': 6, 'i': 7};
     window.addEventListener("keypress", (event) => {
         if (event.key in lookup) {
-            let index = lookup[event.key],
-                f = filter_frequencies[8],
-                velocity = 110;
-            players[index].cutOff(f).play(midiGain(velocity));
+            let index = lookup[event.key]
+            players[index].cutOff(f).play(midiVelocity);
             sequencer.addEvent('play', { player: index, velocity: velocity, frequency: f });
         }
     });
