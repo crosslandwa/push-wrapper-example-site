@@ -121,7 +121,6 @@ function setupMetronome(bpm, push) {
     tap.on('average', bpm.changeTo)
 
     let metronome = Scheduling.Metronome(4, bpm)
-    bpm.on('changed', metronome.updateBPM)
     let running = false
 
     function toggleMetronome() {
