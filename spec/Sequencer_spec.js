@@ -115,7 +115,7 @@ describe('Sequencer', () => {
         }, 410)
     })
 
-    it('automatically plays the selected sequence if it has no recorded events', (done) => {
+    it('automatically plays the selected sequence if it has recorded events', (done) => {
         sequencer.recordButtonPressed() // arm
         sequencer.addEvent('sequence1-event', {})
         setTimeout(sequencer.playButtonPressed, 100) //start 1 looping (100ms long)
