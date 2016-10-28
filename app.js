@@ -147,11 +147,7 @@ function setupMetronome(bpm, push) {
 function makeSequencer(players, push, bpm, metronome) {
     const selectionButtons = document.getElementsByClassName('push-wrapper-sequence-button')
 
-    let sequencer = new Sequencer(
-        selectionButtons.length,
-        Scheduling,
-        bpm,
-        metronome);
+    let sequencer = new Sequencer(selectionButtons.length, Scheduling, bpm, metronome);
 
     sequencer.on('sequenceState', (number, state, isSelected) => {
         switch (state) {
