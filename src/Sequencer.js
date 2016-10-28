@@ -76,8 +76,8 @@ function Sequencer(numberOfSequences, Scheduling, bpm, metronome) {
     }
 
     this.addEvent = function(name, data) {
-        selectedSequence.record()
         selectedSequence.addEvent('__sequenced_event__', {name: name, data: data})
+        selectedSequence.record()
     }
 
     this.reportSelectedSequenceState = function() {

@@ -15,8 +15,6 @@ const states = {
 const ppq = { '1': 96, '3/4': 72, '1/2': 48, '1/3': 32, '1/4': 24,
       '1/6': 16, '1/8': 12, '1/12': 8, '1/16': 6, '1/24': 4, '1/32': 3 }
 
-// TODO this works for adjusting time/quantising IF metronome is running
-// Think I want to flag if metronome was running when recording started (isQuantised)
 function AppSequence(Scheduling, bpm, metronome) {
     EventEmitter.call(this)
     let wrapped = Scheduling.Sequence()
@@ -28,6 +26,7 @@ function AppSequence(Scheduling, bpm, metronome) {
     let nextTick = _now
     let previousTick = _now
     let metronomeRunning = false
+    let isQuantised = false
 
     if (metronome) {
         metronome.on('started', (metronomeInterval) => {
@@ -59,7 +58,7 @@ function AppSequence(Scheduling, bpm, metronome) {
     let setLoopLengthAndBroadcastBPM = function() {
         let sequenceLengthMs = wrapped.currentPositionMs()
 
-        if (!metronomeRunning) {
+        if (!isQuantised) {
           wrapped.loop(sequenceLengthMs)
           wrapped.start()
           // TODO calculate BPM based on number of beats and sequence length???
@@ -101,12 +100,13 @@ function AppSequence(Scheduling, bpm, metronome) {
 
     this.addEvent = function(name, data) {
         switch (state) {
+            case (states.armed):
+                isQuantised = metronomeRunning
             case (states.recording):
             case (states.overdubbing):
-            case (states.armed):
                 let quantisedTime = 0
 
-                if (metronomeRunning) {
+                if (isQuantised) {
                     let currentTimeMs = wrapped.currentPositionMs();
                     // TODO selectable quantisation
                     let quantisationFactor = (bpm.beatLength().toMs() / 96) * ppq['1/4']
@@ -202,6 +202,7 @@ function AppSequence(Scheduling, bpm, metronome) {
     this.reset = function() {
         wrapped.reset();
         state = states.idle;
+        isQuantised = false
         metronome.removeListener('bpmChanged', scaleSequenceLength)
         reportState();
         return true

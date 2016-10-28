@@ -35,7 +35,7 @@ describe('Sequencer', () => {
     }, 300)
   })
 
-  it ('quantises sequence when the metronome is running', (done) => {
+  it ('quantises sequence if the metronome is running when recording starts', (done) => {
     let events = []
     capture(events, 'name')
 
