@@ -5,13 +5,12 @@ const EventEmitter = require('events')
 const util = require('util')
 
 // selection: {off, hasSequence, selected, playing, recording}
-// rec: {off, ready, on}
-// play: {off, ready, on}
 
-function Sequencer(recIndication, playIndicator, selectionIndicators, Scheduling, bpm, metronome) {
+function Sequencer(selectionIndicators, Scheduling, bpm, metronome) {
     EventEmitter.call(this)
 
     let sequences = selectionIndicators.map(() => new Sequence(Scheduling, bpm, metronome))
+    sequences.forEach((sequence, index) => {sequence.number = index + 1})
     let selectedSequence
     let activeSequence
     let sequencer = this
@@ -105,22 +104,9 @@ function Sequencer(recIndication, playIndicator, selectionIndicators, Scheduling
     }
 
     // this = sequence instance
-    function showPlayRecButtonState(state) {
+    function reportActiveSequenceState(state) {
         if (!isSelected(this)) return
-        switch (state) {
-            case 'idle':
-                recIndication.off(); playIndicator.off(); break;
-            case 'armed':
-                recIndication.on(); playIndicator.off(); break;
-            case 'recording':
-                recIndication.on(); playIndicator.off(); break;
-            case 'overdubbing':
-                recIndication.ready(); playIndicator.on(); break;
-            case 'playback':
-                recIndication.off(); playIndicator.on(); break;
-            case 'stopped':
-                recIndication.off(); playIndicator.ready(); break;
-        }
+        sequencer.emit('activeSequenceState', state)
     }
 
     function sequencerStopped() {
@@ -135,7 +121,7 @@ function Sequencer(recIndication, playIndicator, selectionIndicators, Scheduling
     //initialisation
     sequences.forEach((sequence, index) => {
         sequence.addListener('state', showIndividualSequenceState.bind(sequence, selectionIndicators[index]))
-        sequence.addListener('state', showPlayRecButtonState)
+        sequence.addListener('state', reportActiveSequenceState)
         sequence.addListener('active', captureActiveSequence)
         sequence.addListener('__sequenced_event__', emitSequencedEvent)
         sequence.addListener('state', (state) => {

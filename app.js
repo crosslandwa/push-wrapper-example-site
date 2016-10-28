@@ -154,12 +154,6 @@ function setupMetronome(bpm, push) {
 }
 
 function makeSequencer(players, push, bpm, metronome) {
-    function LedButton(pushButton) {
-        this.off = pushButton.led_off
-        this.ready = pushButton.led_dim
-        this.on = pushButton.led_on
-    }
-
     function SelectionButton(pushButton, uiButton) {
         this.off = function() { pushButton.led_off(); uiButton.off() }
         this.hasSequence = function() { pushButton.yellow(); pushButton.led_on(); uiButton.hasSequence() }
@@ -182,12 +176,27 @@ function makeSequencer(players, push, bpm, metronome) {
 
 
     let sequencer = new Sequencer(
-        new LedButton(push.button['rec']),
-        new LedButton(push.button['play']),
         oneToEight.map((x) => new SelectionButton(push.channel[x].select, sequenceButtons[x -1])),
         Scheduling,
         bpm,
         metronome);
+
+    sequencer.on('activeSequenceState', (state) => {
+        switch (state) {
+            case 'idle':
+                push.button['rec'].led_off(); push.button['play'].led_off(); break;
+            case 'armed':
+                push.button['rec'].led_on(); push.button['play'].led_off(); break;
+            case 'recording':
+                push.button['rec'].led_on(); push.button['play'].led_off(); break;
+            case 'overdubbing':
+                push.button['rec'].led_dim(); push.button['play'].led_on(); break;
+            case 'playback':
+                push.button['rec'].led_off(); push.button['play'].led_on(); break;
+            case 'stopped':
+                push.button['rec'].led_off(); push.button['play'].led_dim(); break;
+        }
+    })
 
     window.addEventListener('keydown', (event) => {
         switch (event.key) {

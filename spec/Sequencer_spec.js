@@ -3,7 +3,7 @@ const Sequencer = require('../src/Sequencer.js')
 const Scheduling = require('wac.scheduling')()
 
 function LedButton() {
-    let state = 'not yet set'
+    let state = 'off'
     this.off = function() { state = 'off' }
     this.ready = function() { state = 'dim' }
     this.on = function() { state = 'on' }
@@ -21,13 +21,29 @@ function SelectionButton(sequenceNumber) {
     this.number = sequenceNumber
 }
 
-describe('Sequencer', () => {
+fdescribe('Sequencer', () => {
     let sequencer
     let rec = new LedButton(), play = new LedButton
     let sel1 = new SelectionButton(1), sel2 = new SelectionButton(2), sel3 = new SelectionButton(3)
 
     beforeEach(() => {
-        sequencer = new Sequencer(rec, play, [sel1, sel2, sel3], Scheduling, Scheduling.BPM(120))
+        sequencer = new Sequencer([sel1, sel2, sel3], Scheduling, Scheduling.BPM(120), Scheduling.Metronome(4, 120))
+        sequencer.on('activeSequenceState', (state) => {
+            switch (state) {
+                case 'idle':
+                    rec.off(); play.off(); break;
+                case 'armed':
+                    rec.on(); play.off(); break;
+                case 'recording':
+                    rec.on(); play.off(); break;
+                case 'overdubbing':
+                    rec.ready(); play.on(); break;
+                case 'playback':
+                    rec.off(); play.on(); break;
+                case 'stopped':
+                    rec.off(); play.ready(); break;
+            }
+        })
     })
 
     it('initialises with sequence 1 selected but not armed', () => {
