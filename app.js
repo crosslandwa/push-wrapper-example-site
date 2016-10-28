@@ -50,15 +50,6 @@ function show_no_midi_warning() {
 
 function off_we_go(bound_push) {
     const buttons = document.getElementsByClassName('push-wrapper-button');
-    const sequenceButtons = Array.prototype.map.call(document.getElementsByClassName('push-wrapper-sequence-button'),
-        (button) => {
-            button.off = updateSequenceUiButton.bind(button)
-            button.hasSequence = updateSequenceUiButton.bind(button, 'has-sequence')
-            button.playing = updateSequenceUiButton.bind(button, 'playing')
-            button.recording = updateSequenceUiButton.bind(button, 'recording')
-            button.selected = updateSequenceUiButton.bind(button, 'selected')
-            return button
-        });
     const players = create_players(),
         push = bound_push,
         metronome = setupMetronome(bpm, push),
@@ -154,26 +145,7 @@ function setupMetronome(bpm, push) {
 }
 
 function makeSequencer(players, push, bpm, metronome) {
-    function SelectionButton(pushButton, uiButton) {
-        this.off = function() { pushButton.led_off(); uiButton.off() }
-        this.hasSequence = function() { pushButton.yellow(); pushButton.led_on(); uiButton.hasSequence() }
-        this.selected = function() { pushButton.orange(); pushButton.led_on(); uiButton.selected() }
-        this.playing = function() { pushButton.green(); pushButton.led_on(); uiButton.playing() }
-        this.recording = function() { pushButton.red(); pushButton.led_on(); uiButton.recording() }
-    }
-
-    const uiSequenceButtons = document.getElementsByClassName('push-wrapper-sequence-button')
-    const sequenceButtons = Array.prototype.map.call(
-        uiSequenceButtons,
-        (button) => {
-            button.off = updateSequenceUiButton.bind(button)
-            button.hasSequence = updateSequenceUiButton.bind(button, 'has-sequence')
-            button.playing = updateSequenceUiButton.bind(button, 'playing')
-            button.recording = updateSequenceUiButton.bind(button, 'recording')
-            button.selected = updateSequenceUiButton.bind(button, 'selected')
-            return button
-        });
-    let selectionButtons = oneToEight.map((x) => new SelectionButton(push.channel[x].select, sequenceButtons[x -1]))
+    const selectionButtons = document.getElementsByClassName('push-wrapper-sequence-button')
 
     let sequencer = new Sequencer(
         selectionButtons.length,
@@ -184,22 +156,39 @@ function makeSequencer(players, push, bpm, metronome) {
     sequencer.on('sequenceState', (number, state, isSelected) => {
         switch (state) {
             case 'idle':
-                isSelected ? selectionButtons[number - 1].selected() : selectionButtons[number - 1].off()
+                if (isSelected) {
+                    updateSequenceUiButton(selectionButtons[number - 1], 'selected')
+                    push.channel[number].select.orange(); push.channel[number].select.led_on();
+                } else {
+                    updateSequenceUiButton(selectionButtons[number - 1], '')
+                    push.channel[number].select.led_off()
+                }
                 push.button['rec'].led_off(); push.button['play'].led_off(); break;
             case 'armed':
-                selectionButtons[number - 1].recording()
+                updateSequenceUiButton(selectionButtons[number - 1], 'recording')
+                push.channel[number].select.red(); push.channel[number].select.led_on();
                 push.button['rec'].led_on(); push.button['play'].led_off(); break;
             case 'recording':
-                selectionButtons[number - 1].recording()
+                updateSequenceUiButton(selectionButtons[number - 1], 'recording')
+                push.channel[number].select.red(); push.channel[number].select.led_on();
                 push.button['rec'].led_on(); push.button['play'].led_off(); break;
             case 'overdubbing':
-                selectionButtons[number - 1].recording()
+                updateSequenceUiButton(selectionButtons[number - 1], 'recording')
+                push.channel[number].select.red(); push.channel[number].select.led_on();
                 push.button['rec'].led_dim(); push.button['play'].led_on(); break;
             case 'playback':
-                selectionButtons[number - 1].playing()
+                updateSequenceUiButton(selectionButtons[number - 1], 'playing')
+                push.channel[number].select.green(); push.channel[number].select.led_on();
                 push.button['rec'].led_off(); push.button['play'].led_on(); break;
             case 'stopped':
-                isSelected ? selectionButtons[number - 1].selected() : selectionButtons[number - 1].hasSequence()
+                if (isSelected) {
+                    updateSequenceUiButton(selectionButtons[number - 1], 'selected')
+                    push.channel[number].select.orange()
+                } else {
+                    updateSequenceUiButton(selectionButtons[number - 1], 'has-sequence')
+                    push.channel[number].select.yellow()
+                }
+                push.channel[number].select.led_on()
                 push.button['rec'].led_off(); push.button['play'].led_dim(); break;
         }
     })
@@ -222,7 +211,7 @@ function makeSequencer(players, push, bpm, metronome) {
     });
 
     Array.prototype.forEach.call(
-        uiSequenceButtons,
+        selectionButtons,
         (button, i) => {
             button.addEventListener('mousedown', () => { sequencer.selectSequence(i + 1) })
         })
@@ -367,12 +356,12 @@ function scale(input, minIn, maxIn, minOut, maxOut) {
     return ((maxOut - minOut) * ((input - minIn) / (maxIn - minIn))) + minOut;
 }
 
-function updateSequenceUiButton(state) {
-    this.classList.remove('has-sequence')
-    this.classList.remove('playing')
-    this.classList.remove('recording')
-    this.classList.remove('selected')
+function updateSequenceUiButton(button, state) {
+    button.classList.remove('has-sequence')
+    button.classList.remove('playing')
+    button.classList.remove('recording')
+    button.classList.remove('selected')
     if (state) {
-        this.classList.add(state)
+        button.classList.add(state)
     }
 }
