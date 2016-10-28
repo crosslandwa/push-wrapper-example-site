@@ -40,22 +40,36 @@ ul {
     border: 2px solid white;
     transition: all 0.2s;
 }
+
+.push-wrapper-arm-button, .push-wrapper-play-button, .push-wrapper-delete-button {
+    display: inline-block;
+    width: 30%;
+    height: 40%;
+    margin: 0px 1%;
+    background-color: #c7ccce;
+    border-radius: 10px;
+    opacity: 1;
+    cursor: pointer;
+    border: 2px solid white;
+    transition: all 0.2s;
+}
+
 .push-wrapper-sequence-button {
     height: 20%;
 }
-.push-wrapper-sequence-button.selected {
+.selected {
     background-color: #ff9933;
 }
-.push-wrapper-sequence-button.has-sequence {
+.has-sequence {
     background-color: #ffff4d;
 }
-.push-wrapper-sequence-button.playing {
+.playing {
     background-color: #33cc33;
 }
-.push-wrapper-sequence-button.recording {
+.recording {
     background-color: #e60000;
 }
-.push-wrapper-button.active {
+.active {
     opacity: 0.25;
     box-shadow: inset 0px 0px 30px blue;
     border: 2px solid rgba(100, 100, 100, 0.3);

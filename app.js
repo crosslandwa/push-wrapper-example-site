@@ -49,7 +49,6 @@ function show_no_midi_warning() {
 }
 
 function off_we_go(bound_push) {
-    const buttons = document.getElementsByClassName('push-wrapper-button');
     const players = create_players(),
         push = bound_push,
         metronome = setupMetronome(bpm, push),
@@ -146,7 +145,9 @@ function setupMetronome(bpm, push) {
 
 function makeSequencer(players, push, bpm, metronome) {
     const selectionButtons = document.getElementsByClassName('push-wrapper-sequence-button')
-
+    const armButton = document.getElementsByClassName('push-wrapper-arm-button')[0]
+    const playButton = document.getElementsByClassName('push-wrapper-play-button')[0]
+    const deleteButton = document.getElementsByClassName('push-wrapper-delete-button')[0]
     let sequencer = new Sequencer(selectionButtons.length, Scheduling, bpm, metronome);
 
     sequencer.on('sequenceState', (number, state, isSelected) => {
@@ -159,22 +160,32 @@ function makeSequencer(players, push, bpm, metronome) {
                     updateSequenceUiButton(selectionButtons[number - 1], '')
                     push.channel[number].select.led_off()
                 }
+                updateSequenceUiButton(armButton)
+                updateSequenceUiButton(playButton)
                 push.button['rec'].led_off(); push.button['play'].led_off(); break;
             case 'armed':
                 updateSequenceUiButton(selectionButtons[number - 1], 'recording')
                 push.channel[number].select.red(); push.channel[number].select.led_on();
+                updateSequenceUiButton(armButton, 'recording')
+                updateSequenceUiButton(playButton)
                 push.button['rec'].led_on(); push.button['play'].led_off(); break;
             case 'recording':
                 updateSequenceUiButton(selectionButtons[number - 1], 'recording')
-                push.channel[number].select.red(); push.channel[number].select.led_on();
+                push.channel[number].select.red(); push.channel[number].select.led_on()
+                updateSequenceUiButton(armButton, 'recording')
+                updateSequenceUiButton(playButton)
                 push.button['rec'].led_on(); push.button['play'].led_off(); break;
             case 'overdubbing':
                 updateSequenceUiButton(selectionButtons[number - 1], 'recording')
-                push.channel[number].select.red(); push.channel[number].select.led_on();
+                push.channel[number].select.red(); push.channel[number].select.led_on()
+                updateSequenceUiButton(armButton, 'recording')
+                updateSequenceUiButton(playButton, 'playing')
                 push.button['rec'].led_dim(); push.button['play'].led_on(); break;
             case 'playback':
                 updateSequenceUiButton(selectionButtons[number - 1], 'playing')
                 push.channel[number].select.green(); push.channel[number].select.led_on();
+                updateSequenceUiButton(armButton)
+                updateSequenceUiButton(playButton, 'playing')
                 push.button['rec'].led_off(); push.button['play'].led_on(); break;
             case 'stopped':
                 if (isSelected) {
@@ -185,6 +196,8 @@ function makeSequencer(players, push, bpm, metronome) {
                     push.channel[number].select.yellow()
                 }
                 push.channel[number].select.led_on()
+                updateSequenceUiButton(armButton)
+                updateSequenceUiButton(playButton, 'has-sequence')
                 push.button['rec'].led_off(); push.button['play'].led_dim(); break;
         }
     })
@@ -214,6 +227,9 @@ function makeSequencer(players, push, bpm, metronome) {
 
     push.button['rec'].on('pressed', sequencer.recordButtonPressed);
     push.button['play'].on('pressed', sequencer.playButtonPressed);
+    armButton.addEventListener('mousedown', sequencer.recordButtonPressed)
+    playButton.addEventListener('mousedown', sequencer.playButtonPressed)
+    deleteButton.addEventListener('mousedown', sequencer.deleteSequence)
 
     let deleteOrShift = 'off'
 
