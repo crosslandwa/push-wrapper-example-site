@@ -84,7 +84,7 @@ function Sequencer(recIndication, playIndicator, selectionIndicators, Scheduling
         selectedSequence.addEvent('__sequenced_event__', {name: name, data: data})
     }
 
-    // this = sequencer instance
+    // this = sequence instance
     function showIndividualSequenceState(indicator, state) {
         switch (state) {
             case 'idle':
@@ -104,7 +104,7 @@ function Sequencer(recIndication, playIndicator, selectionIndicators, Scheduling
         activeSequence = this // this refers to the sequencer instance
     }
 
-    // this = sequencer instance
+    // this = sequence instance
     function showPlayRecButtonState(state) {
         if (!isSelected(this)) return
         switch (state) {
