@@ -15,13 +15,32 @@ const states = {
 const ppq = { '1': 96, '3/4': 72, '1/2': 48, '1/3': 32, '1/4': 24,
       '1/6': 16, '1/8': 12, '1/12': 8, '1/16': 6, '1/24': 4, '1/32': 3 }
 
-function AppSequence(Scheduling, bpm) {
+// TODO this works for adjusting time/quantising IF metronome is running
+// Think I want to flag if metronome was running when recording started (isQuantised)
+function AppSequence(Scheduling, bpm, metronome) {
     EventEmitter.call(this)
     let wrapped = Scheduling.Sequence()
     let state = states.idle
     let numberOfBeats = undefined
-    let calculatedBPM = undefined
+    let sequenceBPM = undefined
     let sequence = this
+    let _now = { toMs: Scheduling.nowMs }
+    let nextTick = _now
+    let previousTick = _now
+    let metronomeRunning = false
+
+    if (metronome) {
+        metronome.on('started', (metronomeInterval) => {
+            nextTick = metronomeInterval.nextTick
+            previousTick = metronomeInterval.previousTick
+            metronomeRunning = true
+        })
+        metronome.on('stopped', () => {
+            nextTick = _now
+            previousTick = _now
+            metronomeRunning = false
+        })
+    }
 
     function isActive() { return [states.playback, states.overdubbing, states.recording].indexOf(state) != -1 }
 
@@ -32,24 +51,41 @@ function AppSequence(Scheduling, bpm) {
     }
 
     function scaleSequenceLength(bpm) {
-        let changeFactor = calculatedBPM / bpm.current()
+        let changeFactor = sequenceBPM / bpm.current()
         wrapped.scale(changeFactor)
-        calculatedBPM = bpm.current()
+        sequenceBPM = bpm.current()
     }
 
     let setLoopLengthAndBroadcastBPM = function() {
         let sequenceLengthMs = wrapped.currentPositionMs()
+
+        if (!metronomeRunning) {
+          wrapped.loop(sequenceLengthMs)
+          wrapped.start()
+          // TODO calculate BPM based on number of beats and sequence length???
+          // TODO do we want to scale unquantised loop when BPM changes?
+          // bpm.removeListener('changed', scaleSequenceLength)
+          // bpm.changeTo(sequenceBPM);
+          // bpm.on('changed', scaleSequenceLength)
+          return
+        }
+
+        sequenceBPM = bpm.current()
         let beatLengthMs = bpm.beatLength().toMs()
         numberOfBeats = Math.round(sequenceLengthMs / beatLengthMs)
         numberOfBeats = numberOfBeats > 1 ? numberOfBeats : 1
         sequence.emit('numberOfBeats', numberOfBeats)
-        calculatedBPM = bpm.current()
-//        wrapped.loop(numberOfBeats * beatLengthMs) // this makes loop length equal whole number of beats, but breaks tests
-        wrapped.loop(sequenceLengthMs)
-//        console.log('calculated beats', numberOfBeats, 'at bpm', calculatedBPM, 'loop length unrounded', sequenceLengthMs, 'loop length', numberOfBeats * beatLengthMs)
-//        bpm.removeListener('changed', scaleSequenceLength)  // TODO rethink this
-//        bpm.changeTo(calculatedBPM);
-        bpm.on('changed', scaleSequenceLength)
+
+        let roundedSequenceLengthMs = numberOfBeats * beatLengthMs
+        // console.log('calculated beats', numberOfBeats, 'at bpm', sequenceBPM, 'loop length unrounded', sequenceLengthMs, 'loop length', roundedSequenceLengthMs)
+        wrapped.loop(roundedSequenceLengthMs)
+        if (roundedSequenceLengthMs < sequenceLengthMs) {
+            let timeSinceLastTick = Scheduling.nowMs() - previousTick.toMs()
+            wrapped.start(timeSinceLastTick)
+        } else {
+            wrapped.startAt(nextTick)
+        }
+        metronome.on('bpmChanged', scaleSequenceLength)
     }
 
 //    this.changeNumberOfBeatsBy = function(amount) {
@@ -57,9 +93,9 @@ function AppSequence(Scheduling, bpm) {
 //        numberOfBeats += amount;
 //        numberOfBeats = numberOfBeats < 1 ? 1 : numberOfBeats;
 //        sequence.emit('numberOfBeats', numberOfBeats);
-//        calculatedBPM = ((60000 * numberOfBeats) / wrapped.loopLengthMs());
+//        sequenceBPM = ((60000 * numberOfBeats) / wrapped.loopLengthMs());
 //        bpm.removeListener('changed', scaleSequenceLength)
-//        bpm.changeTo(calculatedBPM);
+//        bpm.changeTo(sequenceBPM);
 //        bpm.on('changed', scaleSequenceLength)
 //    }
 
@@ -68,12 +104,15 @@ function AppSequence(Scheduling, bpm) {
             case (states.recording):
             case (states.overdubbing):
             case (states.armed):
-                let currentTimeMs = wrapped.currentPositionMs();
+                let quantisedTime = 0
 
-                let quantisationFactor = (bpm.beatLength().toMs() / 96) * ppq['1/4']
-                let quantisedTime = Math.round(currentTimeMs / quantisationFactor) * quantisationFactor
-
-//                console.log(currentTimeMs, bpm.current(), 'beatlengthMs', bpm.beatLength().toMs(), 'quantised', quantisedTime);
+                if (metronomeRunning) {
+                    let currentTimeMs = wrapped.currentPositionMs();
+                    // TODO selectable quantisation
+                    let quantisationFactor = (bpm.beatLength().toMs() / 96) * ppq['1/4']
+                    quantisedTime = Math.round(currentTimeMs / quantisationFactor) * quantisationFactor
+//                    console.log(currentTimeMs, bpm.current(), 'beatlengthMs', bpm.beatLength().toMs(), 'quantised', quantisedTime);
+                }
 
                 // quantise to nearest 96th of a beat
                 if (quantisedTime > 0) {
@@ -118,9 +157,10 @@ function AppSequence(Scheduling, bpm) {
         if (state === states.stopped || state === states.overdubbing || state === states.recording) {
             if (state === states.recording) {
                 setLoopLengthAndBroadcastBPM()
-                wrapped.start(offset)
+            } else if (state === states.stopped) {
+                // TODO what if its not quantised? This means we can't do rapid restart
+                wrapped.startAt(nextTick, offset)
             }
-            if (state === states.stopped) wrapped.start(offset)
             state = states.playback
             reportState()
             return true
@@ -140,9 +180,10 @@ function AppSequence(Scheduling, bpm) {
         if (state === states.stopped || state === states.playback || state === states.recording) {
             if (state === states.recording) {
                 setLoopLengthAndBroadcastBPM()
-                wrapped.start()
+            } else if (state === states.stopped) {
+                // TODO what if its not quantised? This means we can't do rapid restart
+                wrapped.startAt(nextTick)
             }
-            if (state === states.stopped) wrapped.start()
             state = states.overdubbing
             reportState()
             return true
@@ -161,6 +202,7 @@ function AppSequence(Scheduling, bpm) {
     this.reset = function() {
         wrapped.reset();
         state = states.idle;
+        metronome.removeListener('bpmChanged', scaleSequenceLength)
         reportState();
         return true
     }
