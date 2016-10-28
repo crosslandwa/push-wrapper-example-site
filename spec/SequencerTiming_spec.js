@@ -2,7 +2,7 @@
 const Sequencer = require('../src/Sequencer.js')
 const Scheduling = require('wac.scheduling')()
 
-fdescribe('Sequencer', () => {
+describe('Sequencer', () => {
   let sequencer
   let clockStartTime
   let metronome
@@ -90,10 +90,28 @@ fdescribe('Sequencer', () => {
     }, 350)
   })
 
+  it ('starts a previously recorded (but stopped) quantised sequence on the next metronome tick', done => {
+    let events = []
+    capture(events, 'name')
+
+    // 240 bpm, beat every 250ms
+    metronome.start()
+
+    sequencer.recordButtonPressed()
+    sequencer.addEvent('name', 'one')
+
+    setTimeout(() => { sequencer.playButtonPressed() }, 200) // quantised to beat length, of 250
+    setTimeout(() => { sequencer.playButtonPressed() }, 230) // stops
+    setTimeout(() => { sequencer.playButtonPressed() }, 300) // starts at next tick, i.e. 500
+    setTimeout(() => {
+      expectEventAtTime(events[0], 'name', 500, 'one')
+      done()
+    }, 550)
+  })
+
   // quantised sequence timing changes with BPM 
   // unquantised sequence timing unaffected by BPM change
   // unquantised sequence can become quantised by setting its length in beats (?)
-  // starts quantised sequence in sync with metronome
 })
 
 
