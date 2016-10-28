@@ -341,7 +341,8 @@ function bind_pitchbend(push, players) {
 
 function bind_tempo_knob_to_bpm(push, bpm) {
     push.knob['tempo'].on('turned', bpm.changeBy);
-    bpm.on('changed', bpm => push.lcd.x[1].y[3].update('bpm= ' + bpm.current()));
+    bpm.on('changed', bpm => push.lcd.x[1].y[3].update('   bpm ='));
+    bpm.on('changed', bpm => push.lcd.x[2].y[3].update(bpm.current()));
 }
 
 function turn_button_display_on(ui_btn) {
@@ -357,10 +358,7 @@ function scale(input, minIn, maxIn, minOut, maxOut) {
 }
 
 function updateSequenceUiButton(button, state) {
-    button.classList.remove('has-sequence')
-    button.classList.remove('playing')
-    button.classList.remove('recording')
-    button.classList.remove('selected')
+    ['has-sequence', 'playing', 'recording', 'selected'].forEach(state => button.classList.remove(state))
     if (state) {
         button.classList.add(state)
     }
