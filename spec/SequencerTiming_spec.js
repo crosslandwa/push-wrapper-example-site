@@ -19,20 +19,46 @@ describe('Sequencer', () => {
     clockStartTime = Scheduling.nowMs()
   })
 
-  it ('does not quantise sequence when the metronome is not running', () => {
+  it ('does not quantise sequence when the metronome is not running', (done) => {
     let events = []
     capture(events, 'name')
     sequencer.recordButtonPressed()
     sequencer.addEvent('name', 'one')
 
-    setTimeout(() => { sequencer.addEvent('name', 'two') }, 63)
+    setTimeout(() => { sequencer.addEvent('name', 'two') }, 20)
     setTimeout(() => { sequencer.recordButtonPressed() }, 100)
     setTimeout(() => {
       expectEventAtTime(events[0], 'name', 100, 'one')
-      expectEventAtTime(events[1], 'name', 163, 'two')
+      expectEventAtTime(events[1], 'name', 120, 'two')
       expectEventAtTime(events[2], 'name', 200, 'one')
-    }, 1000)
+      done()
+    }, 300)
   })
+
+  it ('quantises sequence when the metronome is running', (done) => {
+    let events = []
+    capture(events, 'name')
+
+    // 240 bpm, 1/4PPQ, expect events at 0, 62.5, 125, 187.5 250
+    metronome.start()
+
+    sequencer.recordButtonPressed()
+    sequencer.addEvent('name', 'one')
+
+    setTimeout(() => { sequencer.addEvent('name', 'two') }, 40) // quantises to 62.5
+    setTimeout(() => { sequencer.recordButtonPressed() }, 200) // quantised to beat length, of 250
+    setTimeout(() => {
+      expectEventAtTime(events[0], 'name', 250, 'one')
+      expectEventAtTime(events[1], 'name', 312.5, 'two')
+      expectEventAtTime(events[2], 'name', 500, 'one')
+      done()
+    }, 550)
+  })
+
+  // quantised sequence timing changes with BPM 
+  // unquantised sequence timing unaffected by BPM change
+  // unquantised sequence can become quantised by setting its length in beats (?)
+  // starts quantised sequence in sync with metronome
 })
 
 

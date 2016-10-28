@@ -110,11 +110,11 @@ function AppSequence(Scheduling, bpm, metronome) {
                     let currentTimeMs = wrapped.currentPositionMs();
                     // TODO selectable quantisation
                     let quantisationFactor = (bpm.beatLength().toMs() / 96) * ppq['1/4']
+                    // quantise to nearest 96th of a beat
                     quantisedTime = Math.round(currentTimeMs / quantisationFactor) * quantisationFactor
 //                    console.log(currentTimeMs, bpm.current(), 'beatlengthMs', bpm.beatLength().toMs(), 'quantised', quantisedTime);
                 }
 
-                // quantise to nearest 96th of a beat
                 if (quantisedTime > 0) {
                     wrapped.addEventAt(quantisedTime, '__app_sequence__', { name: name, data: data});
                 } else {
