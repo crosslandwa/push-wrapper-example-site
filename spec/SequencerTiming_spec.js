@@ -109,6 +109,26 @@ describe('Sequencer', () => {
     }, 550)
   })
 
+  it ('starts a previously recorded (but stopped) quantised sequence immediately if metronome not running', done => {
+    let events = []
+    capture(events, 'name')
+
+    // 240 bpm, beat every 250ms
+    metronome.start()
+
+    sequencer.recordButtonPressed()
+    sequencer.addEvent('name', 'one')
+
+    setTimeout(() => { sequencer.playButtonPressed() }, 200) // quantised to beat length, of 250
+    setTimeout(() => { sequencer.playButtonPressed() }, 230) // stops
+    setTimeout(() => { metronome.stop() }, 270) // stops metronome
+    setTimeout(() => { sequencer.playButtonPressed() }, 300) // starts at next tick, i.e. 500
+    setTimeout(() => {
+      expectEventAtTime(events[0], 'name', 300, 'one')
+      done()
+    }, 350)
+  })
+
   it ('retimes quantised sequence when bpm changes', done => {
     let events = []
     capture(events, 'name')
