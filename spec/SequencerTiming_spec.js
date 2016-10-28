@@ -2,7 +2,7 @@
 const Sequencer = require('../src/Sequencer.js')
 const Scheduling = require('wac.scheduling')()
 
-fdescribe('Sequencer', () => {
+describe('Sequencer', () => {
   let sequencer
   let clockStartTime
   let metronome
