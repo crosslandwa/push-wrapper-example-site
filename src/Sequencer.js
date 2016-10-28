@@ -6,10 +6,13 @@ const util = require('util')
 
 // selection: {off, hasSequence, selected, playing, recording}
 
-function Sequencer(selectionIndicators, Scheduling, bpm, metronome) {
+function Sequencer(numberOfSequences, Scheduling, bpm, metronome) {
     EventEmitter.call(this)
 
-    let sequences = selectionIndicators.map(() => new Sequence(Scheduling, bpm, metronome))
+    let sequences = []
+    for (let i = 1; i <= numberOfSequences; i++) {
+        sequences.push(new Sequence(Scheduling, bpm, metronome))
+    }
     sequences.forEach((sequence, index) => {sequence.number = index + 1})
     let selectedSequence
     let activeSequence
@@ -83,30 +86,17 @@ function Sequencer(selectionIndicators, Scheduling, bpm, metronome) {
         selectedSequence.addEvent('__sequenced_event__', {name: name, data: data})
     }
 
+    this.reportSelectedSequenceState = function() {
+        selectedSequence.reportState()
+    }
+
     // this = sequence instance
-    function showIndividualSequenceState(indicator, state) {
-        switch (state) {
-            case 'idle':
-                isSelected(this) ? indicator.selected() : indicator.off(); break;
-            case 'armed':
-            case 'recording':
-            case 'overdubbing':
-                indicator.recording(); break;
-            case 'playback':
-                indicator.playing(); break;
-            case 'stopped':
-                isSelected(this) ? indicator.selected() : indicator.hasSequence(); break;
-        }
+    function reportSequenceState(state) {
+        sequencer.emit('sequenceState', this.number, state, isSelected(this))
     }
 
     function captureActiveSequence() {
         activeSequence = this // this refers to the sequencer instance
-    }
-
-    // this = sequence instance
-    function reportActiveSequenceState(state) {
-        if (!isSelected(this)) return
-        sequencer.emit('activeSequenceState', state)
     }
 
     function sequencerStopped() {
@@ -120,8 +110,7 @@ function Sequencer(selectionIndicators, Scheduling, bpm, metronome) {
 
     //initialisation
     sequences.forEach((sequence, index) => {
-        sequence.addListener('state', showIndividualSequenceState.bind(sequence, selectionIndicators[index]))
-        sequence.addListener('state', reportActiveSequenceState)
+        sequence.addListener('state', reportSequenceState)
         sequence.addListener('active', captureActiveSequence)
         sequence.addListener('__sequenced_event__', emitSequencedEvent)
         sequence.addListener('state', (state) => {

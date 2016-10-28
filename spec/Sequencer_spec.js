@@ -11,7 +11,7 @@ function LedButton() {
 }
 
 function SelectionButton(sequenceNumber) {
-    let state = 'not yet set'
+    let state = 'off'
     this.off = function() { state = 'off' }
     this.hasSequence = function() { state = 'yellow' }
     this.selected = function() { state = 'orange' }
@@ -21,29 +21,38 @@ function SelectionButton(sequenceNumber) {
     this.number = sequenceNumber
 }
 
-fdescribe('Sequencer', () => {
+describe('Sequencer', () => {
     let sequencer
     let rec = new LedButton(), play = new LedButton
     let sel1 = new SelectionButton(1), sel2 = new SelectionButton(2), sel3 = new SelectionButton(3)
+    let selectors = [sel1, sel2, sel3]
 
     beforeEach(() => {
-        sequencer = new Sequencer([sel1, sel2, sel3], Scheduling, Scheduling.BPM(120), Scheduling.Metronome(4, 120))
-        sequencer.on('activeSequenceState', (state) => {
+        selectors.forEach(selector => {selector.off()})
+        sequencer = new Sequencer(3, Scheduling, Scheduling.BPM(120), Scheduling.Metronome(4, 120))
+        sequencer.on('sequenceState', (number, state, isSelected) => {
             switch (state) {
                 case 'idle':
+                    isSelected ? selectors[number - 1].selected() : selectors[number - 1].off()
                     rec.off(); play.off(); break;
                 case 'armed':
+                    selectors[number - 1].recording()
                     rec.on(); play.off(); break;
                 case 'recording':
+                    selectors[number - 1].recording()
                     rec.on(); play.off(); break;
                 case 'overdubbing':
+                    selectors[number - 1].recording()
                     rec.ready(); play.on(); break;
                 case 'playback':
+                    selectors[number - 1].playing()
                     rec.off(); play.on(); break;
                 case 'stopped':
+                    isSelected ? selectors[number - 1].selected() : selectors[number - 1].hasSequence()
                     rec.off(); play.ready(); break;
             }
         })
+        sequencer.reportSelectedSequenceState()
     })
 
     it('initialises with sequence 1 selected but not armed', () => {

@@ -173,30 +173,37 @@ function makeSequencer(players, push, bpm, metronome) {
             button.selected = updateSequenceUiButton.bind(button, 'selected')
             return button
         });
-
+    let selectionButtons = oneToEight.map((x) => new SelectionButton(push.channel[x].select, sequenceButtons[x -1]))
 
     let sequencer = new Sequencer(
-        oneToEight.map((x) => new SelectionButton(push.channel[x].select, sequenceButtons[x -1])),
+        selectionButtons.length,
         Scheduling,
         bpm,
         metronome);
 
-    sequencer.on('activeSequenceState', (state) => {
+    sequencer.on('sequenceState', (number, state, isSelected) => {
         switch (state) {
             case 'idle':
+                isSelected ? selectionButtons[number - 1].selected() : selectionButtons[number - 1].off()
                 push.button['rec'].led_off(); push.button['play'].led_off(); break;
             case 'armed':
+                selectionButtons[number - 1].recording()
                 push.button['rec'].led_on(); push.button['play'].led_off(); break;
             case 'recording':
+                selectionButtons[number - 1].recording()
                 push.button['rec'].led_on(); push.button['play'].led_off(); break;
             case 'overdubbing':
+                selectionButtons[number - 1].recording()
                 push.button['rec'].led_dim(); push.button['play'].led_on(); break;
             case 'playback':
+                selectionButtons[number - 1].playing()
                 push.button['rec'].led_off(); push.button['play'].led_on(); break;
             case 'stopped':
+                isSelected ? selectionButtons[number - 1].selected() : selectionButtons[number - 1].hasSequence()
                 push.button['rec'].led_off(); push.button['play'].led_dim(); break;
         }
     })
+    sequencer.reportSelectedSequenceState()
 
     window.addEventListener('keydown', (event) => {
         switch (event.key) {
