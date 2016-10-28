@@ -2,7 +2,7 @@
 const Sequencer = require('../src/Sequencer.js')
 const Scheduling = require('wac.scheduling')()
 
-describe('Sequencer', () => {
+fdescribe('Sequencer', () => {
   let sequencer
   let clockStartTime
   let metronome
@@ -53,6 +53,41 @@ describe('Sequencer', () => {
       expectEventAtTime(events[2], 'name', 500, 'one')
       done()
     }, 550)
+  })
+
+  it ('starts a new quantised sequence on the next beat when recording finishes before the next beat', done => {
+    let events = []
+    capture(events, 'name')
+
+    // 240 bpm, beat every 250ms
+    metronome.start()
+
+    sequencer.recordButtonPressed()
+    sequencer.addEvent('name', 'one')
+
+    setTimeout(() => { sequencer.recordButtonPressed() }, 200) // quantised to beat length, of 250
+    setTimeout(() => {
+      expectEventAtTime(events[0], 'name', 250, 'one')
+      done()
+    }, 300)
+  })
+
+  it ('starts a new quantised sequence on the previous beat when recording finishes slightly after last beat', done => {
+    let events = []
+    capture(events, 'name')
+
+    // 240 bpm, beat every 250ms
+    metronome.start()
+
+    sequencer.recordButtonPressed()
+    sequencer.addEvent('name', 'one')
+
+    setTimeout(() => { sequencer.addEvent('name', 'two') }, 50) // quantised to beat length, of 250
+    setTimeout(() => { sequencer.recordButtonPressed() }, 260) // quantised to beat length, of 250
+    setTimeout(() => {
+      expectEventAtTime(events[0], 'name', 300, 'two')
+      done()
+    }, 350)
   })
 
   // quantised sequence timing changes with BPM 
