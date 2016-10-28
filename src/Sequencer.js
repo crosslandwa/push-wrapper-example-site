@@ -4,15 +4,9 @@ const Sequence = require('./AppSequence.js')
 const EventEmitter = require('events')
 const util = require('util')
 
-// selection: {off, hasSequence, selected, playing, recording}
-
 function Sequencer(numberOfSequences, Scheduling, bpm, metronome) {
     EventEmitter.call(this)
-
-    let sequences = []
-    for (let i = 1; i <= numberOfSequences; i++) {
-        sequences.push(new Sequence(Scheduling, bpm, metronome))
-    }
+    let sequences = Array(numberOfSequences + 1).fill('').map(() => new Sequence(Scheduling, bpm, metronome))
     sequences.forEach((sequence, index) => {sequence.number = index + 1})
     let selectedSequence
     let activeSequence
