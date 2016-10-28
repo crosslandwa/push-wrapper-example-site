@@ -109,8 +109,41 @@ describe('Sequencer', () => {
     }, 550)
   })
 
-  // quantised sequence timing changes with BPM 
-  // unquantised sequence timing unaffected by BPM change
+  it ('retimes quantised sequence when bpm changes', done => {
+    let events = []
+    capture(events, 'name')
+
+    // 240 bpm, beat every 250ms
+    metronome.start()
+
+    sequencer.recordButtonPressed()
+    sequencer.addEvent('name', 'one')
+
+    setTimeout(() => { sequencer.playButtonPressed() }, 200) // quantised to beat length, of 250
+    setTimeout(() => { bpm.changeTo(300) }, 260) // 5 beats per second, i.e. every 200
+    setTimeout(() => {
+      expectEventAtTime(events[0], 'name', 250, 'one')
+      expectEventAtTime(events[1], 'name', 450, 'one')
+      done()
+    }, 500)
+  })
+
+  it ('unquantised sequence is not affected by bpm changes', done => {
+    let events = []
+    capture(events, 'name')
+
+    sequencer.recordButtonPressed()
+    sequencer.addEvent('name', 'one')
+
+    setTimeout(() => { sequencer.playButtonPressed() }, 200) // quantised to beat length, of 250
+    setTimeout(() => { bpm.changeTo(300) }, 260) // 5 beats per second, i.e. every 200
+    setTimeout(() => {
+      expectEventAtTime(events[0], 'name', 200, 'one')
+      expectEventAtTime(events[1], 'name', 400, 'one')
+      done()
+    }, 500)
+  })
+
   // unquantised sequence can become quantised by setting its length in beats (?)
 })
 
