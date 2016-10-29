@@ -113,6 +113,11 @@ function setupMetronome(bpm, push) {
     let metronome = Scheduling.Metronome(4, bpm)
     let running = false
 
+    let accent = new Player('assets/audio/metronome-accent.mp3', context).toMaster()
+    let tick = new Player('assets/audio/metronome-tick.mp3', context).toMaster()
+    metronome.on('accent', accent.play)
+    metronome.on('tick', tick.play)
+
     function toggleMetronome() {
         running = !running
         if (running) {
@@ -135,10 +140,38 @@ function setupMetronome(bpm, push) {
         if (event.key === 'n') tap.again()
     });
 
-    let accent = new Player('assets/audio/metronome-accent.mp3', context).toMaster()
-    let tick = new Player('assets/audio/metronome-tick.mp3', context).toMaster()
-    metronome.on('accent', accent.play)
-    metronome.on('tick', tick.play)
+    const tapTempoButton = document.getElementsByClassName('tap')[0]
+    const metronomeOnOffButton = document.getElementsByClassName('metronome-on-off')[0]
+    const bpmSlider = document.getElementById('bpm-control')
+    const bpmLabel = document.querySelector("label[for='bpm-control']")
+    const accentSlider = document.getElementById('accent-control')
+    const accentLabel = document.querySelector("label[for='accent-control']")
+
+    metronome.on('started', () => turn_button_display_on(metronomeOnOffButton))
+    metronome.on('stopped', () => turn_button_display_off(metronomeOnOffButton))
+    function flashTapTempo() {
+        console.log('flash?')
+        turn_button_display_on(tapTempoButton)
+        setTimeout(() => turn_button_display_off(tapTempoButton), 100)
+    }
+    metronome.on('accent', flashTapTempo)
+    metronome.on('tick', flashTapTempo)
+    metronome.on('bpmChanged', (bpm) => {
+        bpmLabel.innerHTML = 'BPM: ' + bpm.current();
+    })
+    metronome.on('numberOfBeats', (beats) => {
+        accentLabel.innerHTML = `ACCENT: ${beats} beats`
+    })
+
+    bpmSlider.addEventListener('input', (event) => {
+        metronome.updateBPM(event.target.value)
+    })
+    accentSlider.addEventListener('input', (event) => {
+        metronome.updateNumberOfBeats(event.target.value)
+    })
+
+    metronomeOnOffButton.addEventListener('click', toggleMetronome)
+    tapTempoButton.addEventListener('click', tap.again)
 
     return metronome
 }

@@ -90,10 +90,9 @@
     background-color: #e60000;
 }
 .pwe-button--active {
-    opacity: 0.25;
+    opacity: 0.9;
     box-shadow: inset 0px 0px 30px blue;
     border: 2px solid rgba(100, 100, 100, 0.3);
-    animation: shake .1s ease-in-out;
 }
 
 @media only screen and (max-width: 768px) {
