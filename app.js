@@ -358,11 +358,11 @@ function bind_tempo_knob_to_bpm(push, bpm) {
 }
 
 function turn_button_display_on(ui_btn) {
-    ui_btn.classList.add('active');
+    ui_btn.classList.add('pwe-button--active');
 }
 
 function turn_button_display_off(ui_btn) {
-    ui_btn.classList.remove('active');
+    ui_btn.classList.remove('pwe-button--active');
 }
 
 function scale(input, minIn, maxIn, minOut, maxOut) {
