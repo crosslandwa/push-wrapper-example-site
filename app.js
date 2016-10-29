@@ -144,10 +144,10 @@ function setupMetronome(bpm, push) {
 }
 
 function makeSequencer(players, push, bpm, metronome) {
-    const selectionButtons = document.getElementsByClassName('push-wrapper-sequence-button')
-    const armButton = document.getElementsByClassName('push-wrapper-arm-button')[0]
-    const playButton = document.getElementsByClassName('push-wrapper-play-button')[0]
-    const deleteButton = document.getElementsByClassName('push-wrapper-delete-button')[0]
+    const selectionButtons = document.getElementsByClassName('sequence-selector')
+    const armButton = document.getElementsByClassName('arm')[0]
+    const playButton = document.getElementsByClassName('play')[0]
+    const deleteButton = document.getElementsByClassName('delete')[0]
     let sequencer = new Sequencer(selectionButtons.length, Scheduling, bpm, metronome);
 
     sequencer.on('sequenceState', (number, state, isSelected) => {
@@ -294,7 +294,7 @@ function bind_column_to_player(push, player, x, repetae, sequencer) {
 }
 
 function bindQwertyButtonsToPlayback(players, sequencer) {
-    const buttons = document.getElementsByClassName('push-wrapper-button');
+    const buttons = document.getElementsByClassName('sample-playback');
     const velocity = 110
     const midiVelocity = midiGain(velocity)
     const f = filter_frequencies[8]

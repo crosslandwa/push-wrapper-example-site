@@ -20,7 +20,7 @@ ul {
     margin: 10px 0px;
     border-radius: 10px;
 }
-.buttons {
+.button-row {
     margin: 10px 0;
     padding: 10px 0;
 }
@@ -28,35 +28,30 @@ ul {
     margin: 20px 0;
     padding: 10px 0;
 }
-.push-wrapper-button, .push-wrapper-sequence-button {
+.pwe-button {
     display: inline-block;
+    height: 40%;
+    margin: 0px 1%;
+    background-color: #c7ccce;
+    border-radius: 10px;
+    opacity: 1;
+    cursor: pointer;
+    border: 2px solid white;
+    transition: all 0.2s;
+}
+
+.pwe-button--narrow {
     width: 8%;
-    height: 40%;
-    margin: 0px 1%;
-    background-color: #c7ccce;
-    border-radius: 10px;
-    opacity: 1;
-    cursor: pointer;
-    border: 2px solid white;
-    transition: all 0.2s;
 }
 
-.push-wrapper-arm-button, .push-wrapper-play-button, .push-wrapper-delete-button {
-    display: inline-block;
+.pwe-button--wide {
     width: 30%;
-    height: 40%;
-    margin: 0px 1%;
-    background-color: #c7ccce;
-    border-radius: 10px;
-    opacity: 1;
-    cursor: pointer;
-    border: 2px solid white;
-    transition: all 0.2s;
 }
 
-.push-wrapper-sequence-button {
+.pwe-button--short {
     height: 20%;
 }
+
 .selected {
     background-color: #ff9933;
 }
