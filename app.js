@@ -98,9 +98,8 @@ function off_we_go(bound_push) {
         players[data.player].cutOff(data.frequency).play(midiGain(data.velocity));
     });
 
-    bind_tempo_knob_to_bpm(push, bpm);
-
-    bpm.report();
+    bpm.report()
+    metronome.report()
 // TODO rethink how this works with multiple sequences
 //    push.knob['swing'].on('turned', sequence.changeNumberOfBeatsBy);
 //    sequence.on('numberOfBeats', numberOfBeats => push.lcd.x[2].y[3].update(`beats=${numberOfBeats}`));
@@ -140,6 +139,22 @@ function setupMetronome(bpm, push) {
         if (event.key === 'n') tap.again()
     });
 
+    let numberOfBeats = 4
+    let shift = false
+    
+    push.button['shift'].on('pressed', () => { shift = true })
+    push.button['shift'].on('released', () => { shift = false })
+
+    push.knob['tempo'].on('turned', (delta) => {
+        if (shift) {
+            metronome.updateNumberOfBeats(numberOfBeats + delta)
+        } else {
+            bpm.changeBy(delta)
+        }
+    });
+    bpm.on('changed', bpm => push.lcd.x[1].y[3].update('   bpm ='));
+    bpm.on('changed', bpm => push.lcd.x[2].y[3].update(bpm.current()));
+
     const tapTempoButton = document.getElementsByClassName('tap')[0]
     const metronomeOnOffButton = document.getElementsByClassName('metronome-on-off')[0]
     const bpmSlider = document.getElementById('bpm-control')
@@ -150,24 +165,27 @@ function setupMetronome(bpm, push) {
     metronome.on('started', () => turn_button_display_on(metronomeOnOffButton))
     metronome.on('stopped', () => turn_button_display_off(metronomeOnOffButton))
     function flashTapTempo() {
-        console.log('flash?')
         turn_button_display_on(tapTempoButton)
         setTimeout(() => turn_button_display_off(tapTempoButton), 100)
     }
     metronome.on('accent', flashTapTempo)
     metronome.on('tick', flashTapTempo)
     metronome.on('bpmChanged', (bpm) => {
-        bpmLabel.innerHTML = 'BPM: ' + bpm.current();
+        bpmLabel.innerHTML = 'BPM: ' + bpm.current()
+        bpmSlider.value = bpm.current()
     })
     metronome.on('numberOfBeats', (beats) => {
         accentLabel.innerHTML = `ACCENT: ${beats} beats`
+        accentSlider.value = beats
+        push.lcd.x[3].y[3].update(`${beats} bts`)
+        numberOfBeats = beats
     })
 
     bpmSlider.addEventListener('input', (event) => {
-        metronome.updateBPM(event.target.value)
+        metronome.updateBPM(parseInt(event.target.value))
     })
     accentSlider.addEventListener('input', (event) => {
-        metronome.updateNumberOfBeats(event.target.value)
+        metronome.updateNumberOfBeats(parseInt(event.target.value))
     })
 
     metronomeOnOffButton.addEventListener('click', toggleMetronome)
@@ -382,12 +400,6 @@ function bind_pitchbend(push, players) {
         var rate = scale(pb, 0, 16384, -12, 12);
         foreach(players, (player) => player.modulatePitch(rate));
     });
-}
-
-function bind_tempo_knob_to_bpm(push, bpm) {
-    push.knob['tempo'].on('turned', bpm.changeBy);
-    bpm.on('changed', bpm => push.lcd.x[1].y[3].update('   bpm ='));
-    bpm.on('changed', bpm => push.lcd.x[2].y[3].update(bpm.current()));
 }
 
 function turn_button_display_on(ui_btn) {
