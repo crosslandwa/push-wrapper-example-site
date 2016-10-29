@@ -20,7 +20,7 @@ ul {
     margin: 10px 0px;
     border-radius: 10px;
 }
-.buttons {
+.button-row {
     margin: 10px 0;
     padding: 10px 0;
 }
@@ -28,9 +28,8 @@ ul {
     margin: 20px 0;
     padding: 10px 0;
 }
-.push-wrapper-button {
+.pwe-button {
     display: inline-block;
-    width: 8%;
     height: 40%;
     margin: 0px 1%;
     background-color: #c7ccce;
@@ -40,7 +39,32 @@ ul {
     border: 2px solid white;
     transition: all 0.2s;
 }
-.push-wrapper-button.active {
+
+.pwe-button--narrow {
+    width: 8%;
+}
+
+.pwe-button--wide {
+    width: 30%;
+}
+
+.pwe-button--short {
+    height: 20%;
+}
+
+.pwe-button--selected {
+    background-color: #ff9933;
+}
+.pwe-button--has-sequence {
+    background-color: #ffff4d;
+}
+.pwe-button--playing {
+    background-color: #33cc33;
+}
+.pwe-button--recording {
+    background-color: #e60000;
+}
+.pwe-button--active {
     opacity: 0.25;
     box-shadow: inset 0px 0px 30px blue;
     border: 2px solid rgba(100, 100, 100, 0.3);

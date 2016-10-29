@@ -4,9 +4,10 @@ const Push = require('push-wrapper'),
     partial = require('lodash.partial'),
     Player = require('./src/player.js'),
     context = window.AudioContext ? new window.AudioContext() : new window.webkitAudioContext(),
+    Scheduling = require('wac.scheduling')(context),
+    Sequencer = require('./src/Sequencer.js'),
     Repetae = require('./src/repetae.js'),
-    BPM = require('./src/bpm.js'),
-    bpm = new BPM(120),
+    bpm = Scheduling.BPM(120),
     Interval = require('./src/interval.js'),
     intervals = {
         '1/4': Interval['4n'](bpm, '1/4'),
@@ -19,16 +20,19 @@ const Push = require('push-wrapper'),
         '1/32t': Interval['32nt'](bpm, '1/32t'),
     },
     samples = [
-        'assets/audio/Bonus_Kick27.mp3',
-        'assets/audio/snare_turnboot.mp3',
-        'assets/audio/HandClap.mp3',
-        'assets/audio/Beat07_Hat.mp3',
-        'assets/audio/HH_KIT09_100_TMB.mp3',
-        'assets/audio/clingfilm.mp3',
-        'assets/audio/tang-1.mp3',
-        'assets/audio/Cassette808_Tom01.mp3'
+        { path: 'assets/audio/Bonus_Kick27.mp3', name: 'kick' },
+        { path: 'assets/audio/snare_turnboot.mp3', name: 'snare' },
+        { path: 'assets/audio/HandClap.mp3', name: 'clap' },
+        { path: 'assets/audio/Beat07_Hat.mp3', name: 'hat' },
+        { path: 'assets/audio/HH_KIT09_100_TMB.mp3', name: 'tamb' },
+        { path: 'assets/audio/clingfilm.mp3', name: 'cloing' },
+        { path: 'assets/audio/tang-1.mp3', name: 'tang' },
+        { path: 'assets/audio/Cassette808_Tom01.mp3', name: 'tom' }
     ],
-    filter_frequencies = [0, 100, 200, 400, 800, 2000, 6000, 10000, 20000];
+    filter_frequencies = [0, 100, 200, 400, 800, 2000, 6000, 10000, 20000],
+    oneToEight = [1, 2, 3, 4, 5, 6, 7, 8];
+
+bpm.setMaxListeners(20)
 
 window.addEventListener('load', () => {
     if (navigator.requestMIDIAccess) {
@@ -45,16 +49,15 @@ function show_no_midi_warning() {
 }
 
 function off_we_go(bound_push) {
-    const buttons = document.getElementsByClassName('push-wrapper-button'),
-        players = create_players(),
-        push = bound_push;
+    const players = create_players(),
+        push = bound_push,
+        metronome = setupMetronome(bpm, push),
+        sequencer = makeSequencer(players, push, bpm, metronome);
 
     push.lcd.clear();
 
     foreach(players, (player, i) => {
-        var column_number = i + 1,
-            full_path_sample_name = samples[i].split('.')[0],
-            sample_name = full_path_sample_name.split('/').pop(),
+        let column_number = i + 1,
             repetae = new Repetae(intervals['1/4'], context);
 
         push.grid.x[column_number].select.on('pressed', repetae.press);
@@ -68,13 +71,11 @@ function off_we_go(bound_push) {
         repetae.report_interval();
 
         foreach(intervals, (interval, button_name) => {
-            push.button[button_name].on('pressed', partial(repetae.interval, interval))
+            push.button[button_name].on('pressed', partial(repetae.interval, interval));
         });
 
         turn_off_column(push, column_number);
-        push.lcd.x[column_number].y[2].update(sample_name.length > 8 ? sample_name.substr(sample_name.length - 8) : sample_name);
-        player.on('started', partial(turn_button_display_on, buttons[i]));
-        player.on('stopped', partial(turn_button_display_off, buttons[i]));
+        push.lcd.x[column_number].y[2].update(samples[i].name);
         player.on('started', partial(turn_on_column, push, column_number));
         player.on('stopped', partial(turn_off_column, push, column_number));
 
@@ -82,8 +83,7 @@ function off_we_go(bound_push) {
         push.channel[column_number].knob.on('turned', player.changePitchByInterval);
         player.reportPitch();
 
-        buttons[i].addEventListener('mousedown', () => { player.cutOff(filter_frequencies[8]).play(midiGain(110)) });
-        bind_column_to_player(push, player, column_number, repetae);
+        bind_column_to_player(push, player, column_number, repetae, sequencer);
     });
 
     foreach(intervals, (interval, button_name) => {
@@ -92,20 +92,179 @@ function off_we_go(bound_push) {
 
     bind_pitchbend(push, players);
 
-    bindQwertyuiToPlayback(players);
+    bindQwertyButtonsToPlayback(players, sequencer);
+
+    sequencer.on('play', (data) => {
+        players[data.player].cutOff(data.frequency).play(midiGain(data.velocity));
+    });
+
     bind_tempo_knob_to_bpm(push, bpm);
+
     bpm.report();
+// TODO rethink how this works with multiple sequences
+//    push.knob['swing'].on('turned', sequence.changeNumberOfBeatsBy);
+//    sequence.on('numberOfBeats', numberOfBeats => push.lcd.x[2].y[3].update(`beats=${numberOfBeats}`));
+}
+
+function setupMetronome(bpm, push) {
+    let tap = Scheduling.Tap()
+    tap.on('average', bpm.changeTo)
+
+    let metronome = Scheduling.Metronome(4, bpm)
+    let running = false
+
+    function toggleMetronome() {
+        running = !running
+        if (running) {
+            push.button['metronome'].led_on()
+            metronome.start()
+        } else {
+            push.button['metronome'].led_dim()
+            metronome.stop()
+        }
+    }
+
+    push.button['metronome'].on('pressed', toggleMetronome);
+    push.button['metronome'].led_dim()
+
+    push.button['tap_tempo'].on('pressed', tap.again);
+    push.button['tap_tempo'].led_dim()
+
+    window.addEventListener("keypress", (event) => {
+        if (event.key === 'm') toggleMetronome()
+        if (event.key === 'n') tap.again()
+    });
+
+    let accent = new Player('assets/audio/metronome-accent.mp3', context).toMaster()
+    let tick = new Player('assets/audio/metronome-tick.mp3', context).toMaster()
+    metronome.on('accent', accent.play)
+    metronome.on('tick', tick.play)
+
+    return metronome
+}
+
+function makeSequencer(players, push, bpm, metronome) {
+    const selectionButtons = document.getElementsByClassName('sequence-selector')
+    const armButton = document.getElementsByClassName('arm')[0]
+    const playButton = document.getElementsByClassName('play')[0]
+    const deleteButton = document.getElementsByClassName('delete')[0]
+    let sequencer = new Sequencer(selectionButtons.length, Scheduling, bpm, metronome);
+
+    sequencer.on('sequenceState', (number, state, isSelected) => {
+        switch (state) {
+            case 'idle':
+                if (isSelected) {
+                    updateSequenceUiButton(selectionButtons[number - 1], 'selected')
+                    push.channel[number].select.orange(); push.channel[number].select.led_on();
+                } else {
+                    updateSequenceUiButton(selectionButtons[number - 1], '')
+                    push.channel[number].select.led_off()
+                }
+                updateSequenceUiButton(armButton)
+                updateSequenceUiButton(playButton)
+                push.button['rec'].led_off(); push.button['play'].led_off(); break;
+            case 'armed':
+                updateSequenceUiButton(selectionButtons[number - 1], 'recording')
+                push.channel[number].select.red(); push.channel[number].select.led_on();
+                updateSequenceUiButton(armButton, 'recording')
+                updateSequenceUiButton(playButton)
+                push.button['rec'].led_on(); push.button['play'].led_off(); break;
+            case 'recording':
+                updateSequenceUiButton(selectionButtons[number - 1], 'recording')
+                push.channel[number].select.red(); push.channel[number].select.led_on()
+                updateSequenceUiButton(armButton, 'recording')
+                updateSequenceUiButton(playButton)
+                push.button['rec'].led_on(); push.button['play'].led_off(); break;
+            case 'overdubbing':
+                updateSequenceUiButton(selectionButtons[number - 1], 'recording')
+                push.channel[number].select.red(); push.channel[number].select.led_on()
+                updateSequenceUiButton(armButton, 'recording')
+                updateSequenceUiButton(playButton, 'playing')
+                push.button['rec'].led_dim(); push.button['play'].led_on(); break;
+            case 'playback':
+                updateSequenceUiButton(selectionButtons[number - 1], 'playing')
+                push.channel[number].select.green(); push.channel[number].select.led_on();
+                updateSequenceUiButton(armButton)
+                updateSequenceUiButton(playButton, 'playing')
+                push.button['rec'].led_off(); push.button['play'].led_on(); break;
+            case 'stopped':
+                if (isSelected) {
+                    updateSequenceUiButton(selectionButtons[number - 1], 'selected')
+                    push.channel[number].select.orange()
+                } else {
+                    updateSequenceUiButton(selectionButtons[number - 1], 'has-sequence')
+                    push.channel[number].select.yellow()
+                }
+                push.channel[number].select.led_on()
+                updateSequenceUiButton(armButton)
+                updateSequenceUiButton(playButton, 'has-sequence')
+                push.button['rec'].led_off(); push.button['play'].led_dim(); break;
+        }
+    })
+    sequencer.reportSelectedSequenceState()
+
+    window.addEventListener('keydown', (event) => {
+        switch (event.key) {
+            case " ": sequencer.playButtonPressed(); break; // spacebar
+            case "a": sequencer.recordButtonPressed(); break;
+            case "d": sequencer.deleteSequence(); break;
+            case "1": sequencer.selectSequence(1); break;
+            case "2": sequencer.selectSequence(2); break;
+            case "3": sequencer.selectSequence(3); break;
+            case "4": sequencer.selectSequence(4); break;
+            case "5": sequencer.selectSequence(5); break;
+            case "6": sequencer.selectSequence(6); break;
+            case "7": sequencer.selectSequence(7); break;
+            case "8": sequencer.selectSequence(8); break;
+        }
+    });
+
+    Array.prototype.forEach.call(
+        selectionButtons,
+        (button, i) => {
+            button.addEventListener('mousedown', () => { sequencer.selectSequence(i + 1) })
+        })
+
+    push.button['rec'].on('pressed', sequencer.recordButtonPressed);
+    push.button['play'].on('pressed', sequencer.playButtonPressed);
+    armButton.addEventListener('mousedown', sequencer.recordButtonPressed)
+    playButton.addEventListener('mousedown', sequencer.playButtonPressed)
+    deleteButton.addEventListener('mousedown', sequencer.deleteSequence)
+
+    let deleteOrShift = 'off'
+
+    push.button['delete'].led_dim()
+    push.button['shift'].led_dim()
+    push.button['delete'].on('pressed', () => { deleteOrShift = 'delete'; push.button['delete'].led_on() });
+    push.button['shift'].on('pressed', () => { deleteOrShift = 'shift'; push.button['shift'].led_on() });
+    push.button['delete'].on('released', () => { if (deleteOrShift === 'delete') deleteOrShift = 'off'; push.button['delete'].led_dim() });
+    push.button['shift'].on('released', () => { if (deleteOrShift === 'shift') deleteOrShift = 'off'; push.button['shift'].led_dim() });
+
+    oneToEight.forEach((x) => {
+        push.channel[x].select.on('pressed', () => {
+            switch (deleteOrShift) {
+                case 'off':
+                    sequencer.selectSequence(x); break;
+                case 'delete':
+                    sequencer.deleteSequence(x); break;
+                case 'shift':
+                    sequencer.selectSequenceLegato(x, true); break;
+            }
+        })
+    })
+
+    return sequencer;
 }
 
 function create_players() {
     var players = [];
     for (var  i = 0; i < samples.length; i++) {
-        players[i] = new Player(samples[i], context).toMaster();
+        players[i] = new Player(samples[i].path, context).toMaster();
     }
     return players;
 }
 
-function bind_column_to_player(push, player, x, repetae) {
+function bind_column_to_player(push, player, x, repetae, sequencer) {
     let mutable_velocity = 127,
         mutable_frequency = filter_frequencies[8],
         pressed_pads_in_col = 0;
@@ -114,26 +273,47 @@ function bind_column_to_player(push, player, x, repetae) {
         player.cutOff(mutable_frequency).play(midiGain(mutable_velocity));
     }
 
-    foreach([1, 2, 3, 4, 5, 6, 7, 8], (y) => {
-        const grid_button = push.grid.x[x].y[y];
+    let padAftertouch = function(pressure) {
+        if (pressure > 0) mutable_velocity = pressure;
+    }
 
+    foreach(oneToEight, (y) => {
+        const grid_button = push.grid.x[x].y[y];
         grid_button.on('pressed', (velocity) => {
-            mutable_velocity = velocity;
-            mutable_frequency = filter_frequencies[y];
-            if (++pressed_pads_in_col == 1) repetae.start(playback);
+            mutable_velocity = velocity
+            mutable_frequency = filter_frequencies[y]
+            if (++pressed_pads_in_col == 1) repetae.start(playback)
+            sequencer.addEvent('play', { player: x - 1, velocity: mutable_velocity, frequency: mutable_frequency })
         });
-        grid_button.on('aftertouch', (pressure) => { if (pressure > 0) mutable_velocity = pressure });
+        grid_button.on('aftertouch', padAftertouch);
         grid_button.on('released', () => {
-            if (--pressed_pads_in_col == 0) repetae.stop();
+            --pressed_pads_in_col;
+            if (pressed_pads_in_col == 0) repetae.stop();
         });
     });
 }
 
-function bindQwertyuiToPlayback(players) {
-    let lookup = {113: 0, 119: 1, 101: 2, 114: 3, 116: 4, 121: 5, 117: 6, 105: 7};
+function bindQwertyButtonsToPlayback(players, sequencer) {
+    const buttons = document.getElementsByClassName('sample-playback');
+    const velocity = 110
+    const midiVelocity = midiGain(velocity)
+    const f = filter_frequencies[8]
+
+    foreach(players, (player, i) => {
+        player.on('started', partial(turn_button_display_on, buttons[i]));
+        player.on('stopped', partial(turn_button_display_off, buttons[i]));
+        buttons[i].addEventListener('mousedown', () => {
+            player.cutOff(f).play(midiVelocity)
+            sequencer.addEvent('play', { player: i, velocity: velocity, frequency: f });
+        });
+    })
+
+    let lookup = {'q': 0, 'w': 1, 'e': 2, 'r': 3, 't': 4, 'y': 5, 'u': 6, 'i': 7};
     window.addEventListener("keypress", (event) => {
-        if (event.charCode in lookup) {
-            players[lookup[event.charCode]].cutOff(filter_frequencies[8]).play(midiGain(110));
+        if (event.key in lookup) {
+            let index = lookup[event.key]
+            players[index].cutOff(f).play(midiVelocity);
+            sequencer.addEvent('play', { player: index, velocity: velocity, frequency: f });
         }
     });
 }
@@ -148,7 +328,7 @@ function midiGain(velocity) {
 }
 
 function turn_on_column(push, x, gain) {
-    foreach([1, 2, 3, 4, 5, 6, 7, 8], (y) => {
+    foreach(oneToEight, (y) => {
         if (((gain.velocity() + 15) / 16) >= y) {
             push.grid.x[x].y[y].led_on(gain.velocity());
         } else {
@@ -172,18 +352,26 @@ function bind_pitchbend(push, players) {
 }
 
 function bind_tempo_knob_to_bpm(push, bpm) {
-    push.knob['tempo'].on('turned', bpm.change_by);
-    bpm.on('changed', bpm => push.lcd.x[1].y[3].update('bpm= ' + bpm.current));
+    push.knob['tempo'].on('turned', bpm.changeBy);
+    bpm.on('changed', bpm => push.lcd.x[1].y[3].update('   bpm ='));
+    bpm.on('changed', bpm => push.lcd.x[2].y[3].update(bpm.current()));
 }
 
 function turn_button_display_on(ui_btn) {
-    ui_btn.classList.add('active');
+    ui_btn.classList.add('pwe-button--active');
 }
 
 function turn_button_display_off(ui_btn) {
-    ui_btn.classList.remove('active');
+    ui_btn.classList.remove('pwe-button--active');
 }
 
 function scale(input, minIn, maxIn, minOut, maxOut) {
     return ((maxOut - minOut) * ((input - minIn) / (maxIn - minIn))) + minOut;
+}
+
+function updateSequenceUiButton(button, state) {
+    ['has-sequence', 'playing', 'recording', 'selected'].forEach(state => button.classList.remove('pwe-button--' + state))
+    if (state) {
+        button.classList.add('pwe-button--' + state)
+    }
 }

@@ -1,15 +1,14 @@
 'use strict'
 
 const EventEmitter = require('events'),
-    util = require('util'),
-    foreach = require('lodash.foreach');
+    util = require('util');
 
 function Interval(bpm, multiplier, value) {
     EventEmitter.call(this);
     let interval = this;
 
     this.value = value;
-    this.report = function() { interval.emit('changed', (60 / bpm.current) * multiplier * 1000); };
+    this.report = function() { interval.emit('changed', bpm.beatLength().toMs() * multiplier); };
 
     bpm.on('changed', interval.report);
 }
