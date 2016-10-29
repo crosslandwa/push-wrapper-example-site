@@ -52,16 +52,16 @@ ul {
     height: 20%;
 }
 
-.selected {
+.pwe-button--selected {
     background-color: #ff9933;
 }
-.has-sequence {
+.pwe-button--has-sequence {
     background-color: #ffff4d;
 }
-.playing {
+.pwe-button--playing {
     background-color: #33cc33;
 }
-.recording {
+.pwe-button--recording {
     background-color: #e60000;
 }
 .active {

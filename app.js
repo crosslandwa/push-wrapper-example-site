@@ -370,8 +370,8 @@ function scale(input, minIn, maxIn, minOut, maxOut) {
 }
 
 function updateSequenceUiButton(button, state) {
-    ['has-sequence', 'playing', 'recording', 'selected'].forEach(state => button.classList.remove(state))
+    ['has-sequence', 'playing', 'recording', 'selected'].forEach(state => button.classList.remove('pwe-button--' + state))
     if (state) {
-        button.classList.add(state)
+        button.classList.add('pwe-button--' + state)
     }
 }
