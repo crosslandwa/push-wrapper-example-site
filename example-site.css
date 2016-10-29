@@ -1,5 +1,7 @@
-ul {
+.info__ul {
     list-style: inside;
+    text-align: left;
+    padding-left: 2%;
 }
 #content {
     max-width: 800px;
@@ -28,6 +30,31 @@ ul {
     margin: 20px 0;
     padding: 10px 0;
 }
+.pwe-sequencer {
+    background-color: #6f6f6f;
+    border-radius: 10px;
+}
+.pwe-sequencer__metronome {
+    position: relative;
+    margin: 10px 10px;
+    padding: 10px 0;
+    display: inline-block;
+    width: 96%;
+    background-color: #c7ccce;
+    border-radius: 10px;
+    border: 2px solid #333333;
+}
+
+.pwe-sequencer__metronome-slider {
+    margin: 15px 0;
+    width: 30%;
+}
+
+.pwe-sequencer__metronome-slider-label {
+    font-weight: 600
+    vertical-align: super;
+}
+
 .pwe-button {
     display: inline-block;
     height: 40%;
@@ -36,7 +63,7 @@ ul {
     border-radius: 10px;
     opacity: 1;
     cursor: pointer;
-    border: 2px solid white;
+    border: 2px solid #333333;
     transition: all 0.2s;
 }
 
@@ -70,6 +97,26 @@ ul {
     border: 2px solid rgba(100, 100, 100, 0.3);
     animation: shake .1s ease-in-out;
 }
+
+@media only screen and (max-width: 768px) {
+    /* For mobile phones: */
+    [class*="pwe-sequencer__metronome"] {
+        width: 94%;
+    }
+
+    [class*="pwe-button"] {
+        margin-bottom: 15px;
+    }
+
+    [class*="pwe-button--narrow"] {
+        width: 20%;
+    }
+
+    [class*="pwe-sequencer__metronome-slider"] {
+        width: 50%;
+    }
+}
+
 @keyframes shake {
     0% {
         transform: translateX(0);
