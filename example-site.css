@@ -37,12 +37,10 @@
 .pwe-sequencer__metronome {
     position: relative;
     margin: 10px 10px;
-    padding: 10px 0;
     display: inline-block;
     width: 96%;
     background-color: #c7ccce;
     border-radius: 10px;
-    border: 2px solid #333333;
 }
 
 .pwe-sequencer__metronome-slider {
