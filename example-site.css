@@ -13,7 +13,7 @@
     font-size: 12px;
     line-height: 12px;
     letter-spacing: 1.5px;
-    margin-top: 50px;
+    margin-top: 10px;
     text-align: center;
 }
 .no-midi-warning {
@@ -23,7 +23,6 @@
     border-radius: 10px;
 }
 .button-row {
-    margin: 10px 0;
     padding: 10px 0;
 }
 .info {
@@ -33,6 +32,7 @@
 .pwe-sequencer {
     background-color: #6f6f6f;
     border-radius: 10px;
+    margin: 10px 0 0 0;
 }
 .pwe-sequencer__metronome {
     position: relative;
@@ -44,13 +44,16 @@
 }
 
 .pwe-sequencer__metronome-slider {
-    margin: 15px 0;
+    margin: 0 0 30px 0;
     width: 30%;
 }
 
 .pwe-sequencer__metronome-slider-label {
-    font-weight: 600
     vertical-align: super;
+}
+
+.text--bold {
+    font-weight: 600;
 }
 
 .pwe-button {
@@ -70,7 +73,7 @@
 }
 
 .pwe-button--wide {
-    width: 30%;
+    width: 28%;
 }
 
 .pwe-button--short {
@@ -110,7 +113,7 @@
     }
 
     [class*="pwe-sequencer__metronome-slider"] {
-        width: 50%;
+        width: 90%;
     }
 }
 
