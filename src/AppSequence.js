@@ -160,7 +160,6 @@ function AppSequence(Scheduling, bpm, metronome) {
             if (state === states.recording) {
                 setLoopLengthAndBroadcastBPM()
             } else if (state === states.stopped) {
-                // TODO what if its not quantised? This means we can't do rapid restart
                 wrapped.startAt(nextTick, offset)
             }
             state = states.playback
