@@ -280,7 +280,6 @@ function makeSequencer(players, push, bpm, metronome) {
                 push.button['rec'].led_off(); push.button['play'].led_dim(); break;
         }
     })
-    sequencer.reportSelectedSequenceState()
 
     window.addEventListener('keydown', (event) => {
         switch (event.key) {
@@ -330,8 +329,10 @@ function makeSequencer(players, push, bpm, metronome) {
                     sequencer.selectSequenceLegato(x, true); break;
             }
         })
+        push.channel[x].select.led_off()
     })
 
+    sequencer.reportSelectedSequenceState()
     return sequencer;
 }
 
