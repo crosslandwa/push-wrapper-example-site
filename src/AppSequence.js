@@ -27,6 +27,7 @@ function AppSequence(Scheduling, bpm, metronome) {
     let previousTick = _now
     let metronomeRunning = false
     let isQuantised = false
+    let quantisationFactor = 1
 
     if (metronome) {
         metronome.on('started', (metronomeInterval) => {
@@ -76,7 +77,6 @@ function AppSequence(Scheduling, bpm, metronome) {
         sequence.emit('numberOfBeats', numberOfBeats)
 
         let roundedSequenceLengthMs = numberOfBeats * beatLengthMs
-        // console.log('calculated beats', numberOfBeats, 'at bpm', sequenceBPM, 'loop length unrounded', sequenceLengthMs, 'loop length', roundedSequenceLengthMs)
         wrapped.loop(roundedSequenceLengthMs)
         if (roundedSequenceLengthMs < sequenceLengthMs) {
             let timeSinceLastTick = Scheduling.nowMs() - previousTick.toMs()
@@ -98,23 +98,25 @@ function AppSequence(Scheduling, bpm, metronome) {
 //        bpm.on('changed', scaleSequenceLength)
 //    }
 
+    function calculateQuantisationFactor(bpm) {
+        // TODO selectable quantisation
+        quantisationFactor = (bpm.beatLength().toMs() / 96) * ppq['1/4']
+    }
+
+    function quantisedTimeMs() {
+        return Math.round(wrapped.currentPositionMs() / quantisationFactor) * quantisationFactor
+    }
+
+    metronome.on('bpmChanged', calculateQuantisationFactor)
+    metronome.report()
+
     this.addEvent = function(name, data) {
         switch (state) {
             case (states.armed):
                 isQuantised = metronomeRunning
             case (states.recording):
             case (states.overdubbing):
-                let quantisedTime = 0
-
-                if (isQuantised) {
-                    let currentTimeMs = wrapped.currentPositionMs();
-                    // TODO selectable quantisation
-                    let quantisationFactor = (bpm.beatLength().toMs() / 96) * ppq['1/4']
-                    // quantise to nearest 96th of a beat
-                    quantisedTime = Math.round(currentTimeMs / quantisationFactor) * quantisationFactor
-//                    console.log(currentTimeMs, bpm.current(), 'beatlengthMs', bpm.beatLength().toMs(), 'quantised', quantisedTime);
-                }
-
+                let quantisedTime = isQuantised ? quantisedTimeMs() : 0
                 if (quantisedTime > 0) {
                     wrapped.addEventAt(quantisedTime, '__app_sequence__', { name: name, data: data});
                 } else {
@@ -170,7 +172,14 @@ function AppSequence(Scheduling, bpm, metronome) {
 
     this.restart = function() {
         if (state === states.playback) {
-            wrapped.start() // no state change
+            if (isQuantised && metronomeRunning) {
+                let startTime = previousTick.toMs()
+                let now = Scheduling.nowMs()
+                while (startTime < now) startTime += quantisationFactor
+                wrapped.startAt(startTime)
+            } else {
+                wrapped.start() // no state change
+            }
             return true
         }
         return false

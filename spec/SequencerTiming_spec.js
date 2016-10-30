@@ -164,6 +164,41 @@ describe('Sequencer', () => {
     }, 500)
   })
 
+  it ('restarts a sequence at the next quantisation interval when the metronome is running', done => {
+    let events = []
+    capture(events, 'name')
+
+    // 240 bpm, beat every 250ms
+    metronome.start()
+
+    sequencer.recordButtonPressed()
+    sequencer.addEvent('name', 'one')
+
+    setTimeout(() => { sequencer.playButtonPressed() }, 200) // quantised to beat length, of 250
+    setTimeout(() => { sequencer.selectSequence(1) }, 260) // 5 beats per second, i.e. every 200
+    setTimeout(() => {
+      expectEventAtTime(events[0], 'name', 250, 'one')
+      expectEventAtTime(events[1], 'name', 312.5, 'one')
+      done()
+    }, 350)
+  })
+
+  it ('restarts an unquantiserd sequence immediately', done => {
+    let events = []
+    capture(events, 'name')
+
+    sequencer.recordButtonPressed()
+    sequencer.addEvent('name', 'one')
+
+    setTimeout(() => { sequencer.playButtonPressed() }, 200) // quantised to beat length, of 250
+    setTimeout(() => { sequencer.selectSequence(1) }, 260) // 5 beats per second, i.e. every 200
+    setTimeout(() => {
+      expectEventAtTime(events[0], 'name', 200, 'one')
+      expectEventAtTime(events[1], 'name', 260, 'one')
+      done()
+    }, 300)
+  })
+
   // unquantised sequence can become quantised by setting its length in beats (?)
 })
 
