@@ -114,9 +114,7 @@ function setupMetronome(bpm, push) {
 
     let accent = new Player('assets/audio/metronome-accent.mp3', context).toMaster()
     let tick = new Player('assets/audio/metronome-tick.mp3', context).toMaster()
-    metronome.on('accent', accent.play)
-    metronome.on('tick', tick.play)
-
+    
     function toggleMetronome() {
         running = !running
         if (running) {
@@ -128,7 +126,18 @@ function setupMetronome(bpm, push) {
         }
     }
 
-    push.button['metronome'].on('pressed', toggleMetronome);
+    let mute = false
+    push.button['mute'].on('pressed', () => { mute = true; push.button['mute'].led_on() })
+    push.button['mute'].on('released', () => { mute = false; push.button['mute'].led_dim() })
+    push.button['mute'].led_dim()
+
+    push.button['metronome'].on('pressed', () => {
+        if (mute) {
+            toggleMetronomeMute()
+        } else {
+            toggleMetronome()
+        }
+    });
     push.button['metronome'].led_dim()
 
     push.button['tap_tempo'].on('pressed', tap.again);
@@ -137,11 +146,11 @@ function setupMetronome(bpm, push) {
     window.addEventListener("keypress", (event) => {
         if (event.key === 'm') toggleMetronome()
         if (event.key === 'n') tap.again()
+        if (event.key === ',') toggleMetronomeMute()
     });
 
     let numberOfBeats = 4
     let shift = false
-    
     push.button['shift'].on('pressed', () => { shift = true })
     push.button['shift'].on('released', () => { shift = false })
 
@@ -157,6 +166,7 @@ function setupMetronome(bpm, push) {
 
     const tapTempoButton = document.getElementsByClassName('tap')[0]
     const metronomeOnOffButton = document.getElementsByClassName('metronome-on-off')[0]
+    const metronomeMuteButton = document.getElementsByClassName('metronome-mute')[0]
     const bpmSlider = document.getElementById('bpm-control')
     const bpmLabel = document.querySelector("label[for='bpm-control']")
     const accentSlider = document.getElementById('accent-control')
@@ -190,6 +200,24 @@ function setupMetronome(bpm, push) {
 
     metronomeOnOffButton.addEventListener('click', toggleMetronome)
     tapTempoButton.addEventListener('click', tap.again)
+    metronomeMuteButton.addEventListener('click', toggleMetronomeMute)
+
+    let muted = true
+    function toggleMetronomeMute() {
+        muted = !muted
+        if (muted) {
+            metronome.removeListener('accent', accent.play)
+            metronome.removeListener('tick', tick.play)
+            push.lcd.x[4].y[3].update('muted')
+            turn_button_display_on(metronomeMuteButton)
+        } else {
+            metronome.on('accent', accent.play)
+            metronome.on('tick', tick.play)
+            push.lcd.x[4].y[3].clear()
+            turn_button_display_off(metronomeMuteButton)
+        }
+    }
+    toggleMetronomeMute()
 
     return metronome
 }
@@ -257,8 +285,8 @@ function makeSequencer(players, push, bpm, metronome) {
     window.addEventListener('keydown', (event) => {
         switch (event.key) {
             case " ": sequencer.playButtonPressed(); break; // spacebar
-            case "a": sequencer.recordButtonPressed(); break;
-            case "d": sequencer.deleteSequence(); break;
+            case "z": sequencer.recordButtonPressed(); break;
+            case "x": sequencer.deleteSequence(); break;
             case "1": sequencer.selectSequence(1); break;
             case "2": sequencer.selectSequence(2); break;
             case "3": sequencer.selectSequence(3); break;
