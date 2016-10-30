@@ -50,8 +50,10 @@ function Sequencer(numberOfSequences, Scheduling, bpm, metronome) {
             if (activeSequence) {
                 if (legato) offset = activeSequence.currentPositionMs()
                 activeSequence.stop()
+                selectedSequence.play(offset)
+            } else {
+                selectedSequence.playAtNextTick()
             }
-            selectedSequence.play(offset)
         } else {
             selectedSequence.arm()
         }
@@ -62,7 +64,7 @@ function Sequencer(numberOfSequences, Scheduling, bpm, metronome) {
     }
 
     this.playButtonPressed = function() {
-        selectedSequence.stop() || selectedSequence.play()
+        selectedSequence.stop() || (!activeSequence && selectedSequence.playAtNextTick()) || selectedSequence.play()
     }
 
     this.deleteSequence = function(number = 0) {

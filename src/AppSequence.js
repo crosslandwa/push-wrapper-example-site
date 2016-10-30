@@ -103,8 +103,16 @@ function AppSequence(Scheduling, bpm, metronome) {
         quantisationFactor = (bpm.beatLength().toMs() / 96) * ppq['1/4']
     }
 
-    function quantisedTimeMs() {
+    function nearestQuantisedTimeInSequence() {
         return Math.round(wrapped.currentPositionMs() / quantisationFactor) * quantisationFactor
+    }
+
+    function nextQuantisedPointIntime() {
+        let now = Scheduling.nowMs()
+        if (!metronomeRunning) return now
+        let startTime = previousTick.toMs() + quantisationFactor
+        while (startTime < now) startTime += quantisationFactor
+        return startTime
     }
 
     metronome.on('bpmChanged', calculateQuantisationFactor)
@@ -116,7 +124,7 @@ function AppSequence(Scheduling, bpm, metronome) {
                 isQuantised = metronomeRunning
             case (states.recording):
             case (states.overdubbing):
-                let quantisedTime = isQuantised ? quantisedTimeMs() : 0
+                let quantisedTime = isQuantised ? nearestQuantisedTimeInSequence() : 0
                 if (quantisedTime > 0) {
                     wrapped.addEventAt(quantisedTime, '__app_sequence__', { name: name, data: data});
                 } else {
@@ -155,13 +163,22 @@ function AppSequence(Scheduling, bpm, metronome) {
     }
 
     this.play = function(offset = 0) {
-        offset = offset > 0 ? offset : 0
         if (state === states.stopped || state === states.overdubbing || state === states.recording) {
             if (state === states.recording) {
                 setLoopLengthAndBroadcastBPM()
             } else if (state === states.stopped) {
-                wrapped.startAt(nextTick, offset)
+                wrapped.startAt(nextQuantisedPointIntime(), offset)
             }
+            state = states.playback
+            reportState()
+            return true
+        }
+        return false
+    }
+
+    this.playAtNextTick = function(offset = 0) {
+        if (state === states.stopped) {
+            wrapped.startAt(nextTick, offset)
             state = states.playback
             reportState()
             return true
@@ -172,10 +189,7 @@ function AppSequence(Scheduling, bpm, metronome) {
     this.restart = function() {
         if (state === states.playback) {
             if (isQuantised && metronomeRunning) {
-                let startTime = previousTick.toMs()
-                let now = Scheduling.nowMs()
-                while (startTime < now) startTime += quantisationFactor
-                wrapped.startAt(startTime)
+                wrapped.startAt(nextQuantisedPointIntime())
             } else {
                 wrapped.start() // no state change
             }

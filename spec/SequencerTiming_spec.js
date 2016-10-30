@@ -15,7 +15,7 @@ describe('Sequencer', () => {
   beforeEach(() => {
   	bpm = Scheduling.BPM(240) // 4 beats per second
   	metronome = Scheduling.Metronome(4, bpm)
-    sequencer = new Sequencer(1, Scheduling, bpm, metronome)
+    sequencer = new Sequencer(2, Scheduling, bpm, metronome)
     clockStartTime = Scheduling.nowMs()
   })
 
@@ -127,6 +127,27 @@ describe('Sequencer', () => {
       expectEventAtTime(events[0], 'name', 300, 'one')
       done()
     }, 350)
+  })
+
+  it ('switches sequences at the next quantisation interval', done => {
+    let events = []
+    capture(events, 'name1')
+    capture(events, 'name2')
+
+    // 240 bpm, beat every 250ms
+    metronome.start()
+
+    sequencer.recordButtonPressed()
+    sequencer.addEvent('name1', 'one')
+
+    setTimeout(() => { sequencer.selectSequence(2); sequencer.addEvent('name2', 'one') }, 200) // quantised to beat length, of 250
+    setTimeout(() => { sequencer.selectSequence(1) }, 300)
+    setTimeout(() => { sequencer.selectSequence(2) }, 320)
+    setTimeout(() => {
+      expectEventAtTime(events[0], 'name1', 312.5, 'one')
+      expectEventAtTime(events[1], 'name2', 375, 'one')
+      done()
+    }, 400)
   })
 
   it ('retimes quantised sequence when bpm changes', done => {
