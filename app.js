@@ -45,7 +45,7 @@ window.addEventListener('load', () => {
 });
 
 function show_no_midi_warning() {
-    document.getElementById("no-midi-warning").style.display = '';
+    document.getElementById('no-midi-warning').classList.add('pwe-no-midi-warning--show')
 }
 
 function off_we_go(bound_push) {

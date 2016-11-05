@@ -1,4 +1,4 @@
-.info__ul {
+.pwe-info__ul {
     list-style: inside;
     text-align: left;
     padding-left: 2%;
@@ -16,16 +16,22 @@
     margin-top: 10px;
     text-align: center;
 }
-.no-midi-warning {
+.pwe-no-midi-warning {
     background-color: #b33a3a;
     padding: 20px 0px;
     margin: 10px 0px;
     border-radius: 10px;
+    display: none;
 }
+
+.pwe-no-midi-warning--show {
+    display: inherit;
+}
+
 .pwe-sequencer__row {
     padding: 10px 0;
 }
-.info {
+.pwe-info {
     margin: 20px 0;
     padding: 10px 0;
 }
