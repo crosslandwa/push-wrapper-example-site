@@ -17,7 +17,8 @@
     },
     "scripts": {
         "test": "jasmine",
-        "build": "browserify ./app.js -o ./bundle.js --debug -t [ babelify --presets [ es2015 ] ]"
+        "build": "browserify ./app.js -o ./bundle.js --debug -t [ babelify --presets [ es2015 ] ]",
+        "build-minified": "browserify ./app.js -o ./bundle.js -t [ babelify --presets [ es2015 ] ]"
     },
     "author": "https://github.com/crosslandwa",
     "license": "MIT"
