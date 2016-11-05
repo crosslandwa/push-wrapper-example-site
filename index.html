@@ -12,7 +12,7 @@
             push-wrapper example site
         </div>
         <div class="pwe-sequencer">
-            <div class="button-row">
+            <div class="pwe-sequencer__row">
               <div class="pwe-button pwe-button--narrow pwe-button--short sequence-selector"><p>1</p></div>
               <div class="pwe-button pwe-button--narrow pwe-button--short sequence-selector"><p>2</p></div>
               <div class="pwe-button pwe-button--narrow pwe-button--short sequence-selector"><p>3</p></div>
@@ -22,7 +22,7 @@
               <div class="pwe-button pwe-button--narrow pwe-button--short sequence-selector"><p>7</p></div>
               <div class="pwe-button pwe-button--narrow pwe-button--short sequence-selector"><p>8</p></div>
             </div>
-            <div class="button-row">
+            <div class="pwe-sequencer__row">
                 <div class="pwe-button pwe-button--narrow sample-playback"><p>q</p></div>
                 <div class="pwe-button pwe-button--narrow sample-playback"><p>w</p></div>
                 <div class="pwe-button pwe-button--narrow sample-playback"><p>e</p></div>
@@ -32,20 +32,22 @@
                 <div class="pwe-button pwe-button--narrow sample-playback"><p>u</p></div>
                 <div class="pwe-button pwe-button--narrow sample-playback"><p>i</p></div>
             </div>
-            <div class="button-row">
+            <div class="pwe-sequencer__row">
                 <div class="pwe-button pwe-button--wide arm"><p>arm<br>(z)</p></div>
                 <div class="pwe-button pwe-button--wide play"><p>play<br>(space)</p></div>
                 <div class="pwe-button pwe-button--wide delete"><p>delete<br>(x)</p></div>
             </div>
             <div class="pwe-metronome">
                 <div class="text--bold"><p>Metronome</p></div>
-                <div class="button-row">
+                <div>
                     <label class="pwe-metronome__slider-label text--bold" for="bpm-control">BPM: 120</label>
                     <input class="pwe-metronome__slider" id="bpm-control" type="range" name="BPM" min="20" max="300" value="120">
                     <br>
                     <label class="pwe-metronome__slider-label text--bold" for="accent-control">ACCENT: 4 beats</label>
                     <input class="pwe-metronome__slider" id="accent-control" type="range" name="ACCENT" min="1" max="16" value="4">
                     <br>
+                </div>
+                <div class="pwe-metronome__buttons">
                     <div class="pwe-button pwe-button--narrow tap"><p>tap<br>(n)</p></div>
                     <div class="pwe-button pwe-button--narrow metronome-on-off"><p>on/off<br>(m)</p></div>
                     <div class="pwe-button pwe-button--narrow metronome-mute"><p>mute<br>(,)</p></div>
