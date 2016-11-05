@@ -34,7 +34,7 @@
     border-radius: 10px;
     margin: 10px 0 0 0;
 }
-.pwe-sequencer__metronome {
+.pwe-metronome {
     position: relative;
     margin: 10px 10px;
     display: inline-block;
@@ -43,12 +43,12 @@
     border-radius: 10px;
 }
 
-.pwe-sequencer__metronome-slider {
+.pwe-metronome__slider {
     margin: 0 0 30px 0;
     width: 30%;
 }
 
-.pwe-sequencer__metronome-slider-label {
+.pwe-metronome__slider-label {
     vertical-align: super;
 }
 
@@ -100,7 +100,7 @@
 
 @media only screen and (max-width: 768px) {
     /* For mobile phones: */
-    [class*="pwe-sequencer__metronome"] {
+    [class*="pwe-metronome"] {
         width: 94%;
     }
 
@@ -112,7 +112,7 @@
         width: 20%;
     }
 
-    [class*="pwe-sequencer__metronome-slider"] {
+    [class*="pwe-metronome__slider"] {
         width: 90%;
     }
 }
