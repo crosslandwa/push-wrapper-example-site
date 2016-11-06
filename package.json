@@ -13,12 +13,13 @@
     "devDependencies": {
         "jasmine": "~2.3.1",
         "babelify": "7.3.0",
-        "babel-preset-es2015": "6.9.0"
+        "babel-preset-es2015": "6.9.0",
+        "uglify-js": "~2.7.4"
     },
     "scripts": {
         "test": "jasmine",
         "build": "browserify ./app.js -o ./bundle.js --debug -t [ babelify --presets [ es2015 ] ]",
-        "build-minified": "browserify ./app.js -o ./bundle.js -t [ babelify --presets [ es2015 ] ]"
+        "build-minified": "browserify ./app.js -t [ babelify --presets [ es2015 ] ] | node_modules/uglify-js/bin/uglifyjs > ./bundle.js"
     },
     "author": "https://github.com/crosslandwa",
     "license": "MIT"
