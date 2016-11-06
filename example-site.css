@@ -54,9 +54,18 @@
     padding: 10px 0 0 0;
 }
 
+.pwe-metronome__slider-controls {
+    width: 100%;
+}
+
+.pwe-metronome__slider-control {
+    width: 50%;
+    float: left;
+}
+
 .pwe-metronome__slider {
-    margin: 15px 0 15px 0 !important;
-    width: 30% !important;
+    margin: 10px 0 15px 0 !important;
+    width: 90% !important;
     display: inline !important;
 }
 
@@ -136,9 +145,5 @@
 
     [class*="pwe-button--narrow"] {
         width: 20%;
-    }
-
-    [class*="pwe-metronome__slider"] {
-        width: 90% !important;
     }
 }

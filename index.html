@@ -39,13 +39,15 @@
                 </div>
                 <div class="pwe-metronome">
                     <div class="pwe-metronome__title text--bold">Metronome</div>
-                    <div>
-                        <label class="pwe-metronome__slider-label text--bold" for="bpm-control">BPM: 120</label>
-                        <input class="pwe-metronome__slider" id="bpm-control" type="range" name="BPM" min="20" max="300" value="120">
-                        <br>
-                        <label class="pwe-metronome__slider-label text--bold" for="accent-control">ACCENT: 4 beats</label>
-                        <input class="pwe-metronome__slider" id="accent-control" type="range" name="ACCENT" min="1" max="16" value="4">
-                        <br>
+                    <div class="pwe-metronome__slider-controls">
+                        <div class="pwe-metronome__slider-control">
+                            <label class="pwe-metronome__slider-label text--bold" for="bpm-control">BPM: 120</label>
+                            <input class="pwe-metronome__slider" id="bpm-control" type="range" name="BPM" min="20" max="300" value="120">
+                        </div>
+                        <div class="pwe-metronome__slider-control">
+                            <label class="pwe-metronome__slider-label text--bold" for="accent-control">ACCENT: 4 beats</label>
+                            <input class="pwe-metronome__slider" id="accent-control" type="range" name="ACCENT" min="1" max="16" value="4">
+                        </div>
                     </div>
                     <div class="pwe-metronome__buttons">
                         <div class="pwe-button pwe-button--short pwe-button--narrow tap">tap(n)</div>
