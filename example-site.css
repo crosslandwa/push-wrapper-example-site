@@ -119,6 +119,10 @@
         padding: 0;
     }
 
+    [class*="pwe-sequencer__row"] {
+        padding: 10px 0 0 0;
+    }
+
     [class*="pwe-button"] {
         margin-bottom: 15px;
         height: 40px;
