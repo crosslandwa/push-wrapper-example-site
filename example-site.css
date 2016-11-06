@@ -68,7 +68,8 @@
 
 .pwe-button {
     display: inline-block;
-    height: 40%;
+    height: 64px;
+    line-height: 64px;
     margin: 0px 1%;
     background-color: #c7ccce;
     border-radius: 10px;
@@ -87,7 +88,8 @@
 }
 
 .pwe-button--short {
-    height: 20%;
+    height: 34px;
+    line-height: 34px;
 }
 
 .pwe-button--selected {
