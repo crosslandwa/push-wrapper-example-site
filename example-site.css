@@ -40,7 +40,7 @@
 }
 .pwe-metronome {
     position: relative;
-    margin: 10px 10px;
+    margin: 0 0 10px 0;
     display: inline-block;
     width: 96%;
     background-color: #c7ccce;
@@ -116,7 +116,7 @@
 @media only screen and (max-width: 768px) {
     /* For mobile phones: */
     [class*="pwe-metronome"] {
-        width: 94%;
+        padding: 0;
     }
 
     [class*="pwe-button"] {
