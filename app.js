@@ -110,6 +110,7 @@ function setupMetronome(bpm, push) {
     tap.on('average', bpm.changeTo)
 
     let metronome = Scheduling.Metronome(4, bpm)
+    metronome.setMaxListeners(20)
     let running = false
 
     let accent = new Player('assets/audio/metronome-accent.mp3', context).toMaster()
@@ -143,7 +144,7 @@ function setupMetronome(bpm, push) {
     push.button['tap_tempo'].on('pressed', tap.again);
     push.button['tap_tempo'].led_dim()
 
-    window.addEventListener("keypress", (event) => {
+    bindKeypress((event) => {
         if (event.key === 'm') toggleMetronome()
         if (event.key === 'n') tap.again()
         if (event.key === ',') toggleMetronomeMute()
@@ -281,7 +282,7 @@ function makeSequencer(players, push, bpm, metronome) {
         }
     })
 
-    window.addEventListener('keydown', (event) => {
+    bindKeypress((event) => {
         switch (event.key) {
             case "g": sequencer.playButtonPressed(); break; // spacebar
             case "z": sequencer.recordButtonPressed(); break;
@@ -389,7 +390,7 @@ function bindQwertyButtonsToPlayback(players, sequencer) {
     })
 
     let lookup = {'q': 0, 'w': 1, 'e': 2, 'r': 3, 't': 4, 'y': 5, 'u': 6, 'i': 7};
-    window.addEventListener("keypress", (event) => {
+    bindKeypress((event) => {
         if (event.key in lookup) {
             let index = lookup[event.key]
             players[index].cutOff(f).play(midiVelocity);
@@ -448,4 +449,12 @@ function updateSequenceUiButton(button, state) {
     if (state) {
         button.classList.add('pwe-button--' + state)
     }
+}
+
+// monkey patches the emitted keypress event so that event.key is always defined
+function bindKeypress(callback) {
+    window.addEventListener('keypress', (event) => {
+        if (!event.key) event.key = String.fromCharCode(event.charCode)
+        callback(event)
+    })
 }
