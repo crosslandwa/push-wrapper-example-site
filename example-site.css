@@ -118,6 +118,13 @@
 
     [class*="pwe-button"] {
         margin-bottom: 15px;
+        height: 40px;
+        line-height: 40px;
+    }
+
+    [class*="pwe-button--short"] {
+        height: 24px;
+        line-height: 24px;
     }
 
     [class*="pwe-button--narrow"] {
