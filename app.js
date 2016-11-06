@@ -283,7 +283,7 @@ function makeSequencer(players, push, bpm, metronome) {
 
     window.addEventListener('keydown', (event) => {
         switch (event.key) {
-            case " ": sequencer.playButtonPressed(); break; // spacebar
+            case "g": sequencer.playButtonPressed(); break; // spacebar
             case "z": sequencer.recordButtonPressed(); break;
             case "x": sequencer.deleteSequence(); break;
             case "1": sequencer.selectSequence(1); break;

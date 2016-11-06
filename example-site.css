@@ -3,7 +3,7 @@
     text-align: left;
     padding-left: 2%;
 }
-#content {
+.pwe-content {
     max-width: 800px;
     height: 25%;
     min-height: 101px;
