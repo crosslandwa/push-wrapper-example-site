@@ -13,6 +13,7 @@
     letter-spacing: 1.5px;
     margin-top: 10px;
     text-align: center;
+    box-sizing: content-box;
 }
 .pwe-no-midi-warning {
     background-color: #b33a3a;
@@ -47,7 +48,9 @@
     border-radius: 10px;
     padding: 0 0 10px 0;
 }
-
+.pwe-metronome__title {
+    margin: 10px 0;
+}
 .pwe-metronome__buttons {
     padding: 10px 0 0 0;
 }
