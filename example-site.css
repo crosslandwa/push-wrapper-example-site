@@ -56,8 +56,9 @@
 }
 
 .pwe-metronome__slider {
-    margin: 15px 0 15px 0;
-    width: 30%;
+    margin: 15px 0 15px 0 !important;
+    width: 30% !important;
+    display: inline !important;
 }
 
 .pwe-metronome__slider-label {
