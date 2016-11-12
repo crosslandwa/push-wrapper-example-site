@@ -162,16 +162,22 @@ function AppSequence(Scheduling, bpm, metronome) {
         return false
     }
 
-    this.play = function(offset = 0) {
+    this.playLegato = function(offset = 0) {
+        if (state === states.stopped) {
+            wrapped.start(offset)
+            state = states.playback
+            reportState()
+            return true
+        }
+        return false
+    }
+
+    this.play = function() {
         if (state === states.stopped || state === states.overdubbing || state === states.recording) {
             if (state === states.recording) {
                 setLoopLengthAndBroadcastBPM()
             } else if (state === states.stopped) {
-                if (offset > 0) {
-                  wrapped.start(offset)
-                } else {
-                  wrapped.startAt(nextQuantisedPointIntime(), offset)
-                }
+                wrapped.startAt(nextQuantisedPointIntime())
             }
             state = states.playback
             reportState()

@@ -46,10 +46,13 @@ function Sequencer(numberOfSequences, Scheduling, bpm, metronome) {
         }
 
         if (selectedSequence.hasEvents()) {
-            if (activeSequence) {
-                let offset = legato ? activeSequence.currentPositionMs() : 0
+            if (activeSequence && legato) {
+                let offset = activeSequence.currentPositionMs()
                 activeSequence.stop()
-                selectedSequence.play(offset)
+                selectedSequence.playLegato(offset)
+            } else if (activeSequence) {
+                activeSequence.stop()
+                selectedSequence.play()
             } else {
                 selectedSequence.playAtNextTick()
             }
