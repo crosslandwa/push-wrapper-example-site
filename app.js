@@ -70,7 +70,7 @@ function off_we_go(bound_push) {
         repetae.report_interval();
 
         Object.keys(intervals).forEach(buttonName => {
-            push.button[buttonName].on('pressed', partial(repetae.interval, intervals[buttonName]));
+            push.button[buttonName].on('pressed', () => repetae.interval(intervals[buttonName]));
         })
 
         turn_off_column(push, column_number);
