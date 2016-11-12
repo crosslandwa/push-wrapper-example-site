@@ -1,6 +1,5 @@
 'use strict'
 const Push = require('push-wrapper'),
-    foreach = require('lodash.foreach'),
     partial = require('lodash.partial'),
     Player = require('./src/player.js'),
     context = window.AudioContext ? new window.AudioContext() : new window.webkitAudioContext(),
@@ -70,9 +69,9 @@ function off_we_go(bound_push) {
 
         repetae.report_interval();
 
-        foreach(intervals, (interval, button_name) => {
-            push.button[button_name].on('pressed', partial(repetae.interval, interval));
-        });
+        Object.keys(intervals).forEach(buttonName => {
+            push.button[buttonName].on('pressed', partial(repetae.interval, intervals[buttonName]));
+        })
 
         turn_off_column(push, column_number);
         push.lcd.x[column_number].y[2].update(samples[i].name);
