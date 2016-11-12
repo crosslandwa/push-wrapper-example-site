@@ -56,7 +56,7 @@ function off_we_go(bound_push) {
 
     push.lcd.clear();
 
-    foreach(players, (player, i) => {
+    players.forEach((player, i) => {
         let column_number = i + 1,
             repetae = new Repetae(intervals['1/4'], context);
 
