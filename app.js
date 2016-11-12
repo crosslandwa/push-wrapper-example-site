@@ -356,7 +356,7 @@ function bind_column_to_player(push, player, x, repetae, sequencer) {
         if (pressure > 0) mutable_velocity = pressure;
     }
 
-    foreach(oneToEight, (y) => {
+    oneToEight.forEach(y => {
         const grid_button = push.grid.x[x].y[y];
         grid_button.on('pressed', (velocity) => {
             mutable_velocity = velocity
