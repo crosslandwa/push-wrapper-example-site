@@ -378,7 +378,7 @@ function bindQwertyButtonsToPlayback(players, sequencer) {
     const midiVelocity = midiGain(velocity)
     const f = filter_frequencies[8]
 
-    foreach(players, (player, i) => {
+    players.forEach((player, i) => {
         player.on('started', partial(turn_button_display_on, buttons[i]));
         player.on('stopped', partial(turn_button_display_off, buttons[i]));
         buttons[i].addEventListener('mousedown', () => {
