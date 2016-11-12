@@ -86,9 +86,7 @@ function off_we_go(bound_push) {
         bind_column_to_player(push, player, column_number, repetae, sequencer);
     });
 
-    foreach(intervals, (interval, button_name) => {
-        push.button[button_name].led_dim();
-    });
+    Object.keys(intervals).forEach(name => { push.button[name].led_dim() })
 
     bind_pitchbend(push, players);
 
@@ -115,7 +113,7 @@ function setupMetronome(bpm, push) {
 
     let accent = new Player('assets/audio/metronome-accent.mp3', context).toMaster()
     let tick = new Player('assets/audio/metronome-tick.mp3', context).toMaster()
-    
+
     function toggleMetronome() {
         running = !running
         if (running) {
@@ -409,7 +407,7 @@ function midiGain(velocity) {
 }
 
 function turn_on_column(push, x, gain) {
-    foreach(oneToEight, (y) => {
+    oneToEight.forEach(y => {
         if (((gain.velocity() + 15) / 16) >= y) {
             push.grid.x[x].y[y].led_on(gain.velocity());
         } else {
@@ -419,7 +417,7 @@ function turn_on_column(push, x, gain) {
 }
 
 function turn_off_column(push, x) {
-    foreach([2, 3, 4, 5, 6, 7, 8], (y) => {
+    [2, 3, 4, 5, 6, 7, 8].forEach(y => {
         push.grid.x[x].y[y].led_off();
     });
     push.grid.x[x].y[1].led_on();
