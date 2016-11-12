@@ -46,8 +46,8 @@ function Sequencer(numberOfSequences, Scheduling, bpm, metronome) {
         }
 
         if (selectedSequence.hasEvents()) {
-            let offset = 0
             if (activeSequence) {
+                let offset = 0
                 if (legato) offset = activeSequence.currentPositionMs()
                 activeSequence.stop()
                 selectedSequence.play(offset)

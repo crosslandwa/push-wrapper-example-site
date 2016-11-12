@@ -180,9 +180,9 @@ function AppSequence(Scheduling, bpm, metronome) {
         return false
     }
 
-    this.playAtNextTick = function(offset = 0) {
+    this.playAtNextTick = function() {
         if (state === states.stopped) {
-            wrapped.startAt(nextTick, offset)
+            wrapped.startAt(nextTick)
             state = states.playback
             reportState()
             return true
