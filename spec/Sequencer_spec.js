@@ -257,7 +257,7 @@ describe('Sequencer', () => {
             sequencer.selectSequence(2) // start 1 playing, 100ms long
             sequencer.addEvent('sequence2-event', {x: 1}) // recording (this STOPS sequence 1)
         }, 100)
-        setTimeout(sequencer.playButtonPressed, 200) // start 2 playing 100ms, events at 0
+        setTimeout(sequencer.playButtonPressed, 200) // start 2 playing 100ms long, events at 0
         setTimeout(() => sequencer.selectSequenceLegato(1), 225) // select sequence 1, next event (at 250) should have x = 2
 
         setTimeout(() => {

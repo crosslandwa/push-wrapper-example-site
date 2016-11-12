@@ -204,7 +204,7 @@ describe('Sequencer', () => {
     }, 350)
   })
 
-  it ('restarts an unquantiserd sequence immediately', done => {
+  it ('restarts an unquantised sequence immediately', done => {
     let events = []
     capture(events, 'name')
 
