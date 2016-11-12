@@ -173,17 +173,19 @@ function AppSequence(Scheduling, bpm, metronome) {
     }
 
     this.play = function() {
-        if (state === states.stopped || state === states.overdubbing || state === states.recording) {
-            if (state === states.recording) {
-                setLoopLengthAndBroadcastBPM()
-            } else if (state === states.stopped) {
-                wrapped.startAt(nextQuantisedPointIntime())
-            }
-            state = states.playback
-            reportState()
-            return true
+        switch (state) {
+            case states.stopped:
+                wrapped.startAt(nextQuantisedPointIntime()); break;
+            case states.recording:
+                setLoopLengthAndBroadcastBPM(); break;
+            case states.overdubbing:
+                break;
+            default:
+                return false
         }
-        return false
+        state = states.playback
+        reportState()
+        return true
     }
 
     this.playAtNextTick = function() {
@@ -209,17 +211,19 @@ function AppSequence(Scheduling, bpm, metronome) {
     }
 
     this.overdub = function() {
-        if (state === states.stopped || state === states.playback || state === states.recording) {
-            if (state === states.recording) {
-                setLoopLengthAndBroadcastBPM()
-            } else if (state === states.stopped) {
-                wrapped.startAt(nextTick)
-            }
-            state = states.overdubbing
-            reportState()
-            return true
+        switch (state) {
+            case states.stopped:
+                wrapped.startAt(nextTick); break;
+            case states.recording:
+                setLoopLengthAndBroadcastBPM(); break;
+            case states.playback:
+                break;
+            default:
+                return false
         }
-        return false
+        state = states.overdubbing
+        reportState()
+        return true
     }
 
     this.stop = function() {
