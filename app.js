@@ -426,7 +426,7 @@ function turn_off_column(push, x) {
 function bind_pitchbend(push, players) {
     push.touchstrip.on('pitchbend', (pb) => {
         var rate = scale(pb, 0, 16384, -12, 12);
-        foreach(players, (player) => player.modulatePitch(rate));
+        players.forEach(player => player.modulatePitch(rate));
     });
 }
 
