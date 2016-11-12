@@ -1,6 +1,5 @@
 'use strict'
 const Push = require('push-wrapper'),
-    partial = require('lodash.partial'),
     Player = require('./src/player.js'),
     context = window.AudioContext ? new window.AudioContext() : new window.webkitAudioContext(),
     Scheduling = require('wac.scheduling')(context),
@@ -378,8 +377,8 @@ function bindQwertyButtonsToPlayback(players, sequencer) {
     const f = filter_frequencies[8]
 
     players.forEach((player, i) => {
-        player.on('started', partial(turn_button_display_on, buttons[i]));
-        player.on('stopped', partial(turn_button_display_off, buttons[i]));
+        player.on('started', () => turn_button_display_on(buttons[i]));
+        player.on('stopped', () => turn_button_display_off(buttons[i]));
         buttons[i].addEventListener('mousedown', () => {
             player.cutOff(f).play(midiVelocity)
             sequencer.addEvent('play', { player: i, velocity: velocity, frequency: f });
