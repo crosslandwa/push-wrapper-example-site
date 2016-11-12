@@ -167,7 +167,11 @@ function AppSequence(Scheduling, bpm, metronome) {
             if (state === states.recording) {
                 setLoopLengthAndBroadcastBPM()
             } else if (state === states.stopped) {
-                wrapped.startAt(nextQuantisedPointIntime(), offset)
+                if (offset > 0) {
+                  wrapped.start(offset)
+                } else {
+                  wrapped.startAt(nextQuantisedPointIntime(), offset)
+                }
             }
             state = states.playback
             reportState()

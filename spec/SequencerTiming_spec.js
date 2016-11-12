@@ -150,6 +150,37 @@ describe('Sequencer', () => {
     }, 400)
   })
 
+  it('transitions between playing sequences in legato manner', (done) => {
+      let events = []
+      capture(events, 's1')
+      capture(events, 's2')
+
+      // 240 bpm, beat every 250ms, 1/4PPQ, expect events at 0, 62.5, 125, 187.5 250
+      metronome.start()
+
+      sequencer.recordButtonPressed()
+      sequencer.addEvent('s1', 'a') // recording
+
+      // sequence1 250ms long (quantised), events at 0, 62.5
+      setTimeout(() => { sequencer.addEvent('s1', 'b') }, 60)
+      setTimeout(() => { sequencer.selectSequence(2) }, 200) // sequence 1 playing (at 250)
+
+      // start 2 playing 250ms long, events at 0, 62.5
+      setTimeout(() => {sequencer.addEvent('s2', 'a') }, 240) // recording (this STOPS sequence 1)
+      setTimeout(() => {sequencer.addEvent('s2', 'b') }, 300)
+      setTimeout(sequencer.playButtonPressed, 450) // sequence 2 playing (at 500)
+
+      // next event (at 562.5) should should be s1 event with data = b
+      setTimeout(() => sequencer.selectSequenceLegato(1), 525)
+
+      setTimeout(() => {
+          expect(events.length).toEqual(2)
+          expectEventAtTime(events[0], 's2', 500, 'a')
+          expectEventAtTime(events[1], 's1', 562.5, 'b')
+          done()
+      }, 600)
+  })
+
   it ('retimes quantised sequence when bpm changes', done => {
     let events = []
     capture(events, 'name')
