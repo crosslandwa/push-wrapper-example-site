@@ -75,8 +75,8 @@ function off_we_go(bound_push) {
 
         turn_off_column(push, column_number);
         push.lcd.x[column_number].y[2].update(samples[i].name);
-        player.on('started', partial(turn_on_column, push, column_number));
-        player.on('stopped', partial(turn_off_column, push, column_number));
+        player.on('started', gain => turn_on_column(push, column_number, gain));
+        player.on('stopped', () => turn_off_column(push, column_number));
 
         player.on('pitch', push.lcd.x[column_number].y[4].update);
         push.channel[column_number].knob.on('turned', player.changePitchByInterval);
