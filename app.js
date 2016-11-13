@@ -172,7 +172,12 @@ function setupMetronome(bpm, push) {
     metronome.on('stopped', () => turn_button_display_off(metronomeOnOffButton))
     function flashTapTempo() {
         turn_button_display_on(tapTempoButton)
-        setTimeout(() => turn_button_display_off(tapTempoButton), 100)
+        push.button['tap_tempo'].led_on()
+        setTimeout(() => {
+          turn_button_display_off(tapTempoButton)
+          push.button['tap_tempo'].led_dim()
+        }, 100)
+
     }
     metronome.on('accent', flashTapTempo)
     metronome.on('tick', flashTapTempo)
