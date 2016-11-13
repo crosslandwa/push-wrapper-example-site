@@ -30,6 +30,8 @@ const Push = require('push-wrapper'),
     filter_frequencies = [0, 100, 200, 400, 800, 2000, 6000, 10000, 20000],
     oneToEight = [1, 2, 3, 4, 5, 6, 7, 8];
 
+const bindPushTempoKnob = require('./src/bindPushTempoKnob.js')
+
 bpm.setMaxListeners(20)
 
 window.addEventListener('load', () => {
@@ -51,6 +53,13 @@ function off_we_go(bound_push) {
         push = bound_push,
         metronome = setupMetronome(bpm, push),
         sequencer = makeSequencer(players, push, bpm, metronome);
+
+    pushModifierButton(push.button['shift'])
+    pushModifierButton(push.button['delete'])
+    pushModifierButton(push.button['accent'])
+    pushModifierButton(push.button['mute'])
+    pushModifierButton(push.button['tap_tempo'])
+    Object.keys(intervals).map(name => push.button[name]).forEach(pushModifierButton)
 
     push.lcd.clear();
 
@@ -84,8 +93,6 @@ function off_we_go(bound_push) {
         bind_column_to_player(push, player, column_number, repetae, sequencer);
     });
 
-    Object.keys(intervals).forEach(name => { push.button[name].led_dim() })
-
     bind_pitchbend(push, players);
 
     bindQwertyButtonsToPlayback(players, sequencer);
@@ -96,9 +103,6 @@ function off_we_go(bound_push) {
 
     bpm.report()
     metronome.report()
-// TODO rethink how this works with multiple sequences
-//    push.knob['swing'].on('turned', sequence.changeNumberOfBeatsBy);
-//    sequence.on('numberOfBeats', numberOfBeats => push.lcd.x[2].y[3].update(`beats=${numberOfBeats}`));
 }
 
 function setupMetronome(bpm, push) {
@@ -124,9 +128,8 @@ function setupMetronome(bpm, push) {
     }
 
     let mute = false
-    push.button['mute'].on('pressed', () => { mute = true; push.button['mute'].led_on() })
-    push.button['mute'].on('released', () => { mute = false; push.button['mute'].led_dim() })
-    push.button['mute'].led_dim()
+    push.button['mute'].on('pressed', () => { mute = true })
+    push.button['mute'].on('released', () => { mute = false })
 
     push.button['metronome'].on('pressed', () => {
         if (mute) {
@@ -138,7 +141,6 @@ function setupMetronome(bpm, push) {
     push.button['metronome'].led_dim()
 
     push.button['tap_tempo'].on('pressed', tap.again);
-    push.button['tap_tempo'].led_dim()
 
     bindKeypress((event) => {
         if (event.key === 'm') toggleMetronome()
@@ -146,19 +148,16 @@ function setupMetronome(bpm, push) {
         if (event.key === ',') toggleMetronomeMute()
     });
 
-    let numberOfBeats = 4
-    let shift = false
-    push.button['shift'].on('pressed', () => { shift = true })
-    push.button['shift'].on('released', () => { shift = false })
+    bindPushTempoKnob(
+        push.knob['tempo'],
+        push.button['shift'],
+        push.button['accent'],
+        metronome,
+        bpm
+    )
 
-    push.knob['tempo'].on('turned', (delta) => {
-        if (shift) {
-            metronome.updateNumberOfBeats(numberOfBeats + delta)
-        } else {
-            bpm.changeBy(delta)
-        }
-    });
-    bpm.on('changed', bpm => push.lcd.x[1].y[3].update('   bpm ='));
+    push.lcd.x[1].y[3].update('   bpm =')
+    console.log('   bpm =')
     bpm.on('changed', bpm => push.lcd.x[2].y[3].update(bpm.current()));
 
     const tapTempoButton = document.getElementsByClassName('tap')[0]
@@ -185,7 +184,6 @@ function setupMetronome(bpm, push) {
         accentLabel.innerHTML = `ACCENT: ${beats} beats`
         accentSlider.value = beats
         push.lcd.x[3].y[3].update(`${beats} bts`)
-        numberOfBeats = beats
     })
 
     bpmSlider.addEventListener('input', (event) => {
@@ -308,12 +306,10 @@ function makeSequencer(players, push, bpm, metronome) {
 
     let deleteOrShift = 'off'
 
-    push.button['delete'].led_dim()
-    push.button['shift'].led_dim()
-    push.button['delete'].on('pressed', () => { deleteOrShift = 'delete'; push.button['delete'].led_on() });
-    push.button['shift'].on('pressed', () => { deleteOrShift = 'shift'; push.button['shift'].led_on() });
-    push.button['delete'].on('released', () => { if (deleteOrShift === 'delete') deleteOrShift = 'off'; push.button['delete'].led_dim() });
-    push.button['shift'].on('released', () => { if (deleteOrShift === 'shift') deleteOrShift = 'off'; push.button['shift'].led_dim() });
+    push.button['delete'].on('pressed', () => { deleteOrShift = 'delete' });
+    push.button['shift'].on('pressed', () => { deleteOrShift = 'shift' });
+    push.button['delete'].on('released', () => { if (deleteOrShift === 'delete') deleteOrShift = 'off' });
+    push.button['shift'].on('released', () => { if (deleteOrShift === 'shift') deleteOrShift = 'off' });
 
     oneToEight.forEach((x) => {
         push.channel[x].select.on('pressed', () => {
@@ -445,6 +441,12 @@ function updateSequenceUiButton(button, state) {
     if (state) {
         button.classList.add('pwe-button--' + state)
     }
+}
+
+function pushModifierButton(pushButton) {
+    pushButton.led_dim()
+    pushButton.on('pressed', pushButton.led_on)
+    pushButton.on('released', pushButton.led_dim)
 }
 
 // monkey patches the emitted keypress event so that event.key is always defined
