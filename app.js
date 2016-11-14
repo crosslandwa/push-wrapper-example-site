@@ -291,11 +291,9 @@ function makeSequencer(players, push, bpm, metronome) {
         }
     });
 
-    Array.prototype.forEach.call(
-        selectionButtons,
-        (button, i) => {
-            button.addEventListener('mousedown', () => { sequencer.selectSequence(i + 1) })
-        })
+    Array.prototype.forEach.call(selectionButtons, (button, i) => {
+        button.addEventListener('mousedown', () => { sequencer.selectSequence(i + 1) })
+    })
 
     push.button['rec'].on('pressed', sequencer.recordButtonPressed);
     push.button['play'].on('pressed', sequencer.playButtonPressed);
