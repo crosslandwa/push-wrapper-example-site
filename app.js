@@ -31,6 +31,7 @@ const Push = require('push-wrapper'),
     oneToEight = [1, 2, 3, 4, 5, 6, 7, 8];
 
 const bindPushTempoKnob = require('./src/bindPushTempoKnob.js')
+const bindPushChannelSelectButtons = require('./src/bindPushChannelSelectButtons.js')
 
 bpm.setMaxListeners(20)
 
@@ -148,16 +149,9 @@ function setupMetronome(bpm, push) {
         if (event.key === ',') toggleMetronomeMute()
     });
 
-    bindPushTempoKnob(
-        push.knob['tempo'],
-        push.button['shift'],
-        push.button['accent'],
-        metronome,
-        bpm
-    )
+    bindPushTempoKnob(push.knob['tempo'], push.button['shift'], push.button['accent'], metronome, bpm)
 
     push.lcd.x[1].y[3].update('   bpm =')
-    console.log('   bpm =')
     bpm.on('changed', bpm => push.lcd.x[2].y[3].update(bpm.current()));
 
     const tapTempoButton = document.getElementsByClassName('tap')[0]
@@ -309,27 +303,7 @@ function makeSequencer(players, push, bpm, metronome) {
     playButton.addEventListener('mousedown', sequencer.playButtonPressed)
     deleteButton.addEventListener('mousedown', sequencer.deleteSequence)
 
-    let deleteOrShift = 'off'
-
-    push.button['delete'].on('pressed', () => { deleteOrShift = 'delete' });
-    push.button['shift'].on('pressed', () => { deleteOrShift = 'shift' });
-    push.button['delete'].on('released', () => { if (deleteOrShift === 'delete') deleteOrShift = 'off' });
-    push.button['shift'].on('released', () => { if (deleteOrShift === 'shift') deleteOrShift = 'off' });
-
-    oneToEight.forEach((x) => {
-        push.channel[x].select.on('pressed', () => {
-            switch (deleteOrShift) {
-                case 'off':
-                    sequencer.selectSequence(x); break;
-                case 'delete':
-                    sequencer.deleteSequence(x); break;
-                case 'shift':
-                    sequencer.selectSequenceLegato(x, true); break;
-            }
-        })
-        push.channel[x].select.led_off()
-    })
-
+    bindPushChannelSelectButtons(push, push.button['shift'], push.button['delete'], sequencer)
     sequencer.reportSelectedSequenceState()
     return sequencer;
 }

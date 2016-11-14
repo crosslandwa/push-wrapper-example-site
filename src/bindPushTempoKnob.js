@@ -1,6 +1,6 @@
 'use strict'
 
-let modes = {
+const modes = {
   ACCENT: 'controls number of metronome beats',
   FINE: 'controls bpm in 0.01 beat increments',
   NORMAL: 'controls bpm in whole beat increments'
