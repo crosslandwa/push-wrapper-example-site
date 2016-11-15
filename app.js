@@ -50,7 +50,7 @@ function show_no_midi_warning() {
 }
 
 function off_we_go(bound_push) {
-    const players = create_players(),
+    const players = samples.map(s => new Player(s.path, context).toMaster()),
         push = bound_push,
         metronome = setupMetronome(bpm, push),
         sequencer = makeSequencer(players, push, bpm, metronome);
@@ -304,14 +304,6 @@ function makeSequencer(players, push, bpm, metronome) {
     bindPushChannelSelectButtons(push, push.button['shift'], push.button['delete'], sequencer)
     sequencer.reportSelectedSequenceState()
     return sequencer;
-}
-
-function create_players() {
-    var players = [];
-    for (var  i = 0; i < samples.length; i++) {
-        players[i] = new Player(samples[i].path, context).toMaster();
-    }
-    return players;
 }
 
 function bind_column_to_player(push, player, x, repetae, sequencer) {
