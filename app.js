@@ -31,6 +31,8 @@ const Push = require('push-wrapper'),
     filter_frequencies = [0, 100, 200, 400, 800, 2000, 6000, 10000, 20000],
     oneToEight = [1, 2, 3, 4, 5, 6, 7, 8];
 
+const midiVelocityToAbsolute = require('./src/midiVelocityToAbsoluteGain.js')
+
 const bindPushTempoKnob = require('./src/bindPushTempoKnob.js')
 const bindPushChannelSelectButtons = require('./src/bindPushChannelSelectButtons.js')
 
@@ -342,7 +344,7 @@ function bind_column_to_player(push, player, x, repetae, sequencer) {
 
 function bindQwertyButtonsToPlayback(players, sequencer) {
     const buttons = document.getElementsByClassName('sample-playback');
-    const velocity = 110
+    const velocity = 108
     const midiVelocity = midiGain(velocity)
     const f = filter_frequencies[8]
 
@@ -368,9 +370,7 @@ function bindQwertyButtonsToPlayback(players, sequencer) {
 function midiGain(velocity) {
     return {
         velocity: function() { return velocity },
-        toAbsolute: function() {
-            return velocity / 127;
-        }
+        toAbsolute: () => midiVelocityToAbsolute(velocity)
     }
 }
 
