@@ -1,5 +1,6 @@
 'use strict'
 const Push = require('push-wrapper'),
+    Mixer = require('./src/Mixer.js'),
     Player = require('./src/player.js'),
     context = window.AudioContext ? new window.AudioContext() : new window.webkitAudioContext(),
     Scheduling = require('wac.scheduling')(context),
@@ -50,10 +51,14 @@ function show_no_midi_warning() {
 }
 
 function off_we_go(bound_push) {
-    const players = samples.map(s => new Player(s.path, context).toMaster()),
+    const players = samples.map(s => new Player(s.path, context)),
         push = bound_push,
         metronome = setupMetronome(bpm, push),
         sequencer = makeSequencer(players, push, bpm, metronome);
+
+    const mixer = new Mixer(8, context)
+    players.forEach(mixer.connectInput)
+    mixer.toMaster()
 
     pushModifierButton(push.button['shift'])
     pushModifierButton(push.button['delete'])
