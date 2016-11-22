@@ -31,8 +31,6 @@ const Push = require('push-wrapper'),
     filter_frequencies = [0, 100, 200, 400, 800, 2000, 6000, 10000, 20000],
     oneToEight = [1, 2, 3, 4, 5, 6, 7, 8];
 
-const midiVelocityToAbsolute = require('./src/midiVelocityToAbsoluteGain.js')
-
 const bindPushTempoKnob = require('./src/bindPushTempoKnob.js')
 const bindPushChannelSelectButtons = require('./src/bindPushChannelSelectButtons.js')
 
@@ -58,9 +56,13 @@ function off_we_go(bound_push) {
         metronome = setupMetronome(bpm, push),
         sequencer = makeSequencer(players, push, bpm, metronome);
 
+    push.lcd.clear();
+
     const mixer = new Mixer(8, context)
     players.forEach(mixer.connectInput)
     mixer.toMaster()
+
+    bindMixerMasterVolumeToPush(mixer, push)
 
     pushModifierButton(push.button['shift'])
     pushModifierButton(push.button['delete'])
@@ -69,7 +71,7 @@ function off_we_go(bound_push) {
     pushModifierButton(push.button['tap_tempo'])
     Object.keys(intervals).map(name => push.button[name]).forEach(pushModifierButton)
 
-    push.lcd.clear();
+
 
     players.forEach((player, i) => {
         let column_number = i + 1,
@@ -370,7 +372,7 @@ function bindQwertyButtonsToPlayback(players, sequencer) {
 function midiGain(velocity) {
     return {
         velocity: function() { return velocity },
-        toAbsolute: () => midiVelocityToAbsolute(velocity)
+        toAbsolute: () => velocity / 127
     }
 }
 
@@ -421,6 +423,16 @@ function pushModifierButton(pushButton) {
     pushButton.led_dim()
     pushButton.on('pressed', pushButton.led_on)
     pushButton.on('released', pushButton.led_dim)
+}
+
+function bindMixerMasterVolumeToPush(mixer, push) {
+  let mixerGain = 100
+  push.knob['master'].on('turned', delta => { mixer.changeMasterMidiGainTo(mixerGain + delta) })
+  mixer.on('masterGain', (gain) => {
+    mixerGain = gain.midiValue()
+    push.lcd.x[8].y[3].update(gain.toDb().toFixed(2) + 'dB')
+  })
+  mixer.changeMasterMidiGainTo(108)
 }
 
 // monkey patches the emitted keypress event so that event.key is always defined
