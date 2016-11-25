@@ -5,7 +5,7 @@
     "description": "A example site to show the Ableton Push push-wrapper in use",
     "dependencies": {
         "push-wrapper": "^1.1.0",
-        "wac.sample-player": "^1.0.0",
+        "wac.sample-player": "^2.0.0",
         "wac.scheduling": "^1.5.0"
     },
     "devDependencies": {

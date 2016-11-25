@@ -38,10 +38,16 @@ bpm.setMaxListeners(20)
 
 window.addEventListener('load', () => {
     if (navigator.requestMIDIAccess) {
-        navigator.requestMIDIAccess({ sysex: true })
-            .then(Push.create_bound_to_web_midi_api)
-            .then(off_we_go)
+        Promise.all(
+          [navigator.requestMIDIAccess({ sysex: true }).then(Push.create_bound_to_web_midi_api)]
+          .concat(samples.map(s => Player.forResource(s.path, context)))
+          .concat(Player.forResource('assets/audio/metronome-accent.mp3', context))
+          .concat(Player.forResource('assets/audio/metronome-tick.mp3', context))
+        ).then(values => {
+          return off_we_go(values[0], values.slice(1, 9), values[9], values[10])
+        })
     } else {
+        // TODO add in players when no MIDI
         Promise.resolve(new Push({ send: (bytes) => { } })).then(off_we_go).then(show_no_midi_warning);
     }
 });
@@ -50,16 +56,17 @@ function show_no_midi_warning() {
     document.getElementById('no-midi-warning').classList.add('pwe-no-midi-warning--show')
 }
 
-function off_we_go(bound_push) {
-    const players = samples.map(s => new Player(s.path, context)),
-        push = bound_push,
-        metronome = setupMetronome(bpm, push),
+function off_we_go(bound_push, players, accent, tick) {
+    const push = bound_push,
+        metronome = setupMetronome(bpm, push, accent, tick),
         sequencer = makeSequencer(players, push, bpm, metronome);
 
     push.lcd.clear();
 
-    const mixer = new Mixer(8, context)
+    const mixer = new Mixer(9, context)
     players.forEach(mixer.connectInput)
+    mixer.connectInput(accent, 8)
+    mixer.connectInput(tick, 8)
     mixer.toMaster()
 
     bindMixerMasterVolumeToPush(mixer, push)
@@ -70,8 +77,6 @@ function off_we_go(bound_push) {
     pushModifierButton(push.button['mute'])
     pushModifierButton(push.button['tap_tempo'])
     Object.keys(intervals).map(name => push.button[name]).forEach(pushModifierButton)
-
-
 
     players.forEach((player, i) => {
         let column_number = i + 1,
@@ -115,16 +120,13 @@ function off_we_go(bound_push) {
     metronome.report()
 }
 
-function setupMetronome(bpm, push) {
+function setupMetronome(bpm, push, accent, tick) {
     let tap = Scheduling.Tap()
     tap.on('average', bpm.changeTo)
 
     let metronome = Scheduling.Metronome(4, bpm)
     metronome.setMaxListeners(20)
     let running = false
-
-    let accent = new Player('assets/audio/metronome-accent.mp3', context).toMaster()
-    let tick = new Player('assets/audio/metronome-tick.mp3', context).toMaster()
 
     function toggleMetronome() {
         running = !running
@@ -350,6 +352,9 @@ function bindQwertyButtonsToPlayback(players, sequencer) {
     const midiVelocity = midiGain(velocity)
     const f = filter_frequencies[8]
 
+    preventDefaultDragAndDropBehaviour()
+    players.forEach((player, i) => bindAudioUpload(buttons[i], player))
+
     players.forEach((player, i) => {
         player.on('started', () => turn_button_display_on(buttons[i]));
         player.on('stopped', () => turn_button_display_off(buttons[i]));
@@ -441,4 +446,40 @@ function bindKeypress(callback) {
         if (!event.key) event.key = String.fromCharCode(event.charCode)
         callback(event)
     })
+}
+
+function stopBubbledEvent(e) {
+    e.stopPropagation();
+    e.preventDefault();
+}
+
+function bindAudioUpload(uploadButton, player) {
+  function addUploadStyling(e) {
+      stopBubbledEvent(e)
+      e.target.classList.add('pwe-button--upload')
+  }
+
+  function removeUploadStyling(e) {
+      stopBubbledEvent(e)
+      e.target.classList.remove('pwe-button--upload')
+  }
+
+  function loadNewAudioFile(e) {
+      stopBubbledEvent(e)
+      e.target.classList.remove('pwe-button--upload')
+
+      var files = e.dataTransfer.files
+      player.loadFile(files[0])
+  }
+
+  uploadButton.addEventListener('dragover', stopBubbledEvent, false)
+  uploadButton.addEventListener('dragenter', addUploadStyling, false)
+  uploadButton.addEventListener('dragleave', removeUploadStyling, false)
+  uploadButton.addEventListener('drop', loadNewAudioFile, false)
+}
+
+function preventDefaultDragAndDropBehaviour() {
+  // prevents audio files dropped outside the pads being opened by the browser
+  window.addEventListener('drop', stopBubbledEvent, false)
+  window.addEventListener('dragover', stopBubbledEvent, false)
 }
