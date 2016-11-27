@@ -1,8 +1,8 @@
 'use strict'
 const Push = require('push-wrapper'),
     Mixer = require('./src/Mixer.js'),
-    Player = require('./src/player.js'),
     context = window.AudioContext ? new window.AudioContext() : new window.webkitAudioContext(),
+    Player = require('./src/player.js')(context),
     Scheduling = require('wac.scheduling')(context),
     Sequencer = require('./src/Sequencer.js'),
     Repetae = require('./src/repetae.js'),
@@ -40,9 +40,9 @@ window.addEventListener('load', () => {
     if (navigator.requestMIDIAccess) {
         Promise.all(
           [navigator.requestMIDIAccess({ sysex: true }).then(Push.create_bound_to_web_midi_api)]
-          .concat(samples.map(s => Player.forResource(s.path, context)))
-          .concat(Player.forResource('assets/audio/metronome-accent.mp3', context))
-          .concat(Player.forResource('assets/audio/metronome-tick.mp3', context))
+          .concat(samples.map(s => Player.forResource(s.path)))
+          .concat(Player.forResource('assets/audio/metronome-accent.mp3'))
+          .concat(Player.forResource('assets/audio/metronome-tick.mp3'))
         ).then(values => {
           return off_we_go(values[0], values.slice(1, 9), values[9], values[10])
         })
@@ -465,11 +465,8 @@ function bindAudioUpload(uploadButton, player) {
   }
 
   function loadNewAudioFile(e) {
-      stopBubbledEvent(e)
-      e.target.classList.remove('pwe-button--upload')
-
-      var files = e.dataTransfer.files
-      player.loadFile(files[0])
+      removeUploadStyling(e)
+      player.loadFile(e.dataTransfer.files[0])
   }
 
   uploadButton.addEventListener('dragover', stopBubbledEvent, false)

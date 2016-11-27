@@ -50,7 +50,8 @@ function Player(samplePlayer, audioContext) {
 
     this.on = samplePlayer.on.bind(samplePlayer);
 
-    // this.loadFile = samplePlayer.loadFile.bind(samplePlayer)
+    this.loadFile = samplePlayer.loadFile.bind(samplePlayer)
+    this.loadResource = samplePlayer.loadResource.bind(samplePlayer)
 }
 
 function clip(value, min, max) {
@@ -62,11 +63,16 @@ function intervalToPlaybackRate(midiNoteNumber) {
     return Math.exp(.057762265 * (midiNoteNumber));
 }
 
-module.exports = {
-  forResource: function(assetUrl, audioContext) {
-    return SamplePlayer.forResource(assetUrl, audioContext)
-    .then((samplePlayer) => {
-      return new Player(samplePlayer, audioContext)
-    })
+function PlayerFactory (audioContext) {
+  let samplePlayerFactory = SamplePlayer(audioContext)
+
+  function create (load, source) {
+    return load(source).then(samplePlayer => new Player(samplePlayer, audioContext))
   }
-};
+
+  this.forResource = assetUrl => create(samplePlayerFactory.forResource, assetUrl)
+
+  this.forFile = file => create(samplePlayerFactory.forFile, file)
+}
+
+module.exports = audioContext => new PlayerFactory(audioContext)
