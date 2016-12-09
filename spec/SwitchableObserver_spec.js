@@ -9,7 +9,19 @@ describe('SwitchableObserver', () => {
     let output = ''
     let bpm = BPM(120)
     let observer = new SwitchableObserver(x => { output = x })
-    observer.addListener(bpm, 'changed', bpm => bpm.current())
+    observer.addListener(bpm, { event: 'changed', })
+    observer.listenTo(bpm)
+    expect(output).toEqual('')
+
+    bpm.changeTo(100)
+    expect(output.current()).toEqual(100) // output = bpm
+  })
+
+  it('can apply a manipulation to the observed value', () => {
+    let output = ''
+    let bpm = BPM(120)
+    let observer = new SwitchableObserver(x => { output = x })
+    observer.addListener(bpm, { event: 'changed', on: bpm => bpm.current() })
     observer.listenTo(bpm)
     expect(output).toEqual('')
 
@@ -21,7 +33,7 @@ describe('SwitchableObserver', () => {
     let output = ''
     let bpm = BPM(120)
     let observer = new SwitchableObserver(x => { output = x })
-    observer.addListener(bpm, 'changed', bpm => bpm.current(), bpm.report)
+    observer.addListener(bpm, { event: 'changed', on: bpm => bpm.current(), report: bpm.report })
     observer.listenTo(bpm)
 
     expect(output).toEqual(120)
@@ -33,8 +45,8 @@ describe('SwitchableObserver', () => {
     let bpm2 = BPM(130)
 
     let observer = new SwitchableObserver(x => { output = x })
-    observer.addListener(bpm, 'changed', bpm => bpm.current(), bpm.report)
-    observer.addListener(bpm2, 'changed', bpm => bpm.current(), bpm2.report)
+    observer.addListener(bpm, {event: 'changed', on: bpm => bpm.current(), report: bpm.report })
+    observer.addListener(bpm2, {event: 'changed', on: bpm => bpm.current(), report: bpm2.report })
 
     observer.listenTo(bpm)
     expect(output).toEqual(120)

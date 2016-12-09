@@ -1,14 +1,22 @@
 'use strict'
 
+function noReport() {}
+
 function SwitchableObserver(cb) {
   let observables = []
   let actions = []
   let observed = undefined
 
-  this.addListener = function (emitter, event, on, report) {
+  function passThrough(x) { cb(x) }
+
+  this.addListener = function (emitter, opts) {
     if (observables.indexOf(emitter) !== -1) return // already added
     observables.push(emitter)
-    actions.push({ report: report, listener: x => { cb(on(x)) }, event: event })
+    actions.push({
+      report: opts.report ? opts.report : noReport,
+      listener: opts.on ? x => { cb(opts.on(x)) } : passThrough,
+      event: opts.event
+    })
   }
 
   this.listenTo = function (emitter) {
@@ -18,7 +26,7 @@ function SwitchableObserver(cb) {
     observed = emitter
     let o = actions[index]
     observed.on(o.event, o.listener)
-    if (o.report) { o.report() }
+    o.report()
   }
 
   function removePreviousListener() {
