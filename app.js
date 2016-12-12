@@ -70,8 +70,6 @@ function off_we_go(bound_push, players, accent, tick) {
     mixer.connectInput(tick, 8)
     mixer.toMaster()
 
-    bindMixerMasterVolumeToPush(mixer, push)
-
     pushModifierButton(push.button['shift'])
     pushModifierButton(push.button['delete'])
     pushModifierButton(push.button['accent'])
@@ -81,10 +79,10 @@ function off_we_go(bound_push, players, accent, tick) {
 
     let repetaes = oneToEight.map(() => new Repetae(intervals['1/4'], context))
 
-    pushControl(push, repetaes, players)
+    pushControl(push, repetaes, players, mixer)
 
     players.forEach((player, i) => {
-        let column_number = i + 1;
+        let column_number = i + 1
         let repetae = repetaes[i];
 
         Object.keys(intervals).forEach(buttonName => {
@@ -423,16 +421,6 @@ function pushModifierButton(pushButton) {
     pushButton.led_dim()
     pushButton.on('pressed', pushButton.led_on)
     pushButton.on('released', pushButton.led_dim)
-}
-
-function bindMixerMasterVolumeToPush(mixer, push) {
-  let mixerGain = 100
-  push.knob['master'].on('turned', delta => { mixer.changeMasterMidiGainTo(mixerGain + delta) })
-  mixer.on('masterGain', (gain) => {
-    mixerGain = gain.midiValue()
-    push.lcd.x[8].y[3].update(gain.toDb().toFixed(2) + 'dB')
-  })
-  mixer.changeMasterMidiGainTo(108)
 }
 
 // monkey patches the emitted keypress event so that event.key is always defined

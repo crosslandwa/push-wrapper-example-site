@@ -2,9 +2,11 @@
 const oneToEight = [1, 2, 3, 4, 5, 6, 7, 8]
 const nowt = () => {}
 
-function pushControl(push, repetaes, players) {
+function pushControl(push, repetaes, players, mixer) {
   function selectButton(x) { return push.grid.x[x].select }
   function knob(x) { return push.channel[x].knob }
+
+  bindMixerMasterVolumeToPush(mixer, push)
 
   oneToEight.map(selectButton)
   .forEach((button, i) => {
@@ -39,6 +41,16 @@ function ledBlue(button) {
 
 function ledOrange(button) {
   return () => button.led_on()
+}
+
+function bindMixerMasterVolumeToPush(mixer, push) {
+  let mixerGain = 108
+  push.knob['master'].on('turned', delta => { mixer.changeMasterMidiGainTo(mixerGain + delta) })
+  mixer.on('masterGain', (gain) => {
+    mixerGain = gain.midiValue()
+    push.lcd.x[8].y[3].update(gain.toDb().toFixed(2) + 'dB')
+  })
+  mixer.changeMasterMidiGainTo(mixerGain)
 }
 
 function Executor() {
