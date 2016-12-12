@@ -81,7 +81,7 @@ function off_we_go(bound_push, players, accent, tick) {
 
     let repetaes = oneToEight.map(() => new Repetae(intervals['1/4'], context))
 
-    pushControl(push, repetaes)
+    pushControl(push, repetaes, players)
 
     players.forEach((player, i) => {
         let column_number = i + 1;

@@ -2,26 +2,33 @@
 const oneToEight = [1, 2, 3, 4, 5, 6, 7, 8]
 const nowt = () => {}
 
-function pushControl(push, repetaes) {
-  function selectButton(x) {
-    return push.grid.x[x].select
-  }
+function pushControl(push, repetaes, players) {
+  function selectButton(x) { return push.grid.x[x].select }
+  function knob(x) { return push.channel[x].knob }
+
   oneToEight.map(selectButton)
-    .forEach((button, i) => {
-      let repetae = repetaes[i]
-      let column = i + 1
-      button.on('pressed', repetae.press);
-      button.on('released', repetae.release);
+  .forEach((button, i) => {
+    let repetae = repetaes[i]
+    let column = i + 1
+    button.on('pressed', repetae.press);
+    button.on('released', repetae.release);
 
-      let executor = new Executor()
-      repetae.on('on', executor.add(ledBlue(button)))
-      repetae.on('off', executor.add(ledOrange(button)))
-      executor.active()
-      ledOrange(button)()
+    let executor = new Executor()
+    repetae.on('on', executor.add(ledBlue(button)))
+    repetae.on('off', executor.add(ledOrange(button)))
+    executor.active()
+    ledOrange(button)()
 
-      repetae.on('interval', push.lcd.x[column].y[1].update)
-      repetae.report_interval()
-    })
+    repetae.on('interval', push.lcd.x[column].y[1].update)
+    repetae.report_interval()
+  })
+
+  oneToEight.map(knob)
+  .forEach((knob, i) => {
+    let player = player[i]
+    let column = i + 1
+    knob.on('turned', player.changePitchByInterval)
+  })
 }
 
 function ledBlue(button) {
