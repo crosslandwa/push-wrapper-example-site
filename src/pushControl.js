@@ -25,7 +25,7 @@ function pushControl(push, repetaes, players) {
 
   oneToEight.map(knob)
   .forEach((knob, i) => {
-    let player = player[i]
+    let player = players[i]
     let column = i + 1
     let executor = new Executor()
     knob.on('turned', executor.add(player.changePitchByInterval))
