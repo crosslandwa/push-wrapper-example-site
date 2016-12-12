@@ -27,7 +27,9 @@ function pushControl(push, repetaes, players) {
   .forEach((knob, i) => {
     let player = player[i]
     let column = i + 1
-    knob.on('turned', player.changePitchByInterval)
+    let executor = new Executor()
+    knob.on('turned', executor.add(player.changePitchByInterval))
+    executor.active()
   })
 }
 
