@@ -57,10 +57,9 @@ function show_no_midi_warning() {
     document.getElementById('no-midi-warning').classList.add('pwe-no-midi-warning--show')
 }
 
-function off_we_go(bound_push, players, accent, tick) {
-    const push = bound_push,
-        metronome = setupMetronome(bpm, push, accent, tick),
-        sequencer = makeSequencer(players, push, bpm, metronome);
+function off_we_go(push, players, accent, tick) {
+    const metronome = setupMetronome(bpm, push, accent, tick);
+    const sequencer = makeSequencer(players, push, bpm, metronome);
 
     push.lcd.clear();
 
