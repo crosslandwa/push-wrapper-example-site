@@ -13,10 +13,10 @@ function pushControl(push, repetaes) {
       button.on('pressed', repetae.press);
       button.on('released', repetae.release);
 
-      let observer = new Observer()
-      repetae.on('on', observer.execute(ledBlue(button)))
-      repetae.on('off', observer.execute(ledOrange(button)))
-      observer.active()
+      let executor = new Executor()
+      repetae.on('on', executor.add(ledBlue(button)))
+      repetae.on('off', executor.add(ledOrange(button)))
+      executor.active()
       ledOrange(button)()
 
       repetae.on('interval', push.lcd.x[column].y[1].update)
@@ -32,14 +32,16 @@ function ledOrange(button) {
   return () => button.led_on()
 }
 
-function Observer() {
+function Executor() {
+  let executor = this;
   let command = nowt
   let active = false
-  this.execute = cb => () => { command = cb; if (active) command() }
-  this.update = () => command()
-  this.active = () => active = true
-  this.disable = () => active = false
-  this.toggleActive = () => active = !active
+  function execute() { if (active) command() }
+  this.add = cb => () => { command = cb; execute() }
+  this.execute = execute
+  this.active = () => { active = true; return executor }
+  this.disable = () => { active = false; return executor }
+  this.toggleActive = () => { active = !active; return active }
 }
 
 module.exports = pushControl
