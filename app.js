@@ -29,7 +29,8 @@ const Push = require('push-wrapper'),
         { path: 'assets/audio/Cassette808_Tom01.mp3', name: 'tom' }
     ],
     filter_frequencies = [0, 100, 200, 400, 800, 2000, 6000, 10000, 20000],
-    oneToEight = [1, 2, 3, 4, 5, 6, 7, 8];
+    oneToEight = [1, 2, 3, 4, 5, 6, 7, 8],
+    pushControl = require('./src/pushControl.js');
 
 const bindPushTempoKnob = require('./src/bindPushTempoKnob.js')
 const bindPushChannelSelectButtons = require('./src/bindPushChannelSelectButtons.js')
@@ -78,19 +79,13 @@ function off_we_go(bound_push, players, accent, tick) {
     pushModifierButton(push.button['tap_tempo'])
     Object.keys(intervals).map(name => push.button[name]).forEach(pushModifierButton)
 
+    let repetaes = oneToEight.map(() => new Repetae(intervals['1/4'], context))
+
+    pushControl(push, repetaes)
+
     players.forEach((player, i) => {
-        let column_number = i + 1,
-            repetae = new Repetae(intervals['1/4'], context);
-
-        push.grid.x[column_number].select.on('pressed', repetae.press);
-        push.grid.x[column_number].select.on('released', repetae.release);
-
-        push.grid.x[column_number].select.led_on();
-        repetae.on('on', () => push.grid.x[column_number].select.led_rgb(0, 155, 155));
-        repetae.on('off', push.grid.x[column_number].select.led_on);
-        repetae.on('interval', push.lcd.x[column_number].y[1].update);
-
-        repetae.report_interval();
+        let column_number = i + 1;
+        let repetae = repetaes[i];
 
         Object.keys(intervals).forEach(buttonName => {
             push.button[buttonName].on('pressed', () => repetae.interval(intervals[buttonName]));
