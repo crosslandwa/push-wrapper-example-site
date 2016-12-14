@@ -93,10 +93,6 @@ function off_we_go(push, players, accent, tick) {
         player.on('started', gain => turn_on_column(push, column_number, gain));
         player.on('stopped', () => turn_off_column(push, column_number));
 
-        player.on('pitch', push.lcd.x[column_number].y[4].update);
-        push.channel[column_number].knob.on('turned', player.changePitchByInterval);
-        player.reportPitch();
-
         bind_column_to_player(push, player, column_number, repetae, sequencer);
     });
 

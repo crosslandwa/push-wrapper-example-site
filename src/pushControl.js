@@ -18,20 +18,40 @@ function pushControl(push, repetaes, players, mixer) {
     let executor = new Executor()
     repetae.on('on', executor.add(ledBlue(button)))
     repetae.on('off', executor.add(ledOrange(button)))
-    executor.active()
+    executor.activate()
     ledOrange(button)()
 
     repetae.on('interval', push.lcd.x[column].y[1].update)
     repetae.report_interval()
   })
 
-  oneToEight.map(knob)
-  .forEach((knob, i) => {
-    let player = players[i]
-    let column = i + 1
-    let executor = new Executor()
-    knob.on('turned', executor.add(player.changePitchByInterval))
-    executor.active()
+  let togglePitchOrVolumeControl = toggleBetween(
+    oneToEight.map(knob).map((knob, i) => {
+      let executor = new Executor()
+      knob.on('turned', executor.add(players[i].changePitchByInterval)) // changePitchByInterval not called with delta
+      return executor
+    }),
+    oneToEight.map(knob).map((knob, i) => {
+      let executor = new Executor()
+      let x = 108
+      knob.on('turned', executor.add(() => mixer.changeMasterMidiGainTo(--x)))
+      return executor
+    })
+  )
+
+  togglePitchOrVolumeControl()
+  push.button['volume'].on('pressed',() => {
+    let on = togglePitchOrVolumeControl() // could chain two toggles together here, or pass in 'on' to the switching function rather than embeddeding it as state
+    if (on) {
+      push.button['volume'].led_on()
+    } else {
+      push.button['volume'].led_dim()
+    }
+  })
+  push.button['volume'].led_dim()
+  players.forEach((player, i) => {
+    player.on('pitch', push.lcd.x[i + 1].y[4].update);
+    player.reportPitch()
   })
 }
 
@@ -59,10 +79,20 @@ function Executor() {
   let active = false
   function execute() { if (active) command() }
   this.add = cb => () => { command = cb; execute() }
-  this.execute = execute
-  this.active = () => { active = true; return executor }
+  this.activate = () => { active = true; execute(); return executor }
   this.disable = () => { active = false; return executor }
-  this.toggleActive = () => { active = !active; return active }
+}
+
+function toggleBetween(a, b) {
+  let on = true
+  return () => {
+    on = !on
+    let enabled = on ? b : a
+    let disabled = on ? a : b
+    disabled.forEach(x => x.disable())
+    enabled.forEach(x => x.activate())
+    return on
+  }
 }
 
 module.exports = pushControl
