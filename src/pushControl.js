@@ -28,7 +28,7 @@ function pushControl(push, repetaes, players, mixer) {
   let togglePitchOrVolumeControl = toggleBetween(
     oneToEight.map(knob).map((knob, i) => {
       let executor = new Executor()
-      knob.on('turned', executor.add(players[i].changePitchByInterval)) // changePitchByInterval not called with delta
+      knob.on('turned', executor.add(players[i].changePitchByInterval))
       return executor
     }),
     oneToEight.map(knob).map((knob, i) => {
@@ -76,9 +76,10 @@ function bindMixerMasterVolumeToPush(mixer, push) {
 function Executor() {
   let executor = this;
   let command = nowt
+  let passed = []
   let active = false
-  function execute() { if (active) command() }
-  this.add = cb => () => { command = cb; execute() }
+  function execute() { if (active) command.apply(null, passed) }
+  this.add = cb => (...args) => { passed = args; command = cb; execute() }
   this.activate = () => { active = true; execute(); return executor }
   this.disable = () => { active = false; return executor }
 }
