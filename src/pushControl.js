@@ -6,7 +6,7 @@ function pushControl(push, repetaes, players, mixer) {
   function selectButton(x) { return push.grid.x[x].select }
   function knob(x) { return push.channel[x].knob }
 
-  bindMixerMasterVolumeToPush(mixer, push)
+  bindMasterVolume(mixer, push)
 
   oneToEight.map(selectButton)
   .forEach((button, i) => {
@@ -15,7 +15,7 @@ function pushControl(push, repetaes, players, mixer) {
     button.on('pressed', repetae.press);
     button.on('released', repetae.release);
 
-    let executor = new Executor()
+    let executor = new MultiCommand()
     repetae.on('on', executor.add(ledBlue(button)))
     repetae.on('off', executor.add(ledOrange(button)))
     executor.activate()
@@ -26,16 +26,17 @@ function pushControl(push, repetaes, players, mixer) {
   })
 
   let togglePitchOrVolumeControl = toggleBetween(
-    oneToEight.map(knob).map((knob, i) => {
-      let executor = new Executor()
-      knob.on('turned', executor.add(players[i].changePitchByInterval))
-      return executor
+    oneToEight.map((channel, i) => {
+      let k = knob(channel)
+      let control = new MultiCommand()
+      k.on('turned', control.add(players[i].changePitchByInterval))
+      return control
     }),
     oneToEight.map(knob).map((knob, i) => {
-      let executor = new Executor()
+      let control = new MultiCommand()
       let x = 108
-      knob.on('turned', executor.add(() => mixer.changeMasterMidiGainTo(--x)))
-      return executor
+      knob.on('turned', control.add(() => mixer.changeMasterMidiGainTo(--x)))
+      return control
     })
   )
 
@@ -63,7 +64,7 @@ function ledOrange(button) {
   return () => button.led_on()
 }
 
-function bindMixerMasterVolumeToPush(mixer, push) {
+function bindMasterVolume(mixer, push) {
   let mixerGain = 108
   push.knob['master'].on('turned', delta => { mixer.changeMasterMidiGainTo(mixerGain + delta) })
   mixer.on('masterGain', (gain) => {
@@ -73,15 +74,22 @@ function bindMixerMasterVolumeToPush(mixer, push) {
   mixer.changeMasterMidiGainTo(mixerGain)
 }
 
-function Executor() {
-  let executor = this;
+function MultiObserver() {
+  return new Executor(true)
+}
+
+function MultiCommand() {
+  return new Executor(false)
+}
+
+function Executor(replayOnActivate) {
   let command = nowt
   let passed = []
   let active = false
   function execute() { if (active) command.apply(null, passed) }
   this.add = cb => (...args) => { passed = args; command = cb; execute() }
-  this.activate = () => { active = true; execute(); return executor }
-  this.disable = () => { active = false; return executor }
+  this.activate = () => { active = true; if (replayOnActivate) execute() } // only want to execute if this is an observer, not if its a controller
+  this.disable = () => { active = false }
 }
 
 function toggleBetween(a, b) {
