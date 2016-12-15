@@ -35,7 +35,7 @@ function pushControl(push, repetaes, players, mixer) {
     oneToEight.map(knob).map((knob, i) => {
       let control = new MultiCommand()
       let x = 108
-      knob.on('turned', control.add(() => mixer.changeMasterMidiGainTo(--x)))
+      knob.on('turned', control.add(mixer.channel(i).changeMidiGainBy))
       return control
     })
   )
@@ -65,13 +65,11 @@ function ledOrange(button) {
 }
 
 function bindMasterVolume(mixer, push) {
-  let mixerGain = 108
-  push.knob['master'].on('turned', delta => { mixer.changeMasterMidiGainTo(mixerGain + delta) })
+  push.knob['master'].on('turned', mixer.masterChannel.changeMidiGainBy)
   mixer.on('masterGain', (gain) => {
-    mixerGain = gain.midiValue()
     push.lcd.x[8].y[3].update(gain.toDb().toFixed(2) + 'dB')
   })
-  mixer.changeMasterMidiGainTo(mixerGain)
+  mixer.masterChannel().changeMidiGainTo(108)
 }
 
 function MultiObserver() {
