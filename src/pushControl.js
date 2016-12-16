@@ -27,10 +27,9 @@ function pushControl(push, repetaes, players, mixer) {
 
   let pitchThings = []
   pitchThings = pitchThings
-  .concat(oneToEight.map((channel, i) => {
-    let k = knob(channel)
+  .concat(oneToEight.map(knob).map((knob, i) => {
     let control = new MultiCommand()
-    k.on('turned', control.add(players[i].changePitchByInterval))
+    knob.on('turned', control.add(players[i].changePitchByInterval))
     return control
   }))
   .concat(oneToEight.map(knob).map((knob, i) => {
@@ -51,6 +50,7 @@ function pushControl(push, repetaes, players, mixer) {
     mixer.on(`channel${i}Gain`, feedback.add(gain => {
       push.lcd.x[i + 1].y[4].update(displayDb(gain))
     }))
+    mixer.channel(i).changeMidiGainTo(108)
     return feedback
   }))
 
