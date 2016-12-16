@@ -25,24 +25,40 @@ function pushControl(push, repetaes, players, mixer) {
     repetae.report_interval()
   })
 
-  let togglePitchOrVolumeControl = toggleBetween(
-    oneToEight.map((channel, i) => {
-      let k = knob(channel)
-      let control = new MultiCommand()
-      k.on('turned', control.add(players[i].changePitchByInterval))
-      return control
-    }),
-    oneToEight.map(knob).map((knob, i) => {
-      let control = new MultiCommand()
-      let x = 108
-      knob.on('turned', control.add(mixer.channel(i).changeMidiGainBy))
-      return control
-    })
-  )
+  let pitchThings = []
+  pitchThings = pitchThings
+  .concat(oneToEight.map((channel, i) => {
+    let k = knob(channel)
+    let control = new MultiCommand()
+    k.on('turned', control.add(players[i].changePitchByInterval))
+    return control
+  }))
+  .concat(oneToEight.map(knob).map((knob, i) => {
+    let feedback = new MultiObserver()
+    players[i].on('pitch', feedback.add(push.lcd.x[i + 1].y[4].update))
+    return feedback
+  }))
+
+  let volumeThings = []
+  volumeThings = volumeThings
+  .concat(oneToEight.map(knob).map((knob, i) => {
+    let control = new MultiCommand()
+    knob.on('turned', control.add(mixer.channel(i).changeMidiGainBy))
+    return control
+  }))
+  .concat(oneToEight.map(knob).map((knob, i) => {
+    let feedback = new MultiObserver()
+    mixer.on(`channel${i}Gain`, feedback.add(gain => {
+      push.lcd.x[i + 1].y[4].update(displayDb(gain))
+    }))
+    return feedback
+  }))
+
+  let togglePitchOrVolumeControl = toggleBetween(pitchThings, volumeThings)
 
   togglePitchOrVolumeControl()
   push.button['volume'].on('pressed',() => {
-    let on = togglePitchOrVolumeControl() // could chain two toggles together here, or pass in 'on' to the switching function rather than embeddeding it as state
+    let on = togglePitchOrVolumeControl()
     if (on) {
       push.button['volume'].led_on()
     } else {
@@ -50,10 +66,11 @@ function pushControl(push, repetaes, players, mixer) {
     }
   })
   push.button['volume'].led_dim()
-  players.forEach((player, i) => {
-    player.on('pitch', push.lcd.x[i + 1].y[4].update);
-    player.reportPitch()
-  })
+  players.forEach(player => { player.reportPitch() })
+}
+
+function displayDb(gain) {
+  return gain.toDb().toFixed(2) + 'dB'
 }
 
 function ledBlue(button) {
@@ -65,9 +82,9 @@ function ledOrange(button) {
 }
 
 function bindMasterVolume(mixer, push) {
-  push.knob['master'].on('turned', mixer.masterChannel.changeMidiGainBy)
+  push.knob['master'].on('turned', mixer.masterChannel().changeMidiGainBy)
   mixer.on('masterGain', (gain) => {
-    push.lcd.x[8].y[3].update(gain.toDb().toFixed(2) + 'dB')
+    push.lcd.x[8].y[3].update(displayDb(gain))
   })
   mixer.masterChannel().changeMidiGainTo(108)
 }

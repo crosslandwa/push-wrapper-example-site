@@ -10,7 +10,7 @@ function Mixer(numberOfChannels, audioContext) {
   let masterChannel = new Channel(masterGainNode, audioContext, report('masterGain'))
   let outputGainNodes = new Array(numberOfChannels).fill(0).map(x => audioContext.createGain())
   outputGainNodes.forEach(node => node.connect(masterGainNode))
-  let channels = outputGainNodes.map((node, i) => new Channel(node, audioContext, report('channel' + i + 'Gain')))
+  let channels = outputGainNodes.map((node, i) => new Channel(node, audioContext, report(`channel${i}Gain`)))
 
   this.connectInput = function (source, channel) {
     source.connect(outputGainNodes[channel])
