@@ -1,11 +1,15 @@
 'use strict'
 const oneToEight = [1, 2, 3, 4, 5, 6, 7, 8]
 const nowt = () => {}
+const bindPushTempoKnob = require('./bindPushTempoKnob.js')
+const bindPushChannelSelectButtons = require('./bindPushChannelSelectButtons.js')
 
-function pushControl(push, repetaes, players, mixer) {
+function pushControl(push, repetaes, players, mixer, metronome, bpm, sequencer) {
   function selectButton(x) { return push.grid.x[x].select }
   function knob(x) { return push.channel[x].knob }
 
+  bindPushTempoKnob(push.knob['tempo'], push.button['shift'], push.button['accent'], metronome, bpm)
+  bindPushChannelSelectButtons(push, push.button['shift'], push.button['delete'], sequencer)
   bindMasterVolume(mixer, push)
 
   oneToEight.map(selectButton)

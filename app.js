@@ -32,9 +32,6 @@ const Push = require('push-wrapper'),
     oneToEight = [1, 2, 3, 4, 5, 6, 7, 8],
     pushControl = require('./src/pushControl.js');
 
-const bindPushTempoKnob = require('./src/bindPushTempoKnob.js')
-const bindPushChannelSelectButtons = require('./src/bindPushChannelSelectButtons.js')
-
 bpm.setMaxListeners(20)
 
 window.addEventListener('load', () => {
@@ -83,7 +80,7 @@ function off_we_go(push, players, accent, tick) {
 
     let repetaes = oneToEight.map(() => new Repetae(intervals['1/4'], context))
 
-    pushControl(push, repetaes, players, mixer)
+    pushControl(push, repetaes, players, mixer, metronome, bpm, sequencer)
 
     players.forEach((player, i) => {
         let column_number = i + 1
@@ -152,8 +149,6 @@ function setupMetronome(bpm, push, accent, tick) {
         if (event.key === 'n') tap.again()
         if (event.key === ',') toggleMetronomeMute()
     });
-
-    bindPushTempoKnob(push.knob['tempo'], push.button['shift'], push.button['accent'], metronome, bpm)
 
     push.lcd.x[1].y[3].update('   bpm =')
     bpm.on('changed', bpm => push.lcd.x[2].y[3].update(bpm.current()));
@@ -305,7 +300,6 @@ function makeSequencer(players, push, bpm, metronome) {
     playButton.addEventListener('mousedown', sequencer.playButtonPressed)
     deleteButton.addEventListener('mousedown', sequencer.deleteSequence)
 
-    bindPushChannelSelectButtons(push, push.button['shift'], push.button['delete'], sequencer)
     sequencer.reportSelectedSequenceState()
     return sequencer;
 }
