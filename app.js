@@ -38,19 +38,24 @@ const bindPushChannelSelectButtons = require('./src/bindPushChannelSelectButtons
 bpm.setMaxListeners(20)
 
 window.addEventListener('load', () => {
+    let createPush = Promise.resolve()
+
     if (navigator.requestMIDIAccess) {
-        Promise.all(
-          [navigator.requestMIDIAccess({ sysex: true }).then(Push.create_bound_to_web_midi_api)]
-          .concat(samples.map(s => Player.forResource(s.path)))
-          .concat(Player.forResource('assets/audio/metronome-accent.mp3'))
-          .concat(Player.forResource('assets/audio/metronome-tick.mp3'))
-        ).then(values => {
-          return off_we_go(values[0], values.slice(1, 9), values[9], values[10])
-        })
+      createPush = createPush.then(() => navigator.requestMIDIAccess({ sysex: true }))
+      .then(Push.create_bound_to_web_midi_api)
     } else {
-        // TODO add in players when no MIDI
-        Promise.resolve(new Push({ send: (bytes) => { } })).then(off_we_go).then(show_no_midi_warning);
+      createPush = createPush.then(show_no_midi_warning)
+      .then(() => new Push({ send: (bytes) => { } }))
     }
+
+    Promise.all(
+      [createPush]
+      .concat(samples.map(s => Player.forResource(s.path)))
+      .concat(Player.forResource('assets/audio/metronome-accent.mp3'))
+      .concat(Player.forResource('assets/audio/metronome-tick.mp3'))
+    ).then(values => {
+      return off_we_go(values[0], values.slice(1, 9), values[9], values[10])
+    })
 });
 
 function show_no_midi_warning() {
