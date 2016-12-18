@@ -22,6 +22,4 @@ function removeFirst(s, char) {
   return s.slice(0, index) + s.slice(index + 1)
 }
 
-
-
 module.exports = sampleNameShortening

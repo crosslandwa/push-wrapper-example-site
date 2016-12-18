@@ -91,7 +91,6 @@ function off_we_go(push, players, accent, tick) {
         })
 
         turn_off_column(push, column_number);
-        push.lcd.x[column_number].y[2].update(samples[i].name);
         player.on('started', gain => turn_on_column(push, column_number, gain));
         player.on('stopped', () => turn_off_column(push, column_number));
 

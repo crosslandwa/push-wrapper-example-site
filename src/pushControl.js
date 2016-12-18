@@ -3,6 +3,7 @@ const oneToEight = [1, 2, 3, 4, 5, 6, 7, 8]
 const nowt = () => {}
 const bindPushTempoKnob = require('./bindPushTempoKnob.js')
 const bindPushChannelSelectButtons = require('./bindPushChannelSelectButtons.js')
+const shortened = require('./sampleNameShortening.js')
 
 function pushControl(push, repetaes, players, mixer, metronome, bpm, sequencer) {
   function selectButton(x) { return push.grid.x[x].select }
@@ -70,7 +71,12 @@ function pushControl(push, repetaes, players, mixer, metronome, bpm, sequencer) 
     }
   })
   push.button['volume'].led_dim()
-  players.forEach(player => { player.reportPitch() })
+
+  players.forEach((player, i) => {
+    player.on('sampleName', name => push.lcd.x[i + 1].y[2].update(shortened(name)))
+    player.reportPitch()
+    player.reportSampleName()
+  })
 }
 
 function displayDb(gain) {

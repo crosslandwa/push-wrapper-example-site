@@ -3,11 +3,12 @@ const SamplePlayer = require('wac.sample-player');
 /**
  * A wac.sample-player wrapper that adds an LP filter and variable pitch
  */
-function Player(samplePlayer, audioContext) {
+function Player(samplePlayer, audioContext, source) {
     let filterNode = audioContext.createBiquadFilter(),
         pitch = 0,
         pitchMod = 0,
         player = this;
+    let sampleName = source
 
     filterNode.frequency.value = 20000;
     samplePlayer.connect(filterNode);
@@ -50,8 +51,22 @@ function Player(samplePlayer, audioContext) {
 
     this.on = samplePlayer.on.bind(samplePlayer);
 
-    this.loadFile = samplePlayer.loadFile.bind(samplePlayer)
-    this.loadResource = samplePlayer.loadResource.bind(samplePlayer)
+    this.loadFile = function(file) {
+      sampleName = file.name
+      let result = samplePlayer.loadFile(file)
+      player.reportSampleName()
+      return result
+    }
+    this.loadResource = function(resource) {
+      sampleName = lastInPath(resource)
+      let result = samplePlayer.loadResource(resource)
+      player.reportSampleName()
+      return result
+    }
+
+    this.reportSampleName = function() {
+      samplePlayer.emit('sampleName', sampleName)
+    }
 }
 
 function clip(value, min, max) {
@@ -63,11 +78,15 @@ function intervalToPlaybackRate(midiNoteNumber) {
     return Math.exp(.057762265 * (midiNoteNumber));
 }
 
+function lastInPath(s) {
+  return s.split('/').slice(-1)[0]
+}
+
 function PlayerFactory (audioContext) {
   let samplePlayerFactory = SamplePlayer(audioContext)
 
   function create (load, source) {
-    return load(source).then(samplePlayer => new Player(samplePlayer, audioContext))
+    return load(source).then(samplePlayer => new Player(samplePlayer, audioContext, source.name || lastInPath(source)))
   }
 
   this.forResource = assetUrl => create(samplePlayerFactory.forResource, assetUrl)
