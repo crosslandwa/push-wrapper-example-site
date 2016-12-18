@@ -18,16 +18,8 @@ const Push = require('push-wrapper'),
         '1/32': Interval['32n'](bpm, '1/32'),
         '1/32t': Interval['32nt'](bpm, '1/32t'),
     },
-    samples = [
-        { path: 'assets/audio/Bonus_Kick27.mp3', name: 'kick' },
-        { path: 'assets/audio/snare_turnboot.mp3', name: 'snare' },
-        { path: 'assets/audio/HandClap.mp3', name: 'clap' },
-        { path: 'assets/audio/Beat07_Hat.mp3', name: 'hat' },
-        { path: 'assets/audio/HH_KIT09_100_TMB.mp3', name: 'tamb' },
-        { path: 'assets/audio/clingfilm.mp3', name: 'cloing' },
-        { path: 'assets/audio/tang-1.mp3', name: 'tang' },
-        { path: 'assets/audio/Cassette808_Tom01.mp3', name: 'tom' }
-    ],
+    samples = ['Kick', 'Snare', 'HandClap', 'Hat', 'Tamb', 'Cloing', 'Tang', 'Tom']
+      .map(x => `assets/audio/${x}.mp3`),
     filter_frequencies = [0, 100, 200, 400, 800, 2000, 6000, 10000, 20000],
     oneToEight = [1, 2, 3, 4, 5, 6, 7, 8],
     pushControl = require('./src/pushControl.js');
@@ -47,7 +39,7 @@ window.addEventListener('load', () => {
 
     Promise.all(
       [createPush]
-      .concat(samples.map(s => Player.forResource(s.path)))
+      .concat(samples.map(Player.forResource))
       .concat(Player.forResource('assets/audio/metronome-accent.mp3'))
       .concat(Player.forResource('assets/audio/metronome-tick.mp3'))
     ).then(values => {
