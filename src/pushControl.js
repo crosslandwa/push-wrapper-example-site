@@ -1,32 +1,29 @@
 'use strict'
 const oneToEight = [1, 2, 3, 4, 5, 6, 7, 8]
 const nowt = () => {}
-const bindPushTempoKnob = require('./bindPushTempoKnob.js')
-const bindPushChannelSelectButtons = require('./bindPushChannelSelectButtons.js')
+const bindTempoKnob = require('./bindPushTempoKnob.js')
+const bindChannelSelectButtons = require('./bindPushChannelSelectButtons.js')
 const shortened = require('./sampleNameShortening.js')
 
 function pushControl(push, repetaes, players, mixer, metronome, bpm, sequencer) {
   function selectButton(x) { return push.grid.x[x].select }
   function knob(x) { return push.channel[x].knob }
 
-  bindPushTempoKnob(push.knob['tempo'], push.button['shift'], push.button['accent'], metronome, bpm)
-  bindPushChannelSelectButtons(push, push.button['shift'], push.button['delete'], sequencer)
+  bindTempoKnob(push.knob['tempo'], push.button['shift'], push.button['accent'], metronome, bpm)
+  bindChannelSelectButtons(push, push.button['shift'], push.button['delete'], sequencer)
   bindMasterVolume(mixer, push)
 
   oneToEight.map(selectButton)
   .forEach((button, i) => {
     let repetae = repetaes[i]
-    let column = i + 1
     button.on('pressed', repetae.press);
     button.on('released', repetae.release);
+    let initialColour = ledOrange(button)
+    repetae.on('on', ledBlue(button))
+    repetae.on('off', initialColour)
+    initialColour()
 
-    let executor = new MultiCommand()
-    repetae.on('on', executor.add(ledBlue(button)))
-    repetae.on('off', executor.add(ledOrange(button)))
-    executor.activate()
-    ledOrange(button)()
-
-    repetae.on('interval', push.lcd.x[column].y[1].update)
+    repetae.on('interval', push.lcd.x[i + 1].y[1].update)
     repetae.report_interval()
   })
 
