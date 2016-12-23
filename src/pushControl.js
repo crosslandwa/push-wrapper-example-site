@@ -6,18 +6,29 @@ const Observer = require('./Observer.js')
 const shortened = require('./sampleNameShortening.js')
 
 function pushControl(push, repetaes, players, mixer, metronome, bpm, sequencer) {
-  function selectButton(x) { return push.grid.x[x].select }
 
+  bindSelectButtonToRepetae(push, repetaes)
   bindTempoKnob(push.knob['tempo'], push.button['shift'], push.button['accent'], metronome, bpm)
   bindChannelSelectButtons(push, push.button['shift'], push.button['delete'], sequencer)
   bindMasterVolume(mixer, push)
   bindEncodersToPitchAndVolume(push, players, mixer)
 
-  oneToEight.map(selectButton)
-  .forEach((button, i) => {
+  players.forEach((player, i) => {
+    player.on('sampleName', name => push.lcd.x[i + 1].y[2].update(shortened(name)))
+    player.reportPitch()
+    player.reportSampleName()
+  })
+}
+
+function bindSelectButtonToRepetae(push, repetaes) {
+  function selectButton(x) { return push.grid.x[x].select }
+
+  oneToEight.forEach((channel, i) => {
+    let button = selectButton(channel)
     let repetae = repetaes[i]
-    button.on('pressed', repetae.press);
-    button.on('released', repetae.release);
+    button.on('pressed', repetae.press)
+    button.on('released', repetae.release)
+
     let initialColour = ledOrange(button)
     repetae.on('on', ledBlue(button))
     repetae.on('off', initialColour)
@@ -26,13 +37,8 @@ function pushControl(push, repetaes, players, mixer, metronome, bpm, sequencer) 
     repetae.on('interval', push.lcd.x[i + 1].y[1].update)
     repetae.report_interval()
   })
-
-  players.forEach((player, i) => {
-    player.on('sampleName', name => push.lcd.x[i + 1].y[2].update(shortened(name)))
-    player.reportPitch()
-    player.reportSampleName()
-  })
 }
+
 function bindEncodersToPitchAndVolume(push, players, mixer) {
   function knob(x) { return push.channel[x].knob }
 
