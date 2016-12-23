@@ -7,11 +7,11 @@ const shortened = require('./sampleNameShortening.js')
 
 function pushControl(push, repetaes, players, mixer, metronome, bpm, sequencer) {
   function selectButton(x) { return push.grid.x[x].select }
-  function knob(x) { return push.channel[x].knob }
 
   bindTempoKnob(push.knob['tempo'], push.button['shift'], push.button['accent'], metronome, bpm)
   bindChannelSelectButtons(push, push.button['shift'], push.button['delete'], sequencer)
   bindMasterVolume(mixer, push)
+  bindEncodersToPitchAndVolume(push, players, mixer)
 
   oneToEight.map(selectButton)
   .forEach((button, i) => {
@@ -27,24 +27,32 @@ function pushControl(push, repetaes, players, mixer, metronome, bpm, sequencer) 
     repetae.report_interval()
   })
 
+  players.forEach((player, i) => {
+    player.on('sampleName', name => push.lcd.x[i + 1].y[2].update(shortened(name)))
+    player.reportPitch()
+    player.reportSampleName()
+  })
+}
+function bindEncodersToPitchAndVolume(push, players, mixer) {
+  function knob(x) { return push.channel[x].knob }
+
   let contolPitch = (channel, i) => Observer.create(knob(channel), 'turned', players[i].changePitchByInterval)
-  let observePitch = (channel, i) => Observer.create(players[i], 'pitch', push.lcd.x[i + 1].y[4].update, players[i].reportPitch)
-  let pitchThings = [].concat(oneToEight.map(contolPitch)).concat(oneToEight.map(observePitch))
+  let observePitch = (channel, i) => Observer.create(players[i], 'pitch', push.lcd.x[channel].y[4].update, players[i].reportPitch)
+  let pitch = [].concat(oneToEight.map(contolPitch)).concat(oneToEight.map(observePitch))
 
   let controlChannelVol = (channel, i) => Observer.create(knob(channel), 'turned', mixer.channel(i).changeMidiGainBy)
   let observeChannelVol = (channel, i) => Observer.create(
     mixer,
     `channel${i}Gain`,
-    gain => { push.lcd.x[i + 1].y[4].update(displayDb(gain)) },
+    gain => { push.lcd.x[channel].y[4].update(displayDb(gain)) },
     mixer.channel(i).reportGain
   )
-  let volumeThings = [].concat(oneToEight.map(controlChannelVol)).concat(oneToEight.map(observeChannelVol))
+  let volume = [].concat(oneToEight.map(controlChannelVol)).concat(oneToEight.map(observeChannelVol))
 
-  let togglePitchOrVolumeControl = toggleBetween(pitchThings, volumeThings)
-
-  togglePitchOrVolumeControl()
+  let togglePitchOrVolume = toggleBetween(pitch, volume)
+  togglePitchOrVolume()
   push.button['volume'].on('pressed',() => {
-    let on = togglePitchOrVolumeControl()
+    let on = togglePitchOrVolume()
     if (on) {
       push.button['volume'].led_on()
     } else {
@@ -52,12 +60,6 @@ function pushControl(push, repetaes, players, mixer, metronome, bpm, sequencer) 
     }
   })
   push.button['volume'].led_dim()
-
-  players.forEach((player, i) => {
-    player.on('sampleName', name => push.lcd.x[i + 1].y[2].update(shortened(name)))
-    player.reportPitch()
-    player.reportSampleName()
-  })
 }
 
 function displayDb(gain) {
