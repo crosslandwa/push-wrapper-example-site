@@ -63,13 +63,6 @@ function off_we_go(push, players, accent, tick) {
     mixer.connectInput(tick, 8)
     mixer.toMaster()
 
-    pushModifierButton(push.button['shift'])
-    pushModifierButton(push.button['delete'])
-    pushModifierButton(push.button['accent'])
-    pushModifierButton(push.button['mute'])
-    pushModifierButton(push.button['tap_tempo'])
-    Object.keys(intervals).map(name => push.button[name]).forEach(pushModifierButton)
-
     let repetaes = oneToEight.map(() => new Repetae(intervals['1/4'], context))
 
     pushControl(push, repetaes, players, mixer, metronome, bpm, sequencer)
@@ -400,12 +393,6 @@ function updateSequenceUiButton(button, state) {
     if (state) {
         button.classList.add('pwe-button--' + state)
     }
-}
-
-function pushModifierButton(pushButton) {
-    pushButton.led_dim()
-    pushButton.on('pressed', pushButton.led_on)
-    pushButton.on('released', pushButton.led_dim)
 }
 
 // monkey patches the emitted keypress event so that event.key is always defined

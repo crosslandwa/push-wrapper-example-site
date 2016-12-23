@@ -6,6 +6,10 @@ const Observer = require('./Observer.js')
 const shortened = require('./sampleNameShortening.js')
 
 function pushControl(push, repetaes, players, mixer, metronome, bpm, sequencer) {
+  let button = name => push.button[name]
+  let intervalButtons = ['1/4', '1/4t', '1/8', '1/8t', '1/16', '1/16t', '1/32', '1/32t']
+  intervalButtons.concat(['shift', 'delete', 'accent', 'mute', 'tap_tempo'])
+    .map(button).forEach(modifierButton)
 
   bindSelectButtonToRepetae(push, repetaes)
   bindTempoKnob(push.knob['tempo'], push.button['shift'], push.button['accent'], metronome, bpm)
@@ -99,6 +103,12 @@ function toggleBetween(a, b) {
     enabled.forEach(Observer.reportOn)
     return on
   }
+}
+
+function modifierButton(button) {
+    button.led_dim()
+    button.on('pressed', button.led_on)
+    button.on('released', button.led_dim)
 }
 
 module.exports = pushControl
