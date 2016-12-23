@@ -27,17 +27,9 @@ function pushControl(push, repetaes, players, mixer, metronome, bpm, sequencer) 
     repetae.report_interval()
   })
 
-  let pitchThings = []
-  .concat(oneToEight.map(knob)
-    .map((knob, i) => Observer.create(knob, 'turned', players[i].changePitchByInterval))
-  ).concat(oneToEight.map(knob)
-    .map((knob, i) => Observer.create(
-      players[i],
-      'pitch',
-      push.lcd.x[i + 1].y[4].update,
-      players[i].reportPitch)
-    )
-  )
+  let observePitch = (channel, i) => Observer.create(players[i], 'pitch', push.lcd.x[i + 1].y[4].update, players[i].reportPitch)
+  let contolPitch = (channel, i) => Observer.create(knob(channel), 'turned', players[i].changePitchByInterval)
+  let pitchThings = [].concat(oneToEight.map(contolPitch)).concat(oneToEight.map(observePitch))
 
   let volumeThings = []
   .concat(oneToEight.map(knob)
