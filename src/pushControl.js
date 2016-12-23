@@ -28,33 +28,30 @@ function pushControl(push, repetaes, players, mixer, metronome, bpm, sequencer) 
   })
 
   let pitchThings = []
-  pitchThings = pitchThings
-  .concat(oneToEight.map(knob).map((knob, i) => {
-    let control = new MultiCommand()
-    knob.on('turned', control.add(players[i].changePitchByInterval))
-    return control
-  }))
-  .concat(oneToEight.map(knob).map((knob, i) => {
-    let feedback = new MultiObserver()
-    players[i].on('pitch', feedback.add(push.lcd.x[i + 1].y[4].update))
-    return feedback
-  }))
+  .concat(oneToEight.map(knob)
+    .map((knob, i) => Observable(knob, 'turned', players[i].changePitchByInterval))
+  ).concat(oneToEight.map(knob)
+    .map((knob, i) => Observable(
+      players[i],
+      'pitch',
+      push.lcd.x[i + 1].y[4].update,
+      players[i].reportPitch)
+    )
+  )
 
   let volumeThings = []
-  volumeThings = volumeThings
-  .concat(oneToEight.map(knob).map((knob, i) => {
-    let control = new MultiCommand()
-    knob.on('turned', control.add(mixer.channel(i).changeMidiGainBy))
-    return control
-  }))
-  .concat(oneToEight.map(knob).map((knob, i) => {
-    let feedback = new MultiObserver()
-    mixer.on(`channel${i}Gain`, feedback.add(gain => {
-      push.lcd.x[i + 1].y[4].update(displayDb(gain))
-    }))
-    mixer.channel(i).changeMidiGainTo(108)
-    return feedback
-  }))
+  .concat(oneToEight.map(knob)
+    .map((knob, i) => Observable(knob, 'turned', mixer.channel(i).changeMidiGainBy))
+  ).concat(oneToEight.map(knob).map((knob, i) => {
+      mixer.channel(i).changeMidiGainTo(108)
+      return Observable(
+        mixer,
+        `channel${i}Gain`,
+        gain => { push.lcd.x[i + 1].y[4].update(displayDb(gain)) },
+        mixer.channel(i).reportGain
+      )
+    })
+  )
 
   let togglePitchOrVolumeControl = toggleBetween(pitchThings, volumeThings)
 
@@ -96,34 +93,33 @@ function bindMasterVolume(mixer, push) {
   mixer.masterChannel().changeMidiGainTo(108)
 }
 
-function MultiObserver() {
-  return new Executor(true)
-}
-
-function MultiCommand() {
-  return new Executor(false)
-}
-
-function Executor(replayOnActivate) {
-  let command = nowt
-  let passed = []
-  let active = false
-  function execute() { if (active) command.apply(null, passed) }
-  this.add = cb => (...args) => { passed = args; command = cb; execute() }
-  this.activate = () => { active = true; if (replayOnActivate) execute() } // only want to execute if this is an observer, not if its a controller
-  this.disable = () => { active = false }
-}
-
 function toggleBetween(a, b) {
   let on = true
   return () => {
     on = !on
     let enabled = on ? b : a
     let disabled = on ? a : b
-    disabled.forEach(x => x.disable())
-    enabled.forEach(x => x.activate())
+    disabled.forEach(disable)
+    enabled.forEach(enable)
+    enabled.forEach(reportOn)
     return on
   }
+}
+
+function Observable (emitter, event, callback, report = nowt) {
+  return {emitter: emitter, event: event, callback: callback, report: report}
+}
+
+function enable (observable) {
+  observable.emitter.on(observable.event, observable.callback)
+}
+
+function reportOn (observable) {
+  observable.report()
+}
+
+function disable (observable) {
+  observable.emitter.removeListener(observable.event, observable.callback)
 }
 
 module.exports = pushControl

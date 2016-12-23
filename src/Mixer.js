@@ -43,6 +43,10 @@ function Channel (gainNode, audioContext, report) {
     channel.changeGainTo(gain)
   }
 
+  this.reportGain = function () {
+    report(gain)
+  }
+
   this.changeMidiGainBy = function(delta) {
     gain = midiGain(gain.midiValue() + delta)
     channel.changeGainTo(gain)

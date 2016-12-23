@@ -51,6 +51,8 @@ function Player(samplePlayer, audioContext, source) {
 
     this.on = samplePlayer.on.bind(samplePlayer);
 
+    this.removeListener = samplePlayer.removeListener.bind(samplePlayer);
+
     this.loadFile = function(file) {
       sampleName = file.name
       let result = samplePlayer.loadFile(file)
