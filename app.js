@@ -74,19 +74,19 @@ function off_we_go(push, players, accent, tick) {
 
     pushControl(push, repetaes, players, mixer, metronome, bpm, sequencer)
 
-    players.forEach((player, i) => {
-        let column_number = i + 1
+    oneToEight.forEach((channel, i) => {
+        let player = players[i]
         let repetae = repetaes[i];
 
         Object.keys(intervals).forEach(buttonName => {
             push.button[buttonName].on('pressed', () => repetae.interval(intervals[buttonName]));
         })
 
-        turn_off_column(push, column_number);
-        player.on('started', gain => turn_on_column(push, column_number, gain));
-        player.on('stopped', () => turn_off_column(push, column_number));
+        turn_off_column(push, channel);
+        player.on('started', gain => turn_on_column(push, channel, gain));
+        player.on('stopped', () => turn_off_column(push, channel));
 
-        bind_column_to_player(push, player, column_number, repetae, sequencer);
+        bind_column_to_player(push, player, channel, repetae, sequencer);
     });
 
     bind_pitchbend(push, players);
