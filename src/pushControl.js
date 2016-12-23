@@ -27,23 +27,18 @@ function pushControl(push, repetaes, players, mixer, metronome, bpm, sequencer) 
     repetae.report_interval()
   })
 
-  let observePitch = (channel, i) => Observer.create(players[i], 'pitch', push.lcd.x[i + 1].y[4].update, players[i].reportPitch)
   let contolPitch = (channel, i) => Observer.create(knob(channel), 'turned', players[i].changePitchByInterval)
+  let observePitch = (channel, i) => Observer.create(players[i], 'pitch', push.lcd.x[i + 1].y[4].update, players[i].reportPitch)
   let pitchThings = [].concat(oneToEight.map(contolPitch)).concat(oneToEight.map(observePitch))
 
-  let volumeThings = []
-  .concat(oneToEight.map(knob)
-    .map((knob, i) => Observer.create(knob, 'turned', mixer.channel(i).changeMidiGainBy))
-  ).concat(oneToEight.map(knob).map((knob, i) => {
-      mixer.channel(i).changeMidiGainTo(108)
-      return Observer.create(
-        mixer,
-        `channel${i}Gain`,
-        gain => { push.lcd.x[i + 1].y[4].update(displayDb(gain)) },
-        mixer.channel(i).reportGain
-      )
-    })
+  let controlChannelVol = (channel, i) => Observer.create(knob(channel), 'turned', mixer.channel(i).changeMidiGainBy)
+  let observeChannelVol = (channel, i) => Observer.create(
+    mixer,
+    `channel${i}Gain`,
+    gain => { push.lcd.x[i + 1].y[4].update(displayDb(gain)) },
+    mixer.channel(i).reportGain
   )
+  let volumeThings = [].concat(oneToEight.map(controlChannelVol)).concat(oneToEight.map(observeChannelVol))
 
   let togglePitchOrVolumeControl = toggleBetween(pitchThings, volumeThings)
 
