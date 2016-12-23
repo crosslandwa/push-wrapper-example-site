@@ -1,8 +1,8 @@
 'use strict'
 const oneToEight = [1, 2, 3, 4, 5, 6, 7, 8]
-const nowt = () => {}
 const bindTempoKnob = require('./bindPushTempoKnob.js')
 const bindChannelSelectButtons = require('./bindPushChannelSelectButtons.js')
+const Observer = require('./Observer.js')
 const shortened = require('./sampleNameShortening.js')
 
 function pushControl(push, repetaes, players, mixer, metronome, bpm, sequencer) {
@@ -29,9 +29,9 @@ function pushControl(push, repetaes, players, mixer, metronome, bpm, sequencer) 
 
   let pitchThings = []
   .concat(oneToEight.map(knob)
-    .map((knob, i) => Observable(knob, 'turned', players[i].changePitchByInterval))
+    .map((knob, i) => Observer.create(knob, 'turned', players[i].changePitchByInterval))
   ).concat(oneToEight.map(knob)
-    .map((knob, i) => Observable(
+    .map((knob, i) => Observer.create(
       players[i],
       'pitch',
       push.lcd.x[i + 1].y[4].update,
@@ -41,10 +41,10 @@ function pushControl(push, repetaes, players, mixer, metronome, bpm, sequencer) 
 
   let volumeThings = []
   .concat(oneToEight.map(knob)
-    .map((knob, i) => Observable(knob, 'turned', mixer.channel(i).changeMidiGainBy))
+    .map((knob, i) => Observer.create(knob, 'turned', mixer.channel(i).changeMidiGainBy))
   ).concat(oneToEight.map(knob).map((knob, i) => {
       mixer.channel(i).changeMidiGainTo(108)
-      return Observable(
+      return Observer.create(
         mixer,
         `channel${i}Gain`,
         gain => { push.lcd.x[i + 1].y[4].update(displayDb(gain)) },
@@ -99,27 +99,11 @@ function toggleBetween(a, b) {
     on = !on
     let enabled = on ? b : a
     let disabled = on ? a : b
-    disabled.forEach(disable)
-    enabled.forEach(enable)
-    enabled.forEach(reportOn)
+    disabled.forEach(Observer.disable)
+    enabled.forEach(Observer.enable)
+    enabled.forEach(Observer.reportOn)
     return on
   }
-}
-
-function Observable (emitter, event, callback, report = nowt) {
-  return {emitter: emitter, event: event, callback: callback, report: report}
-}
-
-function enable (observable) {
-  observable.emitter.on(observable.event, observable.callback)
-}
-
-function reportOn (observable) {
-  observable.report()
-}
-
-function disable (observable) {
-  observable.emitter.removeListener(observable.event, observable.callback)
 }
 
 module.exports = pushControl
