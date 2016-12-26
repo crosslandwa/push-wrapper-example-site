@@ -4,15 +4,17 @@ const Repetae = require('../src/repetae.js')
 const Scheduling = require('wac.scheduling')()
 
 describe('Example app repetae', () => {
-    var repetae, emitted_events, bpm, interval_4n, interval_16n, interval_32n;
+    var repetae, emitted_events, bpm, intervals;
 
     beforeEach(() => {
         bpm = Scheduling.BPM(60);
-        interval_4n = Interval['4n'](bpm); // 1000ms at 60BPM
-        interval_16n = Interval['16n'](bpm); // 250ms at 60BPM
-        interval_32n = Interval['32n'](bpm); // 125ms at 60BPM
+        intervals = {
+          '4n': Interval['4n'](bpm), // 1000ms at 60BPM
+          '16n': Interval['16n'](bpm), // 250ms at 60BPM
+          '32n': Interval['32n'](bpm),  // 125ms at 60BPM
+        }
         emitted_events = [];
-        repetae = new Repetae(interval_4n);
+        repetae = new Repetae(intervals);
         repetae.on('on', (amount) => emitted_events.push('on'));
         repetae.on('off', () => emitted_events.push('off'));
         repetae.on('interval', (interval_name) => emitted_events.push('interval-' + interval_name));
@@ -30,7 +32,7 @@ describe('Example app repetae', () => {
         repetae.press();
         expect(emitted_events).toEqual([]);
 
-        repetae.interval(interval_16n);
+        repetae.interval('16n');
         expect(emitted_events).toEqual(['interval-16n', 'repeater-interval-250']);
 
         repetae.release();
@@ -53,7 +55,7 @@ describe('Example app repetae', () => {
         expect(emitted_events).toEqual(['on']);
 
         repetae.press();
-        repetae.interval(interval_16n);
+        repetae.interval('16n');
         repetae.release();
         expect(emitted_events).toEqual(['on', 'interval-16n', 'repeater-interval-250']);
     });
@@ -63,7 +65,7 @@ describe('Example app repetae', () => {
         repetae.release();
         expect(emitted_events).toEqual(['on']);
 
-        repetae.interval(interval_16n);
+        repetae.interval('16n');
 
         repetae.press();
         repetae.release();
@@ -72,7 +74,7 @@ describe('Example app repetae', () => {
 
     it('calls the passed function at the specified interval whilst on', (done) => {
         repetae.press();
-        repetae.interval(interval_16n); // expect to be called at 0, 250, 500, 750 & 1000ms (i.e. 4 times in 0.9s)
+        repetae.interval('16n'); // expect to be called at 0, 250, 500, 750 & 1000ms (i.e. 4 times in 0.9s)
         repetae.release();
         expect(emitted_events).toEqual(['interval-16n', 'repeater-interval-250', 'on']);
 
@@ -91,7 +93,7 @@ describe('Example app repetae', () => {
 
     it('continues calling the passed function at an interval that can be changed', (done) => {
         repetae.press();
-        repetae.interval(interval_16n); // expect to be called at 0, 250, 500, 750, 1000 & 1250ms (i.e. 6 times in 1.4s)
+        repetae.interval('16n'); // expect to be called at 0, 250, 500, 750, 1000 & 1250ms (i.e. 6 times in 1.4s)
         repetae.release();
 
         var called_count = 0;
@@ -101,7 +103,7 @@ describe('Example app repetae', () => {
         // but we update interval after 0.7s, so expect invocations at 625, 750, 875, 1000, 1125, 1250, 1375, 1500
         setTimeout(() => {
             repetae.press();
-            repetae.interval(interval_32n);
+            repetae.interval('32n');
             repetae.release();
         }, 700);
 

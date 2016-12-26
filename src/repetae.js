@@ -4,13 +4,13 @@ const EventEmitter = require('events'),
     util = require('util'),
     Scheduling = require('wac.scheduling');
 
-function Repetae(repeater, initial_interval) {
+function Repetae(repeater, intervals) {
     EventEmitter.call(this);
     var repetae = this;
     this._active = false;
     this._time_changed = false;
     this._being_pressed = false;
-    this._current_interval = initial_interval;
+    this._current_interval = intervals[Object.keys(intervals)[0]]
 
     repeater.on('interval', (interval) => { repetae.emit('intervalMs', interval) })
     repetae._current_interval.on('changed', repeater.updateInterval);
@@ -39,11 +39,11 @@ function Repetae(repeater, initial_interval) {
         }
     }
 
-    this.interval = function(new_interval) {
-        if (repetae._being_pressed) {
+    this.interval = function(new_interval_name) {
+        if (repetae._being_pressed && intervals[new_interval_name]) {
             repetae._time_changed = true;
             repetae._current_interval.removeListener('changed', repeater.updateInterval);
-            repetae._current_interval = new_interval;
+            repetae._current_interval = intervals[new_interval_name];
             repetae._current_interval.on('changed', repeater.updateInterval);
             repetae.report_interval();
             repetae._current_interval.report();
@@ -63,7 +63,7 @@ function Repetae(repeater, initial_interval) {
 }
 util.inherits(Repetae, EventEmitter);
 
-module.exports = function createRepetae(interval, context) {
+module.exports = function createRepetae(intervals, context) {
     let repeater = Scheduling(context).Repeater(1000); // initial interval here will be changed when Repetae initialises
-    return new Repetae(repeater, interval);
+    return new Repetae(repeater, intervals);
 };
