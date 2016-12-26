@@ -6,52 +6,52 @@ const EventEmitter = require('events'),
 
 function Repetae(repeater, intervals) {
     EventEmitter.call(this);
-    var repetae = this;
-    this._active = false;
-    this._time_changed = false;
-    this._being_pressed = false;
-    this._current_interval = intervals[Object.keys(intervals)[0]]
+    let repetae = this;
+    let _active = false;
+    let _time_changed = false;
+    let _being_pressed = false;
+    let _current_interval = intervals[Object.keys(intervals)[0]]
 
     repeater.on('interval', (interval) => { repetae.emit('intervalMs', interval) })
-    repetae._current_interval.on('changed', repeater.updateInterval);
-    repetae._current_interval.report();
+    _current_interval.on('changed', repeater.updateInterval);
+    _current_interval.report();
 
     this.press = function() {
-        repetae._being_pressed = true;
+        _being_pressed = true;
     }
 
     this.release = function() {
-        var started_active = repetae._active,
-            time_changed = repetae._time_changed;
+        var started_active = _active;
+        let time_changed = _time_changed;
 
-        repetae._time_changed = false;
-        repetae._being_pressed = false;
+        _time_changed = false;
+        _being_pressed = false;
 
         switch (true) {
             case (!started_active):
-                repetae._active = true;
+                _active = true;
                 repetae.emit('on');
                 break;
             case (started_active && !time_changed):
-                repetae._active = false;
+                _active = false;
                 repetae.emit('off');
                 break;
         }
     }
 
     this.interval = function(new_interval_name) {
-        if (repetae._being_pressed && intervals[new_interval_name]) {
-            repetae._time_changed = true;
-            repetae._current_interval.removeListener('changed', repeater.updateInterval);
-            repetae._current_interval = intervals[new_interval_name];
-            repetae._current_interval.on('changed', repeater.updateInterval);
+        if (_being_pressed && intervals[new_interval_name]) {
+            _time_changed = true;
+            _current_interval.removeListener('changed', repeater.updateInterval);
+            _current_interval = intervals[new_interval_name];
+            _current_interval.on('changed', repeater.updateInterval);
             repetae.report_interval();
-            repetae._current_interval.report();
+            _current_interval.report();
         }
     }
 
     this.start = function(callback) {
-        if (!repetae._active) {
+        if (!_active) {
             callback();
             return;
         }
@@ -59,7 +59,7 @@ function Repetae(repeater, intervals) {
     }
 
     this.stop = repeater.stop;
-    this.report_interval = function() { repetae.emit('interval', repetae._current_interval.value)  };
+    this.report_interval = function() { repetae.emit('interval', _current_interval.value)  };
 }
 util.inherits(Repetae, EventEmitter);
 
