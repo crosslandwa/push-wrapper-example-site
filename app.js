@@ -78,8 +78,6 @@ function off_we_go(push, players, accent, tick) {
         bind_column_to_player(push, player, channel, repetae, sequencer);
     });
 
-    bind_pitchbend(push, players);
-
     bindQwertyButtonsToPlayback(players, sequencer);
 
     sequencer.on('play', (data) => {
@@ -365,23 +363,12 @@ function turn_off_column(push, x) {
     push.grid.x[x].y[1].led_on();
 }
 
-function bind_pitchbend(push, players) {
-    push.touchstrip.on('pitchbend', (pb) => {
-        var rate = scale(pb, 0, 16384, -12, 12);
-        players.forEach(player => player.modulatePitch(rate));
-    });
-}
-
 function turn_button_display_on(ui_btn) {
     ui_btn.classList.add('pwe-button--active');
 }
 
 function turn_button_display_off(ui_btn) {
     ui_btn.classList.remove('pwe-button--active');
-}
-
-function scale(input, minIn, maxIn, minOut, maxOut) {
-    return ((maxOut - minOut) * ((input - minIn) / (maxIn - minIn))) + minOut;
 }
 
 function updateSequenceUiButton(button, state) {

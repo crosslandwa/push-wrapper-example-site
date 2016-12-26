@@ -16,6 +16,7 @@ function pushControl(push, repetaes, players, mixer, metronome, bpm, sequencer) 
   bindChannelSelectButtons(push, push.button['shift'], push.button['delete'], sequencer)
   bindMasterVolume(mixer, push)
   bindEncodersToPitchAndVolume(push, players, mixer)
+  bindPitchbend(push, players)
 
   players.forEach((player, i) => {
     player.on('sampleName', name => push.lcd.x[i + 1].y[2].update(shortened(name)))
@@ -87,6 +88,17 @@ function ledBlue(button) {
 
 function ledOrange(button) {
   return () => button.led_on()
+}
+
+function scale(input, minIn, maxIn, minOut, maxOut) {
+  return ((maxOut - minOut) * ((input - minIn) / (maxIn - minIn))) + minOut
+}
+
+function bindPitchbend(push, players) {
+  push.touchstrip.on('pitchbend', (pb) => {
+    var rate = scale(pb, 0, 16384, -12, 12)
+    players.forEach(player => player.modulatePitch(rate))
+  })
 }
 
 function bindMasterVolume(mixer, push) {
