@@ -3,16 +3,13 @@ const Interval = require('../src/interval.js');
 const Repetae = require('../src/repetae.js')
 const Scheduling = require('wac.scheduling')()
 
-describe('Example app repetae', () => {
+fdescribe('Example app repetae', () => {
     var repetae, emitted_events, bpm, intervals;
 
     beforeEach(() => {
         bpm = Scheduling.BPM(60);
-        intervals = {
-          '4n': Interval['4n'](bpm), // 1000ms at 60BPM
-          '16n': Interval['16n'](bpm), // 250ms at 60BPM
-          '32n': Interval['32n'](bpm),  // 125ms at 60BPM
-        }
+        // 1000ms at 60BPM, 250ms at 60BPM, 125ms at 60BPM
+        intervals = [Interval['4n'](bpm), Interval['16n'](bpm), Interval['32n'](bpm)]
         emitted_events = [];
         repetae = new Repetae(intervals);
         repetae.on('on', (amount) => emitted_events.push('on'));

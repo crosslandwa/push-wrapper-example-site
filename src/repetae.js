@@ -10,7 +10,7 @@ function Repetae(repeater, intervals) {
     let _active = false;
     let _time_changed = false;
     let _being_pressed = false;
-    let _current_interval = intervals[Object.keys(intervals)[0]]
+    let _current_interval = intervals[0]
 
     repeater.on('interval', (interval) => { repetae.emit('intervalMs', interval) })
     _current_interval.on('changed', repeater.updateInterval);
@@ -40,10 +40,11 @@ function Repetae(repeater, intervals) {
     }
 
     this.interval = function(new_interval_name) {
-        if (_being_pressed && intervals[new_interval_name]) {
+        let newInterval = intervals.filter(interval => interval.value() === new_interval_name)
+        if (_being_pressed && newInterval) {
             _time_changed = true;
             _current_interval.removeListener('changed', repeater.updateInterval);
-            _current_interval = intervals[new_interval_name];
+            _current_interval = newInterval[0];
             _current_interval.on('changed', repeater.updateInterval);
             repetae.report_interval();
             _current_interval.report();
