@@ -7,7 +7,7 @@ function Interval(bpm, multiplier, value) {
     EventEmitter.call(this);
     let interval = this;
 
-    this.value = value;
+    this.value = () => value;
     this.report = function() { interval.emit('changed', bpm.beatLength().toMs() * multiplier); };
 
     bpm.on('changed', interval.report);

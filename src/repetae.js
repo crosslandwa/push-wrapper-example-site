@@ -59,7 +59,7 @@ function Repetae(repeater, intervals) {
     }
 
     this.stop = repeater.stop;
-    this.report_interval = function() { repetae.emit('interval', _current_interval.value)  };
+    this.report_interval = () => repetae.emit('interval', _current_interval.value());
 }
 util.inherits(Repetae, EventEmitter);
 
