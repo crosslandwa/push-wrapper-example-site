@@ -8,16 +8,6 @@ const Push = require('push-wrapper'),
     Repetae = require('./src/repetae.js'),
     bpm = Scheduling.BPM(120),
     Interval = require('./src/interval.js'),
-    intervals = {
-        '1/4': Interval['4n'](bpm, '1/4'),
-        '1/4t': Interval['4nt'](bpm, '1/4t'),
-        '1/8': Interval['8n'](bpm, '1/8'),
-        '1/8t': Interval['8nt'](bpm, '1/8t'),
-        '1/16': Interval['16n'](bpm, '1/16'),
-        '1/16t': Interval['16nt'](bpm, '1/16t'),
-        '1/32': Interval['32n'](bpm, '1/32'),
-        '1/32t': Interval['32nt'](bpm, '1/32t'),
-    },
     samples = ['Kick', 'Snare', 'HandClap', 'Hat', 'Tamb', 'Cloing', 'Tang', 'Tom']
       .map(x => `assets/audio/${x}.mp3`),
     filter_frequencies = [0, 100, 200, 400, 800, 2000, 6000, 10000, 20000],
@@ -63,17 +53,23 @@ function off_we_go(push, players, accent, tick) {
     mixer.connectInput(tick, 8)
     mixer.toMaster()
 
-    let repetaes = oneToEight.map(() => new Repetae(intervals['1/4'], context))
+    let intervals = [
+        Interval['4n'](bpm, '1/4'),
+        Interval['4nt'](bpm, '1/4t'),
+        Interval['8n'](bpm, '1/8'),
+        Interval['8nt'](bpm, '1/8t'),
+        Interval['16n'](bpm, '1/16'),
+        Interval['16nt'](bpm, '1/16t'),
+        Interval['32n'](bpm, '1/32'),
+        Interval['32nt'](bpm, '1/32t'),
+    ]
+    let repetaes = oneToEight.map(() => new Repetae(intervals, context))
 
     pushControl(push, repetaes, players, mixer, metronome, bpm, sequencer)
 
     oneToEight.forEach((channel, i) => {
         let player = players[i]
         let repetae = repetaes[i];
-
-        Object.keys(intervals).forEach(buttonName => {
-            push.button[buttonName].on('pressed', () => repetae.interval(intervals[buttonName]));
-        })
 
         turn_off_column(push, channel);
         player.on('started', gain => turn_on_column(push, channel, gain));

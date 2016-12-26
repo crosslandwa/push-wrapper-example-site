@@ -27,6 +27,11 @@ function pushControl(push, repetaes, players, mixer, metronome, bpm, sequencer) 
 function bindSelectButtonToRepetae(push, repetaes) {
   function selectButton(x) { return push.grid.x[x].select }
 
+  ['1/4', '1/4t', '1/8', '1/8t', '1/16', '1/16t', '1/32', '1/32t']
+  .forEach((name, i) => {
+    push.button[name].on('pressed', () => repetaes[i].interval(name))
+  })
+
   oneToEight.forEach((channel, i) => {
     let button = selectButton(channel)
     let repetae = repetaes[i]
