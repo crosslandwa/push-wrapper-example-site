@@ -4,6 +4,7 @@ const bindTempoKnob = require('./bindPushTempoKnob.js')
 const bindChannelSelectButtons = require('./bindPushChannelSelectButtons.js')
 const Observer = require('./Observer.js')
 const shortened = require('./sampleNameShortening.js')
+const filterFrequencies = [0, 100, 200, 400, 800, 2000, 6000, 10000, 20000]
 
 function pushControl(push, repetaes, players, mixer, metronome, bpm, sequencer) {
   let button = name => push.button[name]
@@ -19,17 +20,61 @@ function pushControl(push, repetaes, players, mixer, metronome, bpm, sequencer) 
   bindPitchbend(push, players)
 
   players.forEach((player, i) => {
-    bindColumn(push, player, i + 1)
+    bindColumn(push, player, i + 1, repetaes[i], sequencer)
     player.on('sampleName', name => push.lcd.x[i + 1].y[2].update(shortened(name)))
     player.reportPitch()
     player.reportSampleName()
   })
 }
 
-function bindColumn(push, player, channel) {
-  player.on('started', gain => turnOnGridColumn(push, channel, gain))
-  player.on('stopped', () => turnOffGridColumn(push, channel))
-  turnOffGridColumn(push, channel)
+function bindColumn(push, player, channel, repetae, sequencer) {
+  function turnOffGridColumn(x) {
+    [2, 3, 4, 5, 6, 7, 8].forEach(y => {
+      push.grid.x[x].y[y].led_off()
+    })
+    push.grid.x[x].y[1].led_on()
+  }
+
+  function turnOnGridColumn(x, gain) {
+    oneToEight.forEach(y => {
+      if (((gain.velocity() + 15) / 16) >= y) {
+        push.grid.x[x].y[y].led_on(gain.velocity())
+      } else {
+        push.grid.x[x].y[y].led_off()
+      }
+    })
+  }
+
+  player.on('started', gain => turnOnGridColumn(channel, gain))
+  player.on('stopped', () => turnOffGridColumn(channel))
+  turnOffGridColumn(channel)
+
+  let mutable_velocity = 127
+  let mutable_frequency = filterFrequencies[8]
+  let pressed_pads_in_col = 0
+
+  let playback = function() {
+    player.cutOff(mutable_frequency).play(midiGain(mutable_velocity))
+  }
+
+  let padAftertouch = function(pressure) {
+    if (pressure > 0) mutable_velocity = pressure
+  }
+
+  oneToEight.forEach(y => {
+    const grid_button = push.grid.x[channel].y[y];
+    grid_button.on('pressed', (velocity) => {
+      mutable_velocity = velocity
+      mutable_frequency = filterFrequencies[y]
+      if (++pressed_pads_in_col == 1) repetae.start(playback)
+      sequencer.addEvent('play', { player: channel - 1, velocity: mutable_velocity, frequency: mutable_frequency })
+    })
+    grid_button.on('aftertouch', padAftertouch);
+    grid_button.on('released', () => {
+      --pressed_pads_in_col;
+      if (pressed_pads_in_col == 0) repetae.stop();
+    })
+  });
 }
 
 function bindSelectButtonToRepetae(push, repetaes, intervalButtons) {
@@ -129,26 +174,16 @@ function toggleBetween(a, b) {
 }
 
 function modifierButton(button) {
-    button.led_dim()
-    button.on('pressed', button.led_on)
-    button.on('released', button.led_dim)
+  button.led_dim()
+  button.on('pressed', button.led_on)
+  button.on('released', button.led_dim)
 }
 
-function turnOffGridColumn(push, x) {
-  [2, 3, 4, 5, 6, 7, 8].forEach(y => {
-    push.grid.x[x].y[y].led_off()
-  })
-  push.grid.x[x].y[1].led_on()
-}
-
-function turnOnGridColumn(push, x, gain) {
-  oneToEight.forEach(y => {
-    if (((gain.velocity() + 15) / 16) >= y) {
-      push.grid.x[x].y[y].led_on(gain.velocity())
-    } else {
-      push.grid.x[x].y[y].led_off()
-    }
-  })
+function midiGain(velocity) {
+  return {
+    velocity: function() { return velocity },
+    toAbsolute: () => velocity / 127
+  }
 }
 
 module.exports = pushControl

@@ -10,7 +10,6 @@ const Push = require('push-wrapper'),
     Interval = require('./src/interval.js'),
     samples = ['Kick', 'Snare', 'HandClap', 'Hat', 'Tamb', 'Cloing', 'Tang', 'Tom']
       .map(x => `assets/audio/${x}.mp3`),
-    filter_frequencies = [0, 100, 200, 400, 800, 2000, 6000, 10000, 20000],
     oneToEight = [1, 2, 3, 4, 5, 6, 7, 8],
     pushControl = require('./src/pushControl.js');
 
@@ -66,13 +65,6 @@ function off_we_go(push, players, accent, tick) {
     let repetaes = oneToEight.map(() => new Repetae(intervals, context))
 
     pushControl(push, repetaes, players, mixer, metronome, bpm, sequencer)
-
-    oneToEight.forEach((channel, i) => {
-        let player = players[i]
-        let repetae = repetaes[i];
-        bind_column_to_player(push, player, channel, repetae, sequencer);
-    });
-
     bindQwertyButtonsToPlayback(players, sequencer);
 
     sequencer.on('play', (data) => {
@@ -277,40 +269,11 @@ function makeSequencer(players, push, bpm, metronome) {
     return sequencer;
 }
 
-function bind_column_to_player(push, player, x, repetae, sequencer) {
-    let mutable_velocity = 127,
-        mutable_frequency = filter_frequencies[8],
-        pressed_pads_in_col = 0;
-
-    let playback = function() {
-        player.cutOff(mutable_frequency).play(midiGain(mutable_velocity));
-    }
-
-    let padAftertouch = function(pressure) {
-        if (pressure > 0) mutable_velocity = pressure;
-    }
-
-    oneToEight.forEach(y => {
-        const grid_button = push.grid.x[x].y[y];
-        grid_button.on('pressed', (velocity) => {
-            mutable_velocity = velocity
-            mutable_frequency = filter_frequencies[y]
-            if (++pressed_pads_in_col == 1) repetae.start(playback)
-            sequencer.addEvent('play', { player: x - 1, velocity: mutable_velocity, frequency: mutable_frequency })
-        });
-        grid_button.on('aftertouch', padAftertouch);
-        grid_button.on('released', () => {
-            --pressed_pads_in_col;
-            if (pressed_pads_in_col == 0) repetae.stop();
-        });
-    });
-}
-
 function bindQwertyButtonsToPlayback(players, sequencer) {
     const buttons = document.getElementsByClassName('sample-playback');
     const velocity = 108
     const midiVelocity = midiGain(velocity)
-    const f = filter_frequencies[8]
+    const f = 20000
 
     preventDefaultDragAndDropBehaviour()
     players.forEach((player, i) => bindAudioUpload(buttons[i], player))
