@@ -70,11 +70,6 @@ function off_we_go(push, players, accent, tick) {
     oneToEight.forEach((channel, i) => {
         let player = players[i]
         let repetae = repetaes[i];
-
-        turn_off_column(push, channel);
-        player.on('started', gain => turn_on_column(push, channel, gain));
-        player.on('stopped', () => turn_off_column(push, channel));
-
         bind_column_to_player(push, player, channel, repetae, sequencer);
     });
 
@@ -344,23 +339,6 @@ function midiGain(velocity) {
         velocity: function() { return velocity },
         toAbsolute: () => velocity / 127
     }
-}
-
-function turn_on_column(push, x, gain) {
-    oneToEight.forEach(y => {
-        if (((gain.velocity() + 15) / 16) >= y) {
-            push.grid.x[x].y[y].led_on(gain.velocity());
-        } else {
-            push.grid.x[x].y[y].led_off();
-        }
-    });
-}
-
-function turn_off_column(push, x) {
-    [2, 3, 4, 5, 6, 7, 8].forEach(y => {
-        push.grid.x[x].y[y].led_off();
-    });
-    push.grid.x[x].y[1].led_on();
 }
 
 function turn_button_display_on(ui_btn) {
