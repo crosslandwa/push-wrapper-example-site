@@ -11,7 +11,7 @@ function pushControl(push, repetaes, players, mixer, metronome, bpm, sequencer) 
   intervalButtons.concat(['shift', 'delete', 'accent', 'mute', 'tap_tempo'])
     .map(button).forEach(modifierButton)
 
-  bindSelectButtonToRepetae(push, repetaes)
+  bindSelectButtonToRepetae(push, repetaes, intervalButtons)
   bindTempoKnob(push.knob['tempo'], push.button['shift'], push.button['accent'], metronome, bpm)
   bindChannelSelectButtons(push, push.button['shift'], push.button['delete'], sequencer)
   bindMasterVolume(mixer, push)
@@ -25,12 +25,11 @@ function pushControl(push, repetaes, players, mixer, metronome, bpm, sequencer) 
   })
 }
 
-function bindSelectButtonToRepetae(push, repetaes) {
+function bindSelectButtonToRepetae(push, repetaes, intervalButtons) {
   function selectButton(x) { return push.grid.x[x].select }
-
-  ['1/4', '1/4t', '1/8', '1/8t', '1/16', '1/16t', '1/32', '1/32t']
-  .forEach((name, i) => {
-    push.button[name].on('pressed', () => repetaes[i].interval(name))
+  
+  intervalButtons.forEach(name => {
+    push.button[name].on('pressed', () => repetaes.forEach(repetae => repetae.interval(name)))
   })
 
   oneToEight.forEach((channel, i) => {
