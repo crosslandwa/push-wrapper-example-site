@@ -17,13 +17,13 @@ function pushControl(push, repetaes, players, mixer, metronome, bpm, sequencer, 
   bindChannelSelectButtons(push, push.button['shift'], push.button['delete'], sequencer)
   bindMasterVolume(mixer, push)
   bindEncodersToPitchAndVolume(push, players, mixer)
-  bindPitchbend(push, players)
 
   players.forEach((player, i) => {
     if (altmode) {
       bindTopPad(push, i + 1, player, repetaes[i], sequencer)
       bindFilterFrequency(push, i + 1, player)
     } else {
+      bindPitchbend(push, players)
       bindColumn(push, player, i + 1, repetaes[i], sequencer)
     }
     player.on('sampleName', name => push.lcd.x[i + 1].y[2].update(shortened(name)))
