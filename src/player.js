@@ -42,6 +42,7 @@ function Player(samplePlayer, audioContext, source) {
 
     this.cutOff = function(f) {
         filterNode.frequency.setValueAtTime(clip(f, 30, 20000), audioContext.currentTime);
+        samplePlayer.emit('filterFrequency', f)
         return player;
     }
 

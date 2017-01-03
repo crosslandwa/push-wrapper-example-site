@@ -64,11 +64,13 @@ function off_we_go(push, players, accent, tick) {
     ]
     let repetaes = oneToEight.map(() => new Repetae(intervals, context))
 
-    pushControl(push, repetaes, players, mixer, metronome, bpm, sequencer)
+    let useAltControlLayout = window.location.href.indexOf('altmode') > -1
+    pushControl(push, repetaes, players, mixer, metronome, bpm, sequencer, useAltControlLayout)
     bindQwertyButtonsToPlayback(players, sequencer);
 
     sequencer.on('play', (data) => {
-        players[data.player].cutOff(data.frequency).play(midiGain(data.velocity));
+        if (data.frequency) players[data.player].cutOff(data.frequency)
+        players[data.player].play(midiGain(data.velocity));
     });
 
     bpm.report()

@@ -4,9 +4,9 @@ const bindTempoKnob = require('./bindPushTempoKnob.js')
 const bindChannelSelectButtons = require('./bindPushChannelSelectButtons.js')
 const Observer = require('./Observer.js')
 const shortened = require('./sampleNameShortening.js')
-const filterFrequencies = [0, 100, 200, 400, 800, 2000, 6000, 10000, 20000]
+const filterFrequencies = [0, 150, 300, 600, 1200, 2400, 4800, 20000, 20000]
 
-function pushControl(push, repetaes, players, mixer, metronome, bpm, sequencer) {
+function pushControl(push, repetaes, players, mixer, metronome, bpm, sequencer, altmode = false) {
   let button = name => push.button[name]
   let intervalButtons = ['1/4', '1/4t', '1/8', '1/8t', '1/16', '1/16t', '1/32', '1/32t']
   intervalButtons.concat(['shift', 'delete', 'accent', 'mute', 'tap_tempo'])
@@ -20,11 +20,51 @@ function pushControl(push, repetaes, players, mixer, metronome, bpm, sequencer) 
   bindPitchbend(push, players)
 
   players.forEach((player, i) => {
-    bindColumn(push, player, i + 1, repetaes[i], sequencer)
+    if (altmode) {
+      bindTopPad(push, i + 1, player, repetaes[i], sequencer)
+      bindFilterFrequency(push, i + 1, player)
+    } else {
+      bindColumn(push, player, i + 1, repetaes[i], sequencer)
+    }
     player.on('sampleName', name => push.lcd.x[i + 1].y[2].update(shortened(name)))
     player.reportPitch()
     player.reportSampleName()
   })
+}
+
+function bindTopPad(push, channel, player, repetae, sequencer) {
+  let pad = push.grid.x[channel].y[8]
+  let mutableVelocity = 108
+  function playback() {
+    player.play(midiGain(mutableVelocity))
+  }
+  function padAftertouch (pressure) {
+    if (pressure > 0) mutableVelocity = pressure
+  }
+
+  pad.on('pressed', velocity => {
+    mutableVelocity = velocity
+    repetae.start(playback)
+    sequencer.addEvent('play', { player: channel - 1, velocity: velocity })
+  })
+  pad.on('released', repetae.stop)
+  pad.on('aftertouch', padAftertouch)
+
+  player.on('started', gain => pad.led_on(gain.velocity()))
+  player.on('stopped', () => pad.led_off())
+}
+
+function bindFilterFrequency(push, channel, player) {
+  [1, 2, 3, 4, 5, 6, 7].forEach(y => {
+    push.grid.x[channel].y[y].on('pressed', () => player.cutOff(filterFrequencies[y]))
+  })
+  player.on('filterFrequency', f => {
+    [1, 2, 3, 4, 5, 6, 7].forEach(y => {
+      let on = f >= filterFrequencies[y]
+      on ? push.grid.x[channel].y[y].led_on(50) : push.grid.x[channel].y[y].led_off()
+    })
+  })
+  player.cutOff(filterFrequencies[7])
 }
 
 function bindColumn(push, player, channel, repetae, sequencer) {
