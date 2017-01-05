@@ -5,6 +5,8 @@ const bindChannelSelectButtons = require('./bindPushChannelSelectButtons.js')
 const Observer = require('./Observer.js')
 const shortened = require('./sampleNameShortening.js')
 const filterFrequencies = [0, 150, 300, 600, 1200, 2400, 4800, 20000, 20000]
+const MomentaryToggle = require('./PushMomentaryToggleButton.js')
+const NonLinearScale = require('./NonLinearScale.js')
 
 function pushControl(push, repetaes, players, mixer, metronome, bpm, sequencer, altmode = false) {
   let button = name => push.button[name]
@@ -32,6 +34,8 @@ function pushControl(push, repetaes, players, mixer, metronome, bpm, sequencer, 
   })
 }
 
+
+
 function bindTopPad(push, channel, player, repetae, sequencer) {
   let pad = push.grid.x[channel].y[8]
   let mutableVelocity = 108
@@ -55,16 +59,21 @@ function bindTopPad(push, channel, player, repetae, sequencer) {
 }
 
 function bindFilterFrequency(push, channel, player) {
-  [1, 2, 3, 4, 5, 6, 7].forEach(y => {
-    push.grid.x[channel].y[y].on('pressed', () => player.cutOff(filterFrequencies[y]))
+  let pitchModEnabled = MomentaryToggle(push.grid.x[channel].y[1])
+  let filterModEnabled = MomentaryToggle(push.grid.x[channel].y[2])
+  let fScaling = NonLinearScale(0, 16384, 100, 20000, 1000)
+  let pitchScaling = NonLinearScale(0, 16384, -12, 12, 0)
+  push.touchstrip.on('pitchbend', (pb) => {
+    if (pitchModEnabled()) {
+      console.log(pitchScaling(pb))
+      player.modulatePitch(pitchScaling(pb))
+      // player.modulatePitch(scale(pb, 0, 16384, -12, 12))
+    }
+    if (filterModEnabled()) {
+      console.log(fScaling(pb))
+      player.cutOff(fScaling(pb))
+    }
   })
-  player.on('filterFrequency', f => {
-    [1, 2, 3, 4, 5, 6, 7].forEach(y => {
-      let on = f >= filterFrequencies[y]
-      on ? push.grid.x[channel].y[y].led_on(50) : push.grid.x[channel].y[y].led_off()
-    })
-  })
-  player.cutOff(filterFrequencies[7])
 }
 
 function bindColumn(push, player, channel, repetae, sequencer) {
